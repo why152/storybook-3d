@@ -72,7 +72,7 @@ function PaperLeaf({
       ease: 'power2.inOut',
       onComplete: () => onTurnFinished(index),
     });
-    return () => tween.kill();
+    return () => { tween.kill(); };
   }, [index, turned, reducedMotion, onTurnFinished]);
 
   // Pages to the right are ordered cover-first; those on the left stack in
