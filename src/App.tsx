@@ -254,15 +254,18 @@ export default function App() {
         onPointerMove={e=>{if(!reduced&&!visibleTurn&&e.pointerType==='mouse')moveParallax(e.currentTarget,e.clientX,e.clientY);}}
         onPointerLeave={e=>resetParallax(e.currentTarget)}>
         <div className="book-perspective" aria-label="3D 互动绘本">
+          {/* Use distinct element keys: GSAP owns the turning node's inline
+              transform. Reusing that DOM div for the settled page would retain
+              rotateY(±180deg) and make the newly mounted art disappear. */}
           {visibleTurn ? <>
             {/* The moving card owns BOTH sides until it lands. Rendering the
                 incoming still page underneath exposes a duplicate illustration
                 and makes the 3D turn look like two transparent cards. */}
-            <div className="flip-leaf" ref={leaf} style={debugPose === null ? undefined : { transform: `rotateY(${-180 * debugPose}deg)` }}>
+            <div key="turning-leaf" className="flip-leaf" ref={leaf} style={debugPose === null ? undefined : { transform: `rotateY(${-180 * debugPose}deg)` }}>
               <div className="leaf-face leaf-front"><SceneCard scene={scenes[visibleTurn.from]} name={name} wish={wish}/></div>
               <div className="leaf-face leaf-back"><SceneCard scene={scenes[visibleTurn.to]} name={name} wish={wish}/></div>
             </div>
-          </> : <div className="still-layer"><SceneCard scene={scenes[active]} name={name} wish={wish}/></div>}
+          </> : <div key="settled-page" className="still-layer"><SceneCard scene={scenes[active]} name={name} wish={wish}/></div>}
         </div>
       </div>
       <button type="button" aria-label="下一页" className="turn-button turn-next" disabled={active===scenes.length-1||!!turn} onClick={()=>navigate(1)}><Arrow/></button>
