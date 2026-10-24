@@ -26,7 +26,7 @@ The previous whole-card 3D rotation prototype is retired. Read
 - Authentic browser video of opening + one next + one previous turn.
 - Visual comparison to the inspiration site with explicit remaining gaps:
   the site is a craft benchmark, not a card geometry specification.
-- Owner visual approval before merging Draft PR #9.
+- Book-first baseline was approved and merged in PR #9. Require evidence-based acceptance for subsequent visual changes, not permanent references to an old draft PR.
 
 ### Future, not part of demo
 
