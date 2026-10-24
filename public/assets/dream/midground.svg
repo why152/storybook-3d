@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+
+<defs><linearGradient id="balloon" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F4D6AC"/><stop offset=".45" stop-color="#DB9FA8"/><stop offset="1" stop-color="#9A8FBB"/></linearGradient>
+<linearGradient id="rock" x1="0" y1="0" x2=".4" y2="1"><stop stop-color="#A3A3C4"/><stop offset="1" stop-color="#566889"/></linearGradient></defs>
+<!-- A floating hot-air balloon beyond the letterforms -->
+<g transform="translate(848 69)">
+<path d="M86 260q-107-85-88-155Q3 25 89 8q112-15 130 91q11 82-82 160" fill="url(#balloon)" stroke="#6B6A8C" stroke-width="7"/>
+<path d="M92 19Q41 99 98 260M95 17q92 91 38 243M16 124h200" stroke="#F9DFB9" stroke-width="15" opacity=".78" fill="none"/>
+<path d="M89 254l-18 86m62-86 22 87" stroke="#746B7B" stroke-width="6"/>
+<rect x="67" y="332" width="95" height="53" rx="8" fill="#BE9C8D" stroke="#6B6C83" stroke-width="8"/>
+<path d="M76 347h78" stroke="#F1D2AE" stroke-width="8"/>
+</g>
+<!-- Night observatory and telescope -->
+<g transform="translate(76 322)">
+<path d="M0 214V101q106-149 213 0v113" fill="#9A9EB8" stroke="#6A7897" stroke-width="10"/>
+<path d="M-10 101q110-151 233 0" fill="none" stroke="#F0D5B5" stroke-width="17"/>
+<path d="M65 210V129h91v81" fill="#576782"/>
+<path d="M111 112V14" stroke="#777F9C" stroke-width="10"/>
+<path d="M63 60l110-40 18 42-107 37z" fill="#E5C7B6" stroke="#6E738F" stroke-width="9"/>
+<circle cx="63" cy="81" r="23" fill="#6F748E" stroke="#F3DDBF" stroke-width="7"/>
+</g>
+<path d="M0 562q129-28 246-10t271-14T1200 525" stroke="#C5C9C5" stroke-width="6" opacity=".24" fill="none"/>
+<!-- Magical floating staircase on the right -->
+<g fill="#D0BDC3" stroke="#7C789B" stroke-width="6">
+<path d="m964 504 65-15 46 21-69 17z"/><path d="m1003 460 56-17 43 19-54 19z"/>
+<path d="m1046 417 54-20 42 16-55 20z"/>
+</g>
+
+</svg>
