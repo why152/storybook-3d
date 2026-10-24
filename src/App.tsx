@@ -17,6 +17,9 @@ const dots = ['#2f3345', '#e87961', '#477f65', '#e4a55d'];
 // No GSAP timer is running in this mode, making frame comparisons reproducible.
 const poseParam = new URLSearchParams(window.location.search).get('pose');
 const debugPose = poseParam === null ? null : Math.max(0, Math.min(1, Number(poseParam) || 0));
+const sceneParam = new URLSearchParams(window.location.search).get('scene');
+const requestedScene = scenes.findIndex(scene => scene.id === sceneParam);
+const initialScene = debugPose !== null ? 1 : Math.max(0,requestedScene);
 
 
 /** Three original, file-based scene packages all share one artboard and depth
@@ -95,7 +98,7 @@ function Arrow({left=false}: {left?:boolean}) {
 }
 
 export default function App() {
-  const [active,setActive]=useState(debugPose === null ? 0 : 1);
+  const [active,setActive]=useState(initialScene);
   const [turn,setTurn]=useState<Turn|null>(null);
   const [name,setName]=useState('你');
   const [wish,setWish]=useState('愿所有美好的事情，都在下一页等你。');
@@ -151,7 +154,7 @@ export default function App() {
     timeline.fromTo(layers,{opacity:0,'--entry-y':'24px'},{
       opacity:1,'--entry-y':'0px',stagger:.095,duration:.72,ease:'power3.out'
     });
-    timeline.fromTo(words,{opacity:0,y:12},{opacity:1,y:0,duration:.54,ease:'power2.out'},'<=0.12');
+    timeline.fromTo(words,{opacity:0,y:12},{opacity:1,y:0,duration:.54,ease:'power2.out'},'<0.12');
     return()=>{timeline.kill();gsap.set(layers,{clearProps:'opacity,--entry-y'});gsap.set(words,{clearProps:'opacity,transform'});};
   },[active,turn,reduced]);
 
