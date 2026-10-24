@@ -232,7 +232,7 @@ export default function App() {
             <div className="still-layer"><SceneCard scene={scenes[visibleTurn.to]} name={name} wish={wish}/></div>
             <div className="flip-leaf" ref={leaf} style={debugPose === null ? undefined : { transform: `rotateY(${-180 * debugPose}deg)` }}>
               <div className="leaf-face leaf-front"><SceneCard scene={scenes[visibleTurn.from]} name={name} wish={wish}/></div>
-              <div className="leaf-face leaf-back"><SceneCard scene={scenes[turn.to]} name={name} wish={wish}/></div>
+              <div className="leaf-face leaf-back"><SceneCard scene={scenes[visibleTurn.to]} name={name} wish={wish}/></div>
             </div>
           </> : <div className="still-layer"><SceneCard scene={scenes[active]} name={name} wish={wish}/></div>}
         </div>
