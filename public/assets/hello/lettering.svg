@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+<defs>
+ <linearGradient id="letters" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#EA7557"/><stop offset=".42" stop-color="#D74E46"/><stop offset="1" stop-color="#AF3B42"/></linearGradient>
+ <pattern id="scratches" width="39" height="27" patternUnits="userSpaceOnUse"><path d="m3 12 12-3m9 14 11-2" stroke="#FFCE93" stroke-width="3" opacity=".48"/><circle cx="9" cy="23" r="1.9" fill="#F7DCA8"/></pattern>
+ <mask id="letter-mask"><rect width="1200" height="700" fill="#000"/><text x="134" y="479" font-size="390" font-family="Impact, 'Arial Black', sans-serif" font-weight="900" letter-spacing="-18" textLength="960" lengthAdjust="spacingAndGlyphs" fill="#fff">HELLO</text></mask>
+</defs>
+<g transform="rotate(-3 600 345)">
+ <text x="144" y="489" font-size="390" font-family="Impact,'Arial Black',sans-serif" font-weight="900" letter-spacing="-18" textLength="960" lengthAdjust="spacingAndGlyphs" fill="#874A4B" opacity=".34" stroke="#874A4B" stroke-width="14" stroke-linejoin="round">HELLO</text>
+ <text x="134" y="479" font-size="390" font-family="Impact,'Arial Black',sans-serif" font-weight="900" letter-spacing="-18" textLength="960" lengthAdjust="spacingAndGlyphs" fill="url(#letters)" stroke="#A64242" stroke-width="7" paint-order="stroke">HELLO</text>
+ <rect width="1200" height="700" fill="url(#scratches)" mask="url(#letter-mask)" opacity=".8"/>
+ <path d="M170 255l70-9M294 310l63 3M428 228l81 4M666 261l85-9M856 382l78-3M1049 318l47-4" stroke="#FFE7B0" stroke-width="5" opacity=".46" stroke-linecap="round"/>
+</g>
+</svg>
