@@ -135,12 +135,12 @@ export default function App() {
     const duration=reduced ? 0.05 : 1.36;
     const incomingLayers=['midground','lettering','characters','foreground'].map(key=>
       Array.from(document.querySelectorAll<HTMLElement>(
-        `.still-layer .layer-${key}, .leaf-back .layer-${key}`
+        `.leaf-back .layer-${key}`
       ))
     );
     const allIncoming=incomingLayers.flat();
     const incomingCopy=Array.from(document.querySelectorAll<HTMLElement>(
-      '.still-layer .scene-story, .leaf-back .scene-story'
+      '.leaf-back .scene-story'
     ));
     if(!reduced){
       gsap.set(allIncoming,{opacity:0,'--entry-y':'20px'});
@@ -255,7 +255,9 @@ export default function App() {
         onPointerLeave={e=>resetParallax(e.currentTarget)}>
         <div className="book-perspective" aria-label="3D 互动绘本">
           {visibleTurn ? <>
-            <div className="still-layer"><SceneCard scene={scenes[visibleTurn.to]} name={name} wish={wish}/></div>
+            {/* The moving card owns BOTH sides until it lands. Rendering the
+                incoming still page underneath exposes a duplicate illustration
+                and makes the 3D turn look like two transparent cards. */}
             <div className="flip-leaf" ref={leaf} style={debugPose === null ? undefined : { transform: `rotateY(${-180 * debugPose}deg)` }}>
               <div className="leaf-face leaf-front"><SceneCard scene={scenes[visibleTurn.from]} name={name} wish={wish}/></div>
               <div className="leaf-face leaf-back"><SceneCard scene={scenes[visibleTurn.to]} name={name} wish={wish}/></div>
