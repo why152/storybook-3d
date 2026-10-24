@@ -1,6 +1,6 @@
 # Storybook 3D — A Little Story
 
-**Work in progress · Draft PR #9 · user visual sign-off required**
+**Work in progress · book-first baseline merged into main (PR #9) · ongoing AI-first quality upgrades**
 
 An original, personalized **physical 3D illustrated storybook demo**.
 This is a **book**, not a rotating card. A centered binding joins two
@@ -81,7 +81,7 @@ Leaf is rigid paper with cover/pages and shadows, not a smoothly
 deformable page curl. Illustration is original and still needs
 professional art refinement, scene-specific character acting and
 performance profiling. No back end, payments, accounts or customer
-file uploads. **Draft PR #9 remains unmerged pending review.**
+file uploads. **PR #9 was owner-approved and merged on 2026-10-25; artistic polish and future deployments still require separate validation.**
 
 ## AI-first engineering and project tracking
 
