@@ -1,0 +1,72 @@
+{
+  "scene": "wish",
+  "version": 1,
+  "artboard": {
+    "width": 1200,
+    "height": 700,
+    "ratio": "12:7"
+  },
+  "theme": "Birthday wish at a warmly lit indoor party",
+  "palette": [
+    "#A3637F",
+    "#D98890",
+    "#F4C49D",
+    "#FFF0D0"
+  ],
+  "visualStory": "Fox arrives with a wrapped present; bunny cheers; a tiered birthday cake, candles and paper confetti form a near foreground celebration.",
+  "provenance": "Original SVG artwork created for this project; no original-site assets embedded.",
+  "layers": [
+    {
+      "id": "background",
+      "depth": 0,
+      "opaque": true,
+      "role": "palette, atmospheric light, distant setting",
+      "motion": "fixed",
+      "file": "background.svg",
+      "transparent": false
+    },
+    {
+      "id": "midground",
+      "depth": 11,
+      "role": "architecture, canopy, set dressing",
+      "motion": "stagger-entrance + mouse-depth",
+      "file": "midground.svg",
+      "transparent": true
+    },
+    {
+      "id": "lettering",
+      "depth": 27,
+      "role": "illustrated display typography",
+      "motion": "stagger-entrance + mouse-depth",
+      "file": "lettering.svg",
+      "transparent": true
+    },
+    {
+      "id": "characters",
+      "depth": 48,
+      "role": "character gestures and story action",
+      "motion": "stagger-entrance + mouse-depth",
+      "file": "characters.svg",
+      "transparent": true
+    },
+    {
+      "id": "foreground",
+      "depth": 68,
+      "role": "close-range framing and key story props",
+      "motion": "stagger-entrance + mouse-depth",
+      "file": "foreground.svg",
+      "transparent": true
+    },
+    {
+      "id": "effects",
+      "depth": 78,
+      "role": "independent airborne particles and embellishments",
+      "motion": "ambient-float",
+      "file": "effects.svg",
+      "transparent": true
+    }
+  ],
+  "renderer": "src/App.tsx IllustratedArtwork",
+  "motion": "src/App.tsx GSAP entrance timeline; CSS float on effects and pointer-driven parallax; respect prefers-reduced-motion",
+  "note": "Each layer covers a full transparent 1200×700 canvas; preserve alignment when editing. Text personalization is real HTML outside SVG."
+}
