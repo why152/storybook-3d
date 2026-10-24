@@ -40,9 +40,9 @@ function App() {
     if (turningIndex !== null) return;
     const next = current + direction;
     if (next < 0 || next >= pages.length) return;
-    setTurningIndex(direction === 1 ? current : current - 1);
+    if (webgl) setTurningIndex(direction === 1 ? current : current - 1);
     setCurrent(next);
-  }, [current, pages.length, turningIndex]);
+  }, [current, pages.length, turningIndex, webgl]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
