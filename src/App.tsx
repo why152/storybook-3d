@@ -52,28 +52,29 @@ function Fox() {
   </g>;
 }
 
+/** Every HELLO layer is a separately editable and replaceable SVG file.
+ * Each shares the same 1200×700 coordinate system and has independently
+ * configured page-local depth, so the 3D turnover creates real parallax.
+ */
+const helloLayers = [
+  { key: 'background', className: 'hello-background', alt: '' },
+  { key: 'midground', className: 'hello-midground', alt: '' },
+  { key: 'lettering', className: 'hello-lettering', alt: '' },
+  { key: 'characters', className: 'hello-characters', alt: '' },
+  { key: 'foreground', className: 'hello-foreground', alt: '' },
+  { key: 'effects', className: 'hello-effects', alt: '' },
+] as const;
+
 function HelloArtwork() {
-  return <div className="art-hello">
-    <svg className="illustration illustration-back" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <defs><pattern id="helloDots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="9" cy="9" r="4" fill="#b84b45" opacity=".26"/></pattern></defs>
-      <rect width="1200" height="700" fill="url(#helloDots)"/>
-      <rect x="60" y="88" width="150" height="107" fill="#ecab86" stroke="#f4bc91" strokeWidth="9"/>
-      <rect x="985" y="128" width="170" height="102" fill="#d15c52" stroke="#f6b493" strokeWidth="9"/>
-      <rect x="840" y="37" width="104" height="94" fill="#eda783" stroke="#f9caa4" strokeWidth="7"/>
-      <rect x="0" y="537" width="1200" height="163" fill="#ef9e76"/>
-      <path d="M0 538 H1200" stroke="#663f48" strokeWidth="5" opacity=".6"/>
-      <path d="M500 565v105m0-76h47m-47 30h35M937 551v104m0-81h47m-47 38h34" stroke="#8f3f4a" strokeWidth="6" opacity=".6"/>
-      <circle cx="1050" cy="396" r="68" fill="#ffd5a0" opacity=".4"/>
-      <path d="M64 365l41-17 29 41-31 30zM1077 320l57-12-4 58-58 12z" fill="#f4d8a9" opacity=".55"/>
-    </svg>
-    <div className="type-layer hello-type">HELLO</div>
-    <svg className="illustration illustration-front" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <g transform="translate(135,333) scale(.61)"><Bunny/></g>
-      <g transform="translate(326,358) scale(.54)"><Fox/></g>
-      <path d="M199 650h305" stroke="#693947" strokeWidth="9" strokeLinecap="round" opacity=".5"/>
-      <g stroke="#774352" fill="none" strokeWidth="4"><path d="M683 572v-54m0 0q25-12 43 12M975 572v-54m0 0q25-12 43 12"/></g>
-      <g className="flying-stars" fill="#ffd6a1"><path d="m987 79 12 32 33 9-33 9-12 31-11-31-32-9 32-9z"/><path d="m539 80 7 20 20 7-20 7-7 20-7-20-20-7 20-7z"/></g>
-    </svg>
+  return <div className="art-hello layered-scene" aria-label="精致的插画城镇中，一只小兔与小狐狸向彼此问好">
+    {helloLayers.map(layer => <img
+      className={`art-layer ${layer.className}`}
+      key={layer.key}
+      src={`/assets/hello/${layer.key}.svg`}
+      alt={layer.alt}
+      draggable={false}
+      loading="eager"
+    />)}
   </div>;
 }
 
