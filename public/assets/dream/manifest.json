@@ -1,0 +1,57 @@
+{
+  "scene": "dream",
+  "version": 1,
+  "artboard": {
+    "width": 1200,
+    "height": 700,
+    "aspectRatio": "12:7"
+  },
+  "story": "Fox and rabbit hold a shared star map while stargazing under a moonlit sky",
+  "palette": [
+    "#424D7E",
+    "#8B98B9",
+    "#E8CBAF",
+    "#F9F0D5"
+  ],
+  "license": "New original vector illustration. No copyrighted reference-site materials copied.",
+  "layers": [
+    {
+      "id": "background",
+      "depth": 0,
+      "file": "background.svg",
+      "transparent": false
+    },
+    {
+      "id": "midground",
+      "depth": 1,
+      "file": "midground.svg",
+      "transparent": true
+    },
+    {
+      "id": "lettering",
+      "depth": 2,
+      "file": "lettering.svg",
+      "transparent": true
+    },
+    {
+      "id": "characters",
+      "depth": 3,
+      "file": "characters.svg",
+      "transparent": true
+    },
+    {
+      "id": "foreground",
+      "depth": 4,
+      "file": "foreground.svg",
+      "transparent": true
+    },
+    {
+      "id": "effects",
+      "depth": 5,
+      "file": "effects.svg",
+      "transparent": true
+    }
+  ],
+  "rendering": "Spread art is split into left and right physical book pages by src/components/SceneArt.tsx. Each image stays aligned to full 1200x700 spread.",
+  "note": "No flattening of source artwork, two independent halves read one shared original composition."
+}

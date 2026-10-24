@@ -1,72 +1,74 @@
-# Architecture — 3D storybook Demo
+# Architecture — bound physical storybook (2026-10-25)
 
-## Goal
-Recreate the **perceived experience** of a layered illustrated 2.5D/3D flipbook, while independently implementing the rendering and using original artwork. The user values illustrated storytelling, animated page transitions and high-fidelity 3D rotation.
+**Authoritative intent:** `AGENTS.md` supersedes earlier card-flip prototypes.
 
-## High-level modules
-- `src/engine/`: R3F scene, camera, lighting, page pivot, front/back materials, depth ordering, time-based transition state.
-- `src/components/`: React UI for previous/next, loading states, fullscreen or help, accessible controls.
-- `src/scenes/`: reusable illustrated scene renderer with background, character, decoration and foreground planes.
-- `src/data/`: typed story definition, demo content and validation.
-- `public/assets/`: optimized originals, plus placeholders while art is being prepared.
+## What we are building
 
-These paths are *proposed*, not yet present. The coding agent may adjust names and document departures.
+An original, personalized **3D bound book**, not a rotating landscape
+slideshow. The object has a closed portrait cover, two visible page halves
+when open, a persistent central binding and one **half-width page leaf**
+that pivots around the binding. Five illustrated interior spreads are
+HELLO, GROW, TOGETHER, DREAM and WISH.
 
-## Core principle: separate content and rendering
-Story definition example (illustrative TypeScript interface):
+## Modules
 
-```ts
-type LayerKind = 'image' | 'text' | 'particle';
-type SceneLayer = {
-  id: string;
-  kind: LayerKind;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  depth: number;
-  asset?: string;
-  text?: string;
-  animation?: 'none' | 'float' | 'fade-in' | 'pop';
-};
-type StoryPage = {
-  id: string;
-  background: string;
-  front: SceneLayer[];
-  back?: SceneLayer[];
-};
-type Story = {
-  id: string;
-  title: string;
-  pages: StoryPage[];
-  variables: Record<string, string>;
-};
-```
+| Module | Responsibility |
+|---|---|
+| `src/data/story.ts` | Single typed data source for five chapters, palette, text, initial routes |
+| `src/components/SceneArt.tsx` | Six original SVG illustration planes per scene; 1200×700 compositions sliced into page halves |
+| `src/components/Book.tsx` | Binding geometry, stationary pages, dual-sided turning leaf, GSAP animation and pointer parallax |
+| `src/App.tsx` | Navigation and sequential bookmarks, keyboard / touch, lightweight editable name and wish |
+| `src/styles.css` | Actual book cover, spine, page thickness, paper faces, gallery lighting, responsive styles |
+| `tests/demo.spec.ts` | Real-browser evidence: closed cover, opening, 5 chapters, 5 poses, physical reverse turn, mobile and video |
 
-Text substitution must be safely rendered as text, not injected HTML. Consider localization and overflow constraints.
+## Geometry and page ordering
 
-## Rendering and sequencing
-1. Use an orthographic or modest-perspective camera with a reference 16:9 artboard.
-2. Each flipping leaf has a stable pivot at its binding edge. Treat front/back as different surfaces; reverse UV/mirroring correctly.
-3. Manage animation as one transition with an explicit idle/turning state; prevent overlapping input. Support both directions.
-4. Keep scene layers in the coordinate system of their parent page so elements rotate with the book.
-5. Place illustration planes at controlled local depth to achieve parallax; clip/mask page overflow where needed.
-6. Coordinate turn progress, camera transforms, shadow strength and arrival animations on one timeline.
-7. Validate 0/25/50/75/100% poses against the supplied visual reference; screenshots are part of the acceptance review.
-8. Page deformation is optional only after rotation, occlusion and dual-side behavior work. Do not overfit to physically realistic curled paper if the reference looks like rigid cards.
+Book artboard: 1200×700, aspect 12:7. Each of its two physical pages is
+50% of the open spread. Artwork stays authored on one continuous artboard
+and is cropped into left and right **physical paper surfaces** at the spine.
 
-## Layered artwork contract
-A page may use `background.webp`, `character.png`, `foreground.png`, and effects. Transparent elements share a known artboard size and coordinate origin. Avoid baked-in Chinese text; render customizable copy in-app. Include source/ownership metadata for production assets.
+**Next chapter, right-to-left turn**:
+- Underlay: current left page + next right page.
+- Turning leaf starts on the right, front = current right page.
+- Turning leaf back = **next left page**, correctly readable when rotated to left.
+- The physical leaf is anchored at x = 50% of book with
+  `transform-origin: 0 50%` and rotates from 0 to -180 degrees.
+- On completion stationary book becomes next left + next right.
 
-## Performance, UX and fallback
-- Desktop first, phone portrait/landscape sanity checks.
-- Progressive asset loading, lazy preload adjacent page assets, dispose resources when replaced.
-- Pause or reduce unnecessary continuous rendering.
-- Detect missing WebGL and show a readable static story.
-- Keyboard and touch navigation, plus `prefers-reduced-motion`.
+**Previous chapter, left-to-right turn**:
+- Underlay: previous left + current right.
+- Turning leaf begins on left at -180 degrees, reverse = current left.
+- The same leaf rotates to 0 and reveals previous right.
+- On completion book becomes previous left + previous right.
 
-## Deliberately excluded now
-Customer authentication, order CRUD, production database, payments, production media upload, public publishing, video export. Data definitions should leave a migration path to a future admin editor and published revisions.
+**Cover**: front cover is a real right-hand leaf. The book shifts its
+center 25% to center the closed portrait cover; its first opening
+animates toward the full landscape open spread, without card flipping.
 
-## License policy
-Use permissively licensed dependencies or separately licensed originals. Public GitHub source without explicit license is **not** approved for reuse. Do not copy original case-study artwork.
+## Rules for 2.5D illustration
+
+- Every interior chapter has 6 independently editable and replaceable SVGs:
+  background, midground, lettering, characters, foreground, effects.
+- The turning sheet is a **flat physical paper face** (with separate
+  front/back) to prevent artwork protruding outside its cut edge.
+- Stationary open book retains per-plane pointer parallax and ambient
+  decoration movement within each physical page.
+- No ancestor filter or isolation may flatten the turning-leaf backface
+  structure. No doubled incoming page overlay.
+
+## Validation/acceptance
+
+- Real Playwright screenshots at 0, 25, 50, 75 and 100 percent turn,
+  with one half-width turning leaf pinned at the center binding.
+- Video of opening closed cover, next page, previous page.
+- Five scene artboards load from original SVG files and display across
+  two pages with readable titles (no mirrored letters).
+- Reduced-motion, touch, keyboard and recipient/wish customization.
+- Visual review is mandatory in addition to CI. The original reference
+  work remains substantially more polished artistically.
+
+## Out of scope
+
+Back-end, payments, accounts, uploaded files, public sharing, AI-generated
+customer image pipeline, actual page-curl shaders. The current leaf is a
+rigid page hinge with paper depth/shadow, not a deformable paper mesh.

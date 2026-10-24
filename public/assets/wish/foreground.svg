@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+
+<defs><linearGradient id="icing" x2="0" y2="1"><stop stop-color="#FFF7DF"/><stop offset="1" stop-color="#F3DCC4"/></linearGradient>
+<pattern id="sponge" width="25" height="27" patternUnits="userSpaceOnUse"><circle cx="6" cy="8" r="2" fill="#C1797F" opacity=".26"/><path d="m14 21 7-2" stroke="#C1797F" stroke-width="1.5" opacity=".23"/></pattern></defs>
+<!-- Cake and candles separate from characters and big WISH typography -->
+<g transform="translate(511 411)">
+ <ellipse cx="108" cy="257" rx="242" ry="29" fill="#8D6573" opacity=".34"/>
+ <ellipse cx="108" cy="246" rx="226" ry="26" fill="#F8E6CB" stroke="#BA8B87" stroke-width="7"/>
+ <rect x="-82" y="104" width="381" height="136" rx="26" fill="#F3D3BA" stroke="#B7787B" stroke-width="7"/>
+ <rect x="-82" y="104" width="381" height="136" rx="26" fill="url(#sponge)"/>
+ <path d="M-72 127Q-43 165-16 133T35 131T88 131T141 130T190 130T241 130T288 132" fill="none" stroke="#FFF4D9" stroke-width="32" stroke-linecap="round"/>
+ <rect x="-30" y="22" width="271" height="113" rx="32" fill="url(#icing)" stroke="#BE8584" stroke-width="7"/>
+ <path d="M-17 83Q6 105 32 78T85 80T139 80T194 80T230 80" stroke="#D89494" stroke-width="19" fill="none" stroke-linecap="round"/>
+ <path d="M-10 116Q28 129 61 113T127 110T188 112T239 113" stroke="#B9787F" stroke-width="6" fill="none" opacity=".7"/>
+ <rect x="17" y="-36" width="14" height="63" rx="5" fill="#A97591"/>
+ <rect x="94" y="-36" width="14" height="63" rx="5" fill="#A97591"/>
+ <rect x="170" y="-36" width="14" height="63" rx="5" fill="#A97591"/>
+ <g fill="#FFF0BD" stroke="#E1A36B" stroke-width="2">
+ <path d="M24-42q-24-26 0-49q24 25 0 49Z"/>
+ <path d="M101-42q-23-26 0-49q23 25 0 49Z"/>
+ <path d="M177-42q-24-26 0-49q24 25 0 49Z"/>
+ </g>
+ <path d="M-70 186q58-18 117 2t118 0t120 0" stroke="#EAB0A0" stroke-width="9" fill="none" stroke-linecap="round"/>
+ <g fill="#DA8B83"><circle cx="-19" cy="215" r="8"/><circle cx="78" cy="214" r="8"/><circle cx="184" cy="211" r="8"/><circle cx="264" cy="206" r="8"/></g>
+</g>
+<!-- Close flowers and ribbon twists anchor corner framing -->
+<path d="M0 660Q108 603 194 684T392 668V700H0Z" fill="#985C72" opacity=".42"/>
+<path d="M906 700Q1098 603 1200 666V700Z" fill="#9B6077" opacity=".52"/>
+<g transform="translate(85 607) scale(1.18)" fill="#F7DFB7" stroke="#B77979" stroke-width="1.7"><ellipse cy="-18" rx="11" ry="24" transform="rotate(0)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(72)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(144)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(216)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(288)"/><circle r="9" fill="#F9DC9C"/></g><g transform="translate(1103 607) scale(1.21)" fill="#F5D6B6" stroke="#B77979" stroke-width="1.7"><ellipse cy="-18" rx="11" ry="24" transform="rotate(0)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(72)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(144)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(216)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(288)"/><circle r="9" fill="#F9DC9C"/></g><g transform="translate(61 680) scale(0.71)" fill="#E8B4AA" stroke="#B77979" stroke-width="1.7"><ellipse cy="-18" rx="11" ry="24" transform="rotate(0)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(72)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(144)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(216)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(288)"/><circle r="9" fill="#F9DC9C"/></g><g transform="translate(1177 679) scale(0.76)" fill="#E6A0A7" stroke="#B77979" stroke-width="1.7"><ellipse cy="-18" rx="11" ry="24" transform="rotate(0)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(72)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(144)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(216)"/><ellipse cy="-18" rx="11" ry="24" transform="rotate(288)"/><circle r="9" fill="#F9DC9C"/></g>
+<g fill="#F6D9AF"><path d="M177 668q42-50 77-14q-28 34-77 14M1041 679q-46-50-79-9q26 28 79 9"/></g>
+
+</svg>

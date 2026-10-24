@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+
+<defs>
+ <linearGradient id="ink" x2=".2" y2="1"><stop stop-color="#FFF8DA"/><stop offset=".75" stop-color="#F1E5BB"/><stop offset="1" stop-color="#D9C89B"/></linearGradient>
+ <pattern id="rub" width="34" height="23" patternUnits="userSpaceOnUse"><path d="M2 5l15-3m2 12 10-2M8 20l7-2" stroke="#59816A" stroke-width="2.3" opacity=".44"/><circle cx="28" cy="6" r="1.5" fill="#2C6D57" opacity=".41"/></pattern>
+ <mask id="type"><rect width="1200" height="700" fill="black"/><text x="108" y="482" font-family="Impact,'Arial Black',sans-serif" font-weight="900" font-size="402" letter-spacing="-11" textLength="999" lengthAdjust="spacingAndGlyphs" fill="white">GROW</text></mask>
+</defs>
+<g transform="rotate(-3 601 370)">
+ <text x="119" y="500" font-family="Impact,'Arial Black',sans-serif" font-weight="900" font-size="402" letter-spacing="-11" textLength="999" lengthAdjust="spacingAndGlyphs" fill="#21473F" opacity=".5" stroke="#21473F" stroke-width="16">GROW</text>
+ <text x="108" y="482" font-family="Impact,'Arial Black',sans-serif" font-weight="900" font-size="402" letter-spacing="-11" textLength="999" lengthAdjust="spacingAndGlyphs" fill="url(#ink)" stroke="#35614C" stroke-width="8" paint-order="stroke">GROW</text>
+ <rect width="1200" height="700" mask="url(#type)" fill="url(#rub)"/>
+ <g fill="none" stroke="#6A9175" stroke-width="3" opacity=".6"><path d="M152 307l80-7M342 456l67-7M570 272l49-8M782 427l71 6M975 375l75-4"/></g>
+</g>
+
+</svg>

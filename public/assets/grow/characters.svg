@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+
+<defs>
+<linearGradient id="cream" x2="1" y2="1"><stop stop-color="#FFF8D9"/><stop offset=".7" stop-color="#F4D3AC"/><stop offset="1" stop-color="#DDB28E"/></linearGradient>
+<linearGradient id="orange" x2="1" y2="1"><stop stop-color="#F5B070"/><stop offset=".65" stop-color="#DB8355"/><stop offset="1" stop-color="#BC5B50"/></linearGradient>
+<linearGradient id="shirt" x2="1" y2="1"><stop stop-color="#DAB66F"/><stop offset="1" stop-color="#BA8C61"/></linearGradient>
+<pattern id="flecks" width="17" height="22" patternUnits="userSpaceOnUse"><path d="m3 3 2 2m10 8-3 3" fill="none" stroke="#9B785F" stroke-width="1.5" opacity=".24"/></pattern>
+</defs>
+<!-- Rabbit climbs the wooden ladder at the left, reaching toward tree canopy -->
+<g transform="translate(250 146) rotate(-11 108 190)">
+<path d="M104 243Q56 244 47 294M152 244q-4 34 28 44" stroke="#F0CDAB" stroke-width="34" stroke-linecap="round" fill="none"/>
+<ellipse cx="47" cy="302" rx="28" ry="16" fill="#F6DAB8" stroke="#C7A081" stroke-width="3"/>
+<ellipse cx="183" cy="293" rx="29" ry="17" fill="#F6DAB8" stroke="#C7A081" stroke-width="3"/>
+<path d="M100 122Q51 26 68 8Q96-3 117 95Q117 6 144 5Q181 7 149 133" fill="url(#cream)" stroke="#B89279" stroke-width="5"/>
+<path d="M74 36q22 30 26 74M141 35q16 21-6 77" stroke="#EBAFA0" stroke-width="17" stroke-linecap="round" fill="none"/>
+<ellipse cx="122" cy="236" rx="67" ry="85" fill="#E6AF73" stroke="#976F5A" stroke-width="5"/>
+<path d="M63 229Q116 210 172 218" stroke="#2E6153" stroke-width="38" fill="none"/>
+<path d="M95 280q26 11 59-2" fill="none" stroke="#F0D39C" stroke-width="7"/>
+<path d="M168 206Q200 167 208 131" stroke="#F4D5B1" stroke-width="29" stroke-linecap="round" fill="none"/>
+<ellipse cx="212" cy="122" rx="15" ry="21" fill="#F8DABB" transform="rotate(19 212 122)"/>
+<path d="m207 111-13-11m19 11 3-16m-1 19 14-9" stroke="#BE9678" stroke-width="3" stroke-linecap="round"/>
+<path d="M76 207Q42 197 27 230" stroke="#F4D5B1" stroke-width="26" fill="none" stroke-linecap="round"/>
+<ellipse cx="21" cy="228" rx="15" ry="19" fill="#F8D8B7"/>
+<ellipse cx="120" cy="142" rx="76" ry="69" fill="url(#cream)" stroke="#BD957B" stroke-width="5"/>
+<path d="M59 144q16-44 44-51" stroke="#FFF8E2" stroke-width="8" fill="none" stroke-linecap="round"/>
+<circle cx="92" cy="145" r="6" fill="#364342"/><circle cx="147" cy="143" r="6" fill="#364342"/>
+<ellipse cx="121" cy="159" rx="9" ry="7" fill="#AD7770"/>
+<path d="M121 166q-12 17-26 3m26-3q9 18 25 4" stroke="#956866" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+<ellipse cx="74" cy="167" rx="18" ry="10" fill="#ECAD9C" opacity=".75"/><ellipse cx="169" cy="167" rx="17" ry="9" fill="#ECAD9C" opacity=".75"/>
+<path d="M66 211q60 23 115-5" stroke="#2C6559" stroke-width="18" fill="none" stroke-linecap="round"/>
+<path d="m177 212 39 58-36 12-22-57" fill="#2E6558" stroke="#1D564B" stroke-width="3"/>
+<ellipse cx="120" cy="147" rx="77" ry="69" fill="url(#flecks)" opacity=".27"/>
+</g>
+<!-- A fox tends a seedling with a tiny watering can -->
+<g transform="translate(754 354) rotate(5 100 126)">
+<ellipse cx="125" cy="261" rx="102" ry="22" fill="#284439" opacity=".25"/>
+<path d="M165 201q125-122 149-51q17 55-70 93l-48-7" fill="url(#orange)" stroke="#9A5A50" stroke-width="6"/>
+<path d="M261 223q50-22 51-58q-33 23-67 34" fill="#FDF2C9"/>
+<path d="M97 219l-27 48m101-50 8 47" stroke="#3A4948" stroke-width="35" stroke-linecap="round"/>
+<ellipse cx="64" cy="265" rx="35" ry="17" fill="#354845"/><ellipse cx="183" cy="264" rx="36" ry="17" fill="#354845"/>
+<ellipse cx="128" cy="189" rx="72" ry="77" fill="#557A62" stroke="#325947" stroke-width="6"/>
+<path d="M75 163q57 27 112-6" stroke="#F5D89B" stroke-width="24" fill="none"/>
+<path d="M87 181q43 9 86-5" stroke="#D9B16B" stroke-width="4" stroke-dasharray="7 8"/>
+<path d="M81 174Q21 177 8 129" stroke="#EBA074" stroke-width="27" stroke-linecap="round" fill="none"/>
+<ellipse cx="10" cy="124" rx="16" ry="18" fill="#F0AA7D"/>
+<path d="M172 170Q224 168 241 194" stroke="#ECA176" stroke-width="27" fill="none" stroke-linecap="round"/>
+<ellipse cx="245" cy="196" rx="16" ry="17" fill="#F2AA7B"/>
+<path d="M66 90L49 5q40-14 67 56l49-51q33 45 11 85" fill="url(#orange)" stroke="#A85B50" stroke-width="6"/>
+<path d="m66 31 25 51m62-43 12 39" stroke="#F8D6AD" stroke-width="12"/>
+<ellipse cx="127" cy="112" rx="78" ry="66" fill="url(#orange)" stroke="#AE6353" stroke-width="5"/>
+<path d="M51 113q57 49 76 27q39 13 80-30q-11 56-80 67q-68-4-76-64" fill="#FDF0D0"/>
+<circle cx="97" cy="109" r="6" fill="#333D3A"/><circle cx="157" cy="108" r="6" fill="#333D3A"/>
+<ellipse cx="128" cy="133" rx="10" ry="7" fill="#795348"/>
+<path d="M128 138q-11 19-22 3m22-3q10 16 25 1" fill="none" stroke="#9B6E5A" stroke-width="3.5" stroke-linecap="round"/>
+<ellipse cx="78" cy="135" rx="16" ry="10" fill="#F2B6A0" opacity=".74"/>
+<ellipse cx="172" cy="134" rx="16" ry="10" fill="#F2B6A0" opacity=".74"/>
+<ellipse cx="124" cy="109" rx="79" ry="65" fill="url(#flecks)" opacity=".17"/>
+</g>
+<!-- Small watering can placed near fox paw -->
+<g transform="translate(999 532) rotate(-21)">
+<path d="M0 11q52-25 90 0l-6 72H11z" fill="#BDAD7F" stroke="#517266" stroke-width="7"/>
+<path d="M80 27q48-30 60-13l-9 13-39 39" fill="#8BA384" stroke="#527063" stroke-width="7"/>
+<path d="M14 7q22-24 59-1" stroke="#4E6D5C" stroke-width="11" fill="none" stroke-linecap="round"/>
+<path d="M136 11q17-12 25 4" stroke="#607C6A" stroke-width="5" fill="none"/>
+</g>
+<g fill="#C5DCB3" opacity=".87"><ellipse cx="1107" cy="557" rx="5" ry="11" transform="rotate(35 1107 557)"/><ellipse cx="1134" cy="582" rx="6" ry="12" transform="rotate(30 1134 582)"/><circle cx="1095" cy="576" r="5"/></g>
+
+</svg>

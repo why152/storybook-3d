@@ -1,0 +1,72 @@
+{
+  "scene": "hello",
+  "version": 1,
+  "artboard": {
+    "width": 1200,
+    "height": 700,
+    "coordinateSystem": "top-left",
+    "aspectRatio": "12:7"
+  },
+  "composition": "Original illustrated coral town scene: a rabbit greets a fox, with oversized fixed display lettering. Custom greeting copy remains HTML.",
+  "rights": "Original SVG vector artwork created for this project; not copied from the reference website or external repositories.",
+  "layers": [
+    {
+      "id": "background",
+      "file": "background.svg",
+      "depth": 0,
+      "opaque": true,
+      "animation": "none",
+      "purpose": "sunset sky, distant village and landscape"
+    },
+    {
+      "id": "midground",
+      "file": "midground.svg",
+      "depth": 11,
+      "transparent": true,
+      "animation": "none",
+      "purpose": "tree canopy, facades, lanterns and bridge"
+    },
+    {
+      "id": "lettering",
+      "file": "lettering.svg",
+      "depth": 27,
+      "transparent": true,
+      "animation": "page-enter",
+      "purpose": "fixed decorative HELLO typography, separate from editable story copy"
+    },
+    {
+      "id": "characters",
+      "file": "characters.svg",
+      "depth": 48,
+      "transparent": true,
+      "animation": "float-subtle",
+      "purpose": "rabbit and fox, consistent visual style"
+    },
+    {
+      "id": "foreground",
+      "file": "foreground.svg",
+      "depth": 68,
+      "transparent": true,
+      "animation": "none",
+      "purpose": "nearby plants and flowers framing the page"
+    },
+    {
+      "id": "effects",
+      "file": "effects.svg",
+      "depth": 78,
+      "transparent": true,
+      "animation": "hello-sparkle",
+      "purpose": "petals, butterflies and sparkles"
+    }
+  ],
+  "integration": {
+    "renderer": "src/App.tsx HelloArtwork",
+    "styles": "src/styles.css .hello-*",
+    "textCustomization": "scene.title and scene.description, kept in HTML",
+    "warnings": [
+      "Images have identical 1200x700 viewBox alignment; do not tightly crop individual transparent layers.",
+      "Perspective scales depth relative to camera; always inspect a side angle.",
+      "SVG is true separate vector art, NOT raster PNG generated from an infographic."
+    ]
+  }
+}
