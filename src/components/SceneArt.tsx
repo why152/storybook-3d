@@ -1,4 +1,4 @@
-import type { Chapter, ChapterId } from '../data/story';
+import type { Chapter } from '../data/story';
 
 const planes=['background','midground','lettering','characters','foreground','effects'] as const;
 
@@ -53,4 +53,3 @@ export function BlankPage(){
   return <div className="page-surface page-blank" aria-hidden="true"><div className="page-window"/></div>;
 }
 
-export const illustrationChapters:readonly ChapterId[]=['hello','grow','together','dream','wish'];
