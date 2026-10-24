@@ -38,20 +38,6 @@ function Bunny({ dark = false }: { dark?: boolean }) {
   </g>;
 }
 
-function Fox() {
-  return <g className="fox-illustration">
-    <path d="M26 100 Q45 28 93 52 L125 10 L159 70 L208 31 L211 113 Q240 166 208 213 L50 221 Q4 189 26 100" fill="#5c333f"/>
-    <path d="M71 115 Q127 70 196 126 L201 170 Q152 214 60 168Z" fill="#ecaf8e"/>
-    <circle cx="96" cy="141" r="7" fill="#3d2d39"/>
-    <circle cx="170" cy="141" r="7" fill="#3d2d39"/>
-    <path d="M116 167 Q134 176 143 166" stroke="#5c333f" strokeWidth="4" fill="none" strokeLinecap="round"/>
-    <path d="M71 220 Q125 189 195 217 L217 348 L44 348Z" fill="#543545"/>
-    <path d="M114 229 L151 228 L135 294Z" fill="#eac29d"/>
-    <rect x="42" y="332" width="72" height="26" rx="13" fill="#5c333f"/>
-    <rect x="145" y="332" width="75" height="26" rx="13" fill="#5c333f"/>
-  </g>;
-}
-
 /** Every HELLO layer is a separately editable and replaceable SVG file.
  * Each shares the same 1200×700 coordinate system and has independently
  * configured page-local depth, so the 3D turnover creates real parallax.
