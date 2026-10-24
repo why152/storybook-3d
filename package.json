@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@react-three/fiber": "^9.3.0",
@@ -27,6 +28,7 @@
     "@eslint/js": "^9.36.0",
     "eslint": "^9.36.0",
     "globals": "^16.4.0",
-    "typescript-eslint": "^8.46.0"
+    "typescript-eslint": "^8.46.0",
+    "@playwright/test": "^1.56.0"
   }
 }
