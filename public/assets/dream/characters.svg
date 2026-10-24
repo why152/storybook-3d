@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+
+<defs>
+<linearGradient id="rabbit" x2="1" y2="1"><stop stop-color="#FFFAE1"/><stop offset=".66" stop-color="#F0DCC8"/><stop offset="1" stop-color="#CBB8B9"/></linearGradient>
+<linearGradient id="fox" x2="1" y2="1"><stop stop-color="#F2C49B"/><stop offset=".55" stop-color="#E69B89"/><stop offset="1" stop-color="#B97481"/></linearGradient>
+<linearGradient id="coat" x2="1" y2="1"><stop stop-color="#8E8AB0"/><stop offset="1" stop-color="#535C87"/></linearGradient>
+<pattern id="rough" width="17" height="22" patternUnits="userSpaceOnUse"><path d="m2 7 4-2m8 12 3 1" stroke="#725D77" stroke-width="1.5" opacity=".24"/></pattern>
+</defs>
+<!-- The rabbit dreams of distant places, holding a little star chart -->
+<g transform="translate(303 335) rotate(-5 135 153)">
+<path d="M92 147Q50 39 71 15q36-16 54 115Q135 17 160 16q35 16 10 134" fill="url(#rabbit)" stroke="#B8A2A0" stroke-width="6"/>
+<path d="M86 41l27 82m47-76-18 75" stroke="#ECAFB6" stroke-width="16" stroke-linecap="round"/>
+<path d="M104 241q-40 18-50 71m131-70 30 64" stroke="#D2C1C8" stroke-width="33" fill="none" stroke-linecap="round"/>
+<ellipse cx="53" cy="307" rx="34" ry="15" fill="#D3C0CB"/><ellipse cx="217" cy="306" rx="36" ry="15" fill="#D3C0CB"/>
+<ellipse cx="141" cy="212" rx="87" ry="92" fill="url(#coat)" stroke="#596386" stroke-width="6"/>
+<path d="M70 197q77-19 143 0" fill="none" stroke="#F4C9AD" stroke-width="22" stroke-linecap="round"/>
+<path d="M75 223q-61-28-83-71" stroke="#EFD9C7" stroke-width="30" fill="none" stroke-linecap="round"/>
+<ellipse cx="-13" cy="148" rx="16" ry="17" fill="#F4E2CE"/>
+<path d="M200 216q39-24 62-12" stroke="#F1DCC7" stroke-width="29" fill="none" stroke-linecap="round"/>
+<ellipse cx="263" cy="207" rx="16" ry="18" fill="#F2E2CD"/>
+<ellipse cx="144" cy="151" rx="89" ry="75" fill="url(#rabbit)" stroke="#BBA6A5" stroke-width="6"/>
+<path d="M74 140q20-43 58-51" fill="none" stroke="#FFFBF1" stroke-width="10" stroke-linecap="round"/>
+<ellipse cx="112" cy="155" rx="6" ry="8" fill="#4C4A58"/><ellipse cx="177" cy="153" rx="6" ry="8" fill="#4C4A58"/>
+<ellipse cx="145" cy="176" rx="11" ry="8" fill="#BA9192"/>
+<path d="M145 183q-12 17-28 3m28-3q13 15 26 1" stroke="#9A7F85" stroke-width="3" fill="none" stroke-linecap="round"/>
+<ellipse cx="90" cy="175" rx="18" ry="10" fill="#EFBFC0" opacity=".72"/><ellipse cx="198" cy="175" rx="18" ry="10" fill="#EFBFC0" opacity=".72"/>
+<ellipse cx="145" cy="155" rx="89" ry="78" fill="url(#rough)" opacity=".22"/>
+</g>
+<!-- Fox looks upward with a tiny telescope -->
+<g transform="translate(659 355) rotate(7 125 154)">
+<path d="M104 125 74 16q39-6 66 80l57-64q34 39 2 99" fill="url(#fox)" stroke="#A97C7E" stroke-width="6"/>
+<path d="m89 48 28 50m65-44-10 45" stroke="#F9D9B8" stroke-width="14" stroke-linecap="round"/>
+<path d="M72 235Q45 273 71 315m123-76 21 76" stroke="#555C7C" stroke-width="34" fill="none" stroke-linecap="round"/>
+<ellipse cx="66" cy="316" rx="38" ry="18" fill="#545B78"/><ellipse cx="220" cy="314" rx="35" ry="17" fill="#545B78"/>
+<ellipse cx="139" cy="218" rx="87" ry="88" fill="#AD829B" stroke="#716985" stroke-width="6"/>
+<path d="M73 201q58 13 132-1" stroke="#EDD2B1" stroke-width="17" fill="none" stroke-linecap="round"/>
+<path d="M78 231Q43 222 35 181" stroke="#E9A99B" stroke-width="29" stroke-linecap="round" fill="none"/>
+<ellipse cx="35" cy="177" rx="16" ry="18" fill="#EFB7A5"/>
+<path d="M205 230q44-11 65-58" stroke="#ECAB9B" stroke-width="28" fill="none" stroke-linecap="round"/>
+<ellipse cx="270" cy="171" rx="16" ry="18" fill="#F5BDAC"/>
+<path d="M189 260q102-99 128-20q8 35-53 52" fill="url(#fox)" stroke="#AC7C82" stroke-width="5"/>
+<path d="M279 286q36-18 36-39q-18 14-46 16" fill="#FFF1D6"/>
+<ellipse cx="141" cy="160" rx="91" ry="76" fill="url(#fox)" stroke="#B48081" stroke-width="6"/>
+<path d="M53 163q57 52 91 33q43 17 89-34q-9 59-86 69q-73-8-94-68" fill="#FBE8D4"/>
+<circle cx="107" cy="153" r="6" fill="#484958"/><circle cx="177" cy="152" r="6" fill="#484958"/>
+<ellipse cx="141" cy="182" rx="10" ry="8" fill="#9F787D"/>
+<path d="M141 191q-13 17-27 2m27-2q14 15 27 0" stroke="#997379" stroke-width="3" fill="none" stroke-linecap="round"/>
+<ellipse cx="85" cy="182" rx="17" ry="10" fill="#EEB4AE" opacity=".71"/><ellipse cx="199" cy="181" rx="16" ry="9" fill="#EEB4AE" opacity=".71"/>
+<ellipse cx="141" cy="165" rx="91" ry="79" fill="url(#rough)" opacity=".2"/>
+</g>
+<!-- the tiny star map between the friends -->
+<g transform="translate(554 547) rotate(7)">
+<path d="M-24 0h166l-10 89H-40Z" fill="#E1D4CE" stroke="#7D7A9F" stroke-width="7"/>
+<path d="M-24 0q40 17 83 5t83-5M60 7l-4 80" stroke="#9DA5B5" stroke-width="6" fill="none"/>
+<path d="m14 53 11-23 11 23-11 8zM97 47l8-17 8 17-8 6z" fill="#E7BE9D"/>
+<path d="M12 20q35-10 68 2" stroke="#B9A6B3" stroke-dasharray="4 8" stroke-width="4" fill="none"/>
+</g>
+
+</svg>
