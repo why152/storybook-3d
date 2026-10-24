@@ -4,7 +4,7 @@ test('editorial stage, true flip, and personalized final page', async ({ page })
   const runtimeErrors: string[] = [];
   page.on('pageerror', err => runtimeErrors.push(err.message));
   await page.goto('/');
-  await expect(page.getByText('A LITTLE STORY', { exact: true })).toBeVisible();
+  await expect(page.locator('.cover-writing')).toBeVisible();
   await expect(page.getByRole('button', { name: '上一页' })).toBeDisabled();
   await expect(page.getByRole('button', { name: '下一页' })).toBeEnabled();
   await page.screenshot({ path: 'test-results/00-cover.png', fullPage: true });
