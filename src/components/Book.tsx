@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
+import type { PointerEvent } from 'react';
 import { gsap } from 'gsap';
 import { getChapter } from '../data/story';
 import { BlankPage, FrontCover, PageHalf } from './SceneArt';
@@ -40,14 +41,14 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     // All two-sided page transforms are owned by one cancellable timeline.
     const timeline=gsap.timeline({onComplete:()=>onTurnFinished(turning.to)});
     timeline.fromTo(leaf,{rotateY:initialAngle},
-      {rotateY:finalAngle,duration:reducedMotion?.025:1.28,ease:'power2.inOut',
+      {rotateY:finalAngle,duration:reducedMotion ? 0.025 : 1.28,ease:'power2.inOut',
       onUpdate:()=>{
         const progress=Math.abs(Number(gsap.getProperty(leaf,'rotationY')))/180;
         leaf.style.setProperty('--leaf-shade',String(Math.sin(Math.PI*progress)*.34));
       }},0);
     if(fromShift!==toShift){
       timeline.fromTo(shell,{xPercent:fromShift},
-        {xPercent:toShift,duration:reducedMotion?.025:1.28,ease:'power2.inOut'},0);
+        {xPercent:toShift,duration:reducedMotion ? 0.025 : 1.28,ease:'power2.inOut'},0);
     }
     return()=>{
       timeline.kill();
@@ -57,7 +58,7 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     };
   },[turning,debugPose,reducedMotion,onTurnFinished]);
 
-  const handlePointer=(event:React.PointerEvent<HTMLDivElement>)=>{
+  const handlePointer=(event:PointerEvent<HTMLDivElement>)=>{
     if(turning||debugPose!==null||reducedMotion||event.pointerType!=='mouse')return;
     const bounds=event.currentTarget.getBoundingClientRect();
     const dx=((event.clientX-bounds.left)/bounds.width-.5)*2;
@@ -93,7 +94,7 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
 
   const stageShift=debugPose!==null&&showingTurn?.from===0?(-25+25*debugPose):undefined;
   return <div className="book-viewport" onPointerMove={handlePointer} onPointerLeave={clearPointer}>
-    <div className={`book-shell ${closed?'is-closed':'is-open'} ${showingTurn?'is-turning':''}`}
+    <div className={`book-shell ${closed?'is-closed':'is-open'} ${showingTurn?'is-turning':''} ${showingTurn?.from===0?'is-opening':''} ${showingTurn?.to===0?'is-closing':''}`}
       ref={shellRef} data-book-mode={closed?'closed':'open'}
       style={stageShift===undefined?undefined:{transform:`translateX(${stageShift}%)`}}>
       <div className="book-depth" aria-hidden="true"/>
