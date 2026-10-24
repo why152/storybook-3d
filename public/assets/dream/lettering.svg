@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+
+<defs>
+<linearGradient id="letter" x1=".2" y1="0" x2=".8" y2="1"><stop stop-color="#FFF6DC"/><stop offset=".55" stop-color="#F5E4C5"/><stop offset="1" stop-color="#D8CFD3"/></linearGradient>
+<pattern id="flecks" width="31" height="29" patternUnits="userSpaceOnUse"><path d="m6 8 12-3m7 20 5-3" stroke="#667AA0" stroke-width="2.6" opacity=".43"/></pattern>
+<mask id="word"><rect width="1200" height="700" fill="#000"/><text x="103" y="477" font-size="363" font-family="Impact,'Arial Black',sans-serif" font-weight="900" textLength="997" lengthAdjust="spacingAndGlyphs" fill="#fff">DREAM</text></mask></defs>
+<g transform="rotate(-3 595 345)">
+<text x="112" y="495" font-size="363" font-family="Impact,'Arial Black',sans-serif" font-weight="900" textLength="997" lengthAdjust="spacingAndGlyphs" fill="#2D456D" opacity=".62" stroke="#2D456D" stroke-width="13">DREAM</text>
+<text x="103" y="477" font-size="363" font-family="Impact,'Arial Black',sans-serif" font-weight="900" textLength="997" lengthAdjust="spacingAndGlyphs" fill="url(#letter)" stroke="#637A94" stroke-width="6" paint-order="stroke">DREAM</text>
+<rect width="1200" height="700" fill="url(#flecks)" mask="url(#word)"/>
+<path d="M194 314l79-11m307 20 63-8m211 104 67 0" stroke="#FFF6DE" opacity=".66" stroke-width="5" fill="none" stroke-linecap="round"/>
+</g>
+
+</svg>
