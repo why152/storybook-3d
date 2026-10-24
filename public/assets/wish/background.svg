@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+
+<defs>
+<linearGradient id="dusk" x1=".2" y1="0" x2=".75" y2="1"><stop stop-color="#D47E86"/><stop offset=".45" stop-color="#EEA09A"/><stop offset="1" stop-color="#F7CEAA"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#FFF6CD" stop-opacity=".95"/><stop offset=".45" stop-color="#FCE0B2" stop-opacity=".55"/><stop offset="1" stop-color="#F4C89F" stop-opacity="0"/></radialGradient>
+<linearGradient id="floor" x2="0" y2="1"><stop stop-color="#E7A18D"/><stop offset="1" stop-color="#BD7979"/></linearGradient>
+<pattern id="fleck" width="29" height="33" patternUnits="userSpaceOnUse"><circle cx="8" cy="9" r="1.4" fill="#8E5760" opacity=".21"/><path d="m18 21 8-2m-22 8 4 1" fill="none" stroke="#FFF3CD" opacity=".35" stroke-width="1.5"/></pattern>
+</defs>
+<rect width="1200" height="700" fill="url(#dusk)"/>
+<circle cx="899" cy="171" r="210" fill="url(#glow)"/><circle cx="901" cy="167" r="75" fill="#FFF1CA" opacity=".76"/>
+<path d="M0 367Q155 333 311 363T620 343T1001 357T1200 306V700H0Z" fill="#F2B49D" opacity=".5"/>
+<path d="M0 510Q248 460 463 495T832 482T1200 469V700H0Z" fill="#D68C86" opacity=".38"/>
+<path d="M0 594Q345 516 660 575T1200 547V700H0Z" fill="url(#floor)"/>
+<path d="M0 646Q398 600 652 652T1200 611V700H0Z" fill="#B87481" opacity=".25"/>
+<path d="M0 682Q312 625 542 667T1200 666" fill="none" stroke="#F5D5B5" stroke-width="9" opacity=".29"/>
+<rect width="1200" height="700" fill="url(#fleck)"/>
+
+</svg>
