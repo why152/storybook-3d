@@ -38,9 +38,33 @@
 - [里程碑及验收标准](docs/roadmap.md)
 - [Codex 协作约定](AGENTS.md)
 
-## 运行
+## Run the prototype
 
-仓库已完成项目规划初始化，**应用脚手架尚未建立**。首次运行命令将在 Codex 完成 Issue #1 后补充。
+Requires Node.js 22 or later and a browser with WebGL.
+
+```bash
+npm install
+npm run dev
+```
+
+Open the local URL printed by Vite (normally `http://localhost:5173`). Use the left/right arrow keys or the arrow buttons to flip pages. Edit the recipient name and final wish in the right-hand panel; canvas textures update from the shared typed scene data.
+
+Checks:
+
+```bash
+npm run typecheck
+npm run build
+```
+
+The demo uses original artwork procedurally drawn in `src/engine/textures.ts`. This is deliberate placeholder art, not a generated PNG layer kit. Refined art assets will replace it after visual approval.
+
+## Implementation status
+
+- **Implemented on feature branch**: real 3D leaf rotation, front/back textures, layered depth offsets, a four-page story, dynamic text fields, keyboard navigation and reduced-motion behavior.
+- **Not yet visually verified**: cross-browser page occlusion, animation timings, page-turn fidelity and GPU performance.
+- **Not implemented**: custom shader paper deformation, authentic page-shadow treatment, production order flows, assets upload and mobile device testing.
+
+**Do not merge the prototype PR into `main` before build and browser QA.**
 
 ## 参考
 
