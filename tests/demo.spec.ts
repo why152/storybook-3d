@@ -14,7 +14,10 @@ test('opens a story, personalizes final wish, and navigates backward', async ({p
   await page.getByRole('button', {name:'下一页'}).click();
   await expect(page.getByRole('button', {name:'下一页'})).toBeEnabled({timeout:8000});
   await expect(page.locator('.scene-card.theme-hello')).toBeVisible();
-  await expect.poll(async()=>page.locator('.hello-lettering').evaluate((img: HTMLImageElement)=>img.complete && img.naturalWidth>0)).toBe(true);
+  await expect(page.locator('.art-hello .art-layer')).toHaveCount(6);
+  await expect.poll(async()=>page.locator('.art-hello .art-layer').evaluateAll((elements)=>
+    elements.every(node => (node as HTMLImageElement).complete && (node as HTMLImageElement).naturalWidth === 1200)
+  )).toBe(true);
   await page.screenshot({path:'test-results/04-hello.png',...snap});
 
   await page.getByRole('button',{name:/CUSTOMIZE/}).click();
@@ -52,7 +55,10 @@ test('mobile viewport keeps scene and customization accessible',async ({page})=>
   await page.getByRole('button',{name:'下一页'}).click();
   await expect(page.getByRole('button',{name:'下一页'})).toBeEnabled({timeout:8000});
   await expect(page.locator('.scene-card.theme-hello')).toBeVisible();
-  await expect.poll(async()=>page.locator('.hello-lettering').evaluate((img: HTMLImageElement)=>img.complete && img.naturalWidth>0)).toBe(true);
+  await expect(page.locator('.art-hello .art-layer')).toHaveCount(6);
+  await expect.poll(async()=>page.locator('.art-hello .art-layer').evaluateAll((elements)=>
+    elements.every(node => (node as HTMLImageElement).complete && (node as HTMLImageElement).naturalWidth === 1200)
+  )).toBe(true);
   await page.screenshot({path:'test-results/mobile-hello.png',...snap});
   await page.getByRole('button',{name:/CUSTOMIZE/}).click();
   await expect(page.getByLabel('收礼人的名字')).toBeVisible();
