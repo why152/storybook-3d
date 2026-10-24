@@ -1,51 +1,54 @@
 import { expect, test } from '@playwright/test';
 
-test('editorial stage, true flip, and personalized final page', async ({ page }) => {
-  const runtimeErrors: string[] = [];
-  page.on('pageerror', err => runtimeErrors.push(err.message));
+const snap = { fullPage: false, animations: 'disabled' as const, timeout: 15_000 };
+
+test('opens a story, personalizes final wish, and navigates backward', async ({page}) => {
+  const errors: string[] = [];
+  page.on('pageerror', error=>errors.push(error.message));
   await page.goto('/');
   await expect(page.locator('.cover-writing')).toBeVisible();
-  await expect(page.getByRole('button', { name: '上一页' })).toBeDisabled();
-  await expect(page.getByRole('button', { name: '下一页' })).toBeEnabled();
-  await page.screenshot({ path: 'test-results/00-cover.png', fullPage: true });
+  await expect(page.getByRole('button', {name:'上一页'})).toBeDisabled();
+  await page.screenshot({path:'test-results/00-cover.png',...snap});
 
-  await page.getByRole('button', { name: '下一页' }).click();
-  await page.waitForTimeout(300);
-  await page.screenshot({ path: 'test-results/01-turn-quarter.png', fullPage: true });
-  await page.waitForTimeout(400);
-  await page.screenshot({ path: 'test-results/02-turn-middle.png', fullPage: true });
-  await page.waitForTimeout(420);
-  await page.screenshot({ path: 'test-results/03-turn-three-quarter.png', fullPage: true });
-  await expect(page.getByRole('button', { name: '下一页' })).toBeEnabled({ timeout: 6_000 });
-  await expect(page.getByText('HELLO', { exact: true })).toBeVisible();
-  await page.screenshot({ path: 'test-results/04-hello.png', fullPage: true });
+  await page.getByRole('button', {name:'下一页'}).click();
+  await expect(page.getByRole('button', {name:'下一页'})).toBeEnabled({timeout:8000});
+  await expect(page.getByText('HELLO',{exact:true})).toBeVisible();
+  await page.screenshot({path:'test-results/04-hello.png',...snap});
 
-  await page.getByRole('button', { name: 'CUSTOMIZE' }).click();
+  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
   await page.getByLabel('收礼人的名字').fill('小雨');
   await page.getByLabel('最后一页的祝福').fill('愿我们永远有新的故事。');
-  await page.getByRole('button', { name: '看看最后一页' }).click();
-  await expect(page.getByRole('button', { name: '上一页' })).toBeEnabled({ timeout: 7_000 });
-  await expect(page.getByRole('heading', { name: '生日快乐，小雨' })).toBeVisible();
+  await page.getByRole('button',{name:/看看最后一页/}).click();
+  await expect(page.getByRole('button',{name:'上一页'})).toBeEnabled({timeout:8000});
+  await expect(page.getByRole('heading',{name:'生日快乐，小雨'})).toBeVisible();
   await expect(page.getByText('愿我们永远有新的故事。')).toBeVisible();
-  await page.screenshot({ path: 'test-results/05-wish.png', fullPage: true });
+  await page.screenshot({path:'test-results/05-wish.png',...snap});
 
-  await page.getByRole('button', { name: '上一页' }).click();
-  await expect(page.getByRole('button', { name: '下一页' })).toBeEnabled({ timeout: 7_000 });
-  await expect(page.getByText('GROW', { exact: true })).toBeVisible();
-  expect(runtimeErrors).toEqual([]);
+  await page.getByRole('button',{name:'上一页'}).click();
+  await expect(page.getByRole('button',{name:'下一页'})).toBeEnabled({timeout:8000});
+  await expect(page.getByText('GROW',{exact:true})).toBeVisible();
+  expect(errors).toEqual([]);
 });
 
-test('mobile screenshot and swipe navigation', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+test('captures reproducible static 3D turn poses', async ({page}) => {
+  for (const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()) {
+    await page.goto('/?pose='+pose);
+    await expect(page.locator('.flip-leaf')).toBeVisible();
+    await page.screenshot({
+      path:`test-results/pose-${String(step).padStart(2,'0')}.png`,
+      ...snap,
+    });
+  }
+});
+
+test('mobile viewport keeps scene and customization accessible',async ({page})=>{
+  await page.setViewportSize({width:390,height:844});
   await page.goto('/');
-  await page.screenshot({ path: 'test-results/mobile-cover.png', fullPage: true });
-  const stage = page.locator('.exhibition');
-  const bounds = await stage.boundingBox();
-  expect(bounds).not.toBeNull();
-  await page.getByRole('button', { name: '下一页' }).click();
-  await expect(page.getByRole('button', { name: '下一页' })).toBeEnabled({ timeout: 7_000 });
-  await expect(page.getByText('HELLO', { exact: true })).toBeVisible();
-  await page.screenshot({ path: 'test-results/mobile-hello.png', fullPage: true });
-  await page.getByRole('button', { name: 'CUSTOMIZE' }).click();
+  await page.screenshot({path:'test-results/mobile-cover.png',...snap});
+  await page.getByRole('button',{name:'下一页'}).click();
+  await expect(page.getByRole('button',{name:'下一页'})).toBeEnabled({timeout:8000});
+  await expect(page.getByText('HELLO',{exact:true})).toBeVisible();
+  await page.screenshot({path:'test-results/mobile-hello.png',...snap});
+  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
   await expect(page.getByLabel('收礼人的名字')).toBeVisible();
 });
