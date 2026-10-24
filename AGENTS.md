@@ -18,6 +18,38 @@ The reference https://howtotalktowhitekidsaboutracism.com/ provides a standard
 of editorial art, dramatic lettering, parallax and choreography, **not** permission
 to copy assets and **not** a reason to replace book geometry with rotating cards.
 
+## AI-first development policy — owner decision (2026-10-25)
+
+**This codebase is primarily designed, written, revised and maintained by AI agents.**
+We have no reason to preserve historical line counts or to protect obsolete
+implementations just because earlier iterations took time.
+
+1. **Quality and iteration volume win over minimizing the diff.** Generate
+   many alternatives, evaluate them objectively, and keep the version that
+   produces the best visible result. Don't optimize for fewer changed lines,
+   smaller patches, or sentimental preservation of earlier AI output.
+2. **Large refactors and deletions are explicitly allowed.** If the architecture
+   has drifted from the product or the renderer cannot deliver the needed
+   effect, replace it cleanly; remove abandoned code/graphics and update docs.
+   You do not need separate owner permission merely because a justified
+   refactor is large.
+3. **Fast experimentation must produce tested outcomes.** Increased iteration
+   throughput means more high-quality attempts and evidence, not accumulating
+   duplicate engines, redundant files, brittle shortcuts or visual gimmicks.
+   A major change still needs a reproducible visual regression baseline.
+4. **One authoritative implementation per responsibility.** Data and product
+   constraints have canonical sources. Do not maintain parallel card/flipbook
+   implementations, contradictory guidance, or orphaned visual assets.
+5. **Merge in coherent, reviewable milestones.** Stable tests on `main`;
+   experiments happen on short-lived branches with genuine screenshot/video
+   evidence and a clear rollback path. Do not force-merge unvalidated visual
+   experiments simply to increase output.
+6. **Goal hierarchy:** physical BOOK behavior and owner experience first;
+   editorial craft, character animation, 2.5D depth, mobile usability and
+   personalisation next; internal abstraction elegance and historical
+   compatibility last. The original reference site is a **craft benchmark**,
+   not a command to revert to a whole-card rotation.
+
 ## Hard visual and behavioral requirements
 
 1. The closed book has a recognizable portrait **front cover**, spine and page edges.
@@ -65,8 +97,9 @@ to copy assets and **not** a reason to replace book geometry with rotating cards
 1. Read this file, `README.md`, `docs/architecture.md`, `docs/roadmap.md`
    before implementing. If an older document calls the project a *flip-card*,
    this AGENTS contract wins.
-2. Work on Draft PR #9 or a directly linked focused PR. Keep `main` untouched
-   until user visual approval; never merge just because CI passed.
+2. PR #9 was owner-approved and merged to `main` on 2026-10-25 (merge SHA
+   `eff4b60`). Create new targeted branches/PRs for ongoing cleanups and
+   experiments. Keep `main` runnable and avoid unreviewed blind overwrites.
 3. Original/appropriately licensed work only; do not copy reference artwork,
    code, protected fonts or third-party proprietary assets.
 4. Run ESLint, TypeScript, Vite build and Playwright desktop + mobile checks.
@@ -87,4 +120,5 @@ to copy assets and **not** a reason to replace book geometry with rotating cards
 - The structure is small, typed, modular and not burdened with abandoned
   flip-card implementations.
 - Authentic browser video and screenshots inspected; CI passing, user visual
-  feedback still required before merging.
+  feedback still required for visual direction changes. Ordinary verified cleanup
+  can merge when user explicitly requests continued integration.
