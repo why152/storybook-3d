@@ -109,6 +109,11 @@ implementations just because earlier iterations took time.
    Never present moodboards or static mockups as tested 3D output.
 6. No real customer uploads, credentials, backend, payments or database.
    Keep accessibility, swipe/keyboard controls and reduced-motion support.
+7. **Project record:** maintain [Notion Storybook 3D hub](https://app.notion.com/p/403d0befadbd81cbaba2e9061105d171)
+   and its [quality task database](https://app.notion.com/p/01bcf51dc4b7483798422140f0e36af0)
+   after meaningful verified changes. Track PR/commit/CI/video evidence; tasks
+   remain `in progress` or `not started` until validation really succeeds.
+   Do not silently rewrite unrelated Notion personal records.
 
 ## Definition of done for this reboot
 
