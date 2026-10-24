@@ -3,7 +3,6 @@ name: Validate Storybook Demo
 on:
   push:
     branches:
-      - "feat/**"
       - main
   pull_request:
     branches:
@@ -35,3 +34,17 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Install Chromium for UI smoke test
+        run: npx playwright install --with-deps chromium
+
+      - name: Run desktop/mobile UI smoke tests
+        run: npm run test:e2e
+
+      - name: Upload screenshots and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storybook-demo-browser-check
+          path: test-results/
+          if-no-files-found: ignore
