@@ -134,3 +134,41 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
   .layer-effects{animation:none;transform:translateZ(78px)}
   .art-layer{transition:none}
 }
+
+
+/* A turning leaf is a single physical sheet, not six free-floating sprites.
+ * Flatten each face during the rotation, then reveal the authored 2.5D
+ * depths again on the stationary page. This fixes the tall, translucent
+ * slivers seen near the 90° side-on position in real browser recordings.
+ * Both faces remain separately rasterized and backface-culled.
+ */
+.flip-leaf .leaf-face{
+  transform-style:flat;
+  overflow:hidden;
+  border-radius:4.7% / 8%;
+}
+.flip-leaf .scene-card{
+  transform-style:flat;
+  overflow:hidden;
+}
+.flip-leaf .layered-scene{transform-style:flat}
+.flip-leaf .art-layer{
+  --depth:0px;
+  --hover-x:0px;
+  --hover-y:0px;
+  transition:none;
+  border-radius:inherit;
+}
+.flip-leaf .layer-effects{
+  animation:none;
+  transform:translateZ(0px);
+}
+.flip-leaf .scene-story,
+.flip-leaf .scene-corner,
+.flip-leaf .scene-micro,
+.flip-leaf .paper-grain{
+  transform:none;
+}
+.flip-leaf .leaf-face::after{
+  transform:none;
+}
