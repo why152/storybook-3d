@@ -90,28 +90,47 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 
-/* HELLO: six actual separate artboard-aligned image files. CSS perspective is
- * shared with the card; depth is set per layer for genuine page-local parallax.
- * No large SVG turbulence filters or precomposited decorative mockup images.
+/* Original six-plane illustrated scenes — same depth manifest for all chapters.
+ * Keep preserve-3d ancestors free of group opacity, filter or isolation.
  */
 .layered-scene{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none}
-.art-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block;user-select:none;backface-visibility:hidden;-webkit-backface-visibility:hidden;pointer-events:none;border-radius:4.7% / 8%}
-.hello-background{transform:translateZ(0px)}
-.hello-midground{transform:translateZ(11px)}
-.hello-lettering{transform:translateZ(27px)}
-.hello-characters{transform:translateZ(48px)}
-.hello-foreground{transform:translateZ(68px)}
-.hello-effects{animation:hello-sparkle 4.5s ease-in-out infinite alternate;transform:translateZ(78px);opacity:.96}
-@keyframes hello-sparkle{from{transform:translateZ(78px) translateY(0) rotate(0deg)}to{transform:translateZ(78px) translateY(-11px) rotate(.6deg)}}
+.art-layer{
+  --depth:0px;position:absolute;inset:0;width:100%;height:100%;
+  object-fit:fill;display:block;user-select:none;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  pointer-events:none;border-radius:4.7% / 8%;
+  transform:translate3d(var(--hover-x,0px),calc(var(--hover-y,0px) + var(--entry-y,0px)),var(--depth));
+  transition:transform .30s ease-out;will-change:transform;
+}
+.layer-background{--depth:0px}
+.layer-midground{--depth:11px}
+.layer-lettering{--depth:27px}
+.layer-characters{--depth:48px}
+.layer-foreground{--depth:68px}
+.layer-effects{--depth:78px;animation:float-motifs 4.8s ease-in-out infinite alternate}
+@keyframes float-motifs{
+  from{transform:translate3d(0,0,78px) rotate(-.15deg)}
+  to{transform:translate3d(0,-13px,78px) rotate(.55deg)}
+}
+.art-grow .layer-effects{animation-duration:5.8s;animation-delay:-2s}
+.art-wish .layer-effects{animation-duration:3.7s;animation-delay:-.8s}
 .theme-hello .scene-story{left:35%;right:auto;bottom:4%;width:36%;color:#fff4dc;text-shadow:0 2px 3px #7b514b88;transform:translateZ(86px)}
 .theme-hello .scene-story h2{font-size:clamp(11px,1.5cqw,18px);margin:0 0 5px}
 .theme-hello .scene-story p{font-size:clamp(9px,1.1cqw,13px)}
-.theme-hello .scene-corner{transform:translateZ(90px)}
-.theme-hello .scene-micro{transform:rotate(-6deg) translateZ(90px)}
-@media (prefers-reduced-motion:reduce){.hello-effects{animation:none;transform:translateZ(78px)}}
-
-/* Keep the flip leaf's 3D subtree unflattened. CSS filter and isolation on
- * preserve-3d ancestors force flat compositing and caused unstable headless
- * Chromium captures at oblique back-face angles. Apply shadows to each flat
- * card surface instead, and clip only individual artwork images. */
+.theme-grow .scene-story{right:7%;bottom:4%;width:35%;color:#FFF6DF;transform:translateZ(88px);text-shadow:0 2px 3px rgba(26,64,53,.75)}
+.theme-wish .scene-story{right:6%;bottom:3.5%;width:33%;color:#FFF8E7;transform:translateZ(88px);text-shadow:0 2px 3px rgba(114,67,84,.75)}
+.theme-hello .scene-corner,.theme-grow .scene-corner,.theme-wish .scene-corner{transform:translateZ(90px)}
+.theme-hello .scene-micro,.theme-grow .scene-micro,.theme-wish .scene-micro{transform:rotate(-6deg) translateZ(90px)}
+/* A page-wide moving penumbra gives the cardstock depth while the layer art
+ * itself remains separate and does not get flattened by parent filters. */
+.leaf-face::after{
+  content:"";position:absolute;inset:0;border-radius:4.7% / 8%;
+  pointer-events:none;opacity:var(--turn-shade,0);z-index:12;
+  background:linear-gradient(90deg,rgba(23,20,30,.7),transparent 31%,rgba(255,248,228,.32) 85%,rgba(23,20,30,.65));
+  transform:translateZ(95px);
+}
 .leaf-face .scene-card{box-shadow:0 24px 42px rgba(0,0,0,.38)}
+@media(prefers-reduced-motion:reduce){
+  .layer-effects{animation:none;transform:translateZ(78px)}
+  .art-layer{transition:none}
+}
