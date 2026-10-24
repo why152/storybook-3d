@@ -62,3 +62,25 @@ No order processing, customer accounts, DB, payments, commercial deployment, AI-
 ## Intellectual property
 
 The reference is used as a style of interaction to learn from, not a source of copyable artwork or code. The demo content and SVG illustrations are original.
+
+
+## First production-structured illustration: HELLO
+
+The visual art master has six **independent** source files in
+`public/assets/hello/`: background, midground, lettering, characters,
+foreground and effects (SVG, aligned 1200×700). The material is original
+vector artwork, not an AI-generated collage or transparent PNG export.
+
+To inspect the layers one by one, open this URL after `npm run dev`:
+
+**http://localhost:5173/assets/hello/preview.html**
+
+The built-in inspector lets you rotate the page, fan out the depth layers,
+turn each one on/off, and reset to the original composite.
+
+For static flipbook states, open `http://localhost:5173/?pose=0.5` and try
+values `0`, `0.25`, `0.5`, `0.75`, and `1`.
+
+The SVGs demonstrate real independent artwork and depth control, but the
+hand-painted refinement and detailed animation of the original reference
+remain a separate quality gate; they are not yet 1:1.
