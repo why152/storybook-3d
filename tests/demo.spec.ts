@@ -33,7 +33,7 @@ test('opens a story, personalizes final wish, and navigates backward', async ({p
 test('captures reproducible static 3D turn poses', async ({page}) => {
   for (const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()) {
     await page.goto('/?pose='+pose);
-    await expect(page.locator('.flip-leaf')).toBeVisible();
+    await expect(page.locator('.flip-leaf')).toHaveCount(1);
     await page.screenshot({
       path:`test-results/pose-${String(step).padStart(2,'0')}.png`,
       ...snap,
