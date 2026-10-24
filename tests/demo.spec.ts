@@ -44,6 +44,14 @@ for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
     await page.emulateMedia({reducedMotion:'reduce'});
     await page.goto('/?pose='+pose);
     await expect(page.locator('.flip-leaf')).toHaveCount(1);
+    // The old version simultaneously rendered a complete incoming still page
+    // plus the leaf's reverse side: doubled artwork and a translucent shard.
+    await expect(page.locator('.still-layer')).toHaveCount(0);
+    await expect(page.locator('.flip-leaf .leaf-face')).toHaveCount(2);
+    await expect(page.locator('.flip-leaf .art-layer')).toHaveCount(12);
+    const face=page.locator('.flip-leaf .leaf-face').first();
+    expect(await face.evaluate(el=>getComputedStyle(el).overflow)).toBe('hidden');
+    expect(await face.evaluate(el=>getComputedStyle(el).transformStyle)).toBe('flat');
     await expect(page.locator('.art-hello .art-layer').first()).toHaveAttribute('src','/assets/hello/background.svg');
     await expect.poll(async()=>page.locator('.art-hello .art-layer').first().evaluate(
       el=>(el as HTMLImageElement).complete && (el as HTMLImageElement).naturalWidth===1200
@@ -107,6 +115,17 @@ test('records a real GROW to WISH page turn for visual acceptance',async ({brows
     await expect(page.locator('.flip-leaf')).toHaveCount(0,{timeout:12000});
     await expect(page.locator('.scene-card.theme-wish')).toBeVisible();
     await page.waitForTimeout(900);
+    // Once the turnover is complete, the stationary art must remain fully
+    // visible. It should not fade out and re-enter on a second timeline.
+    const settled=page.locator('.still-layer .art-wish .art-layer:not(.layer-background)');
+    await expect(settled).toHaveCount(5);
+    for(let sample=0;sample<4;sample++){
+      const minOpacity=await settled.evaluateAll(elements=>Math.min(
+        ...elements.map(el=>Number(getComputedStyle(el).opacity))
+      ));
+      expect(minOpacity).toBeGreaterThan(.99);
+      await page.waitForTimeout(75);
+    }
   }finally{
     await context.close(); // flushes Playwright's authentic .webm video to artifact
   }
