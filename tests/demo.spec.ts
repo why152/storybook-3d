@@ -84,6 +84,35 @@ test('pointer parallax varies with layer depth and resets',async ({page})=>{
   await expect.poll(async()=>char.evaluate(el=>el.style.getPropertyValue('--hover-x'))).toBe('');
 });
 
+
+test('records a real GROW to WISH page turn for visual acceptance',async ({browser})=>{
+  // Use a real, continuous browser video rather than synthesizing a transition
+  // from the independent still-frame regression snapshots.
+  const context=await browser.newContext({
+    viewport:{width:1280,height:720},
+    reducedMotion:'no-preference',
+    recordVideo:{dir:'test-results/motion',size:{width:1280,height:720}}
+  });
+  const page=await context.newPage();
+  const errors:string[]=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  try{
+    await page.goto('/?scene=grow');
+    await expect(page.locator('.art-grow .art-layer')).toHaveCount(6);
+    await expect.poll(async()=>page.locator('.art-grow .art-layer').evaluateAll(elements=>
+      elements.every(node=>(node as HTMLImageElement).complete&&(node as HTMLImageElement).naturalWidth===1200)
+    )).toBe(true);
+    await page.waitForTimeout(900);
+    await page.getByRole('button',{name:'下一页'}).click();
+    await expect(page.locator('.flip-leaf')).toHaveCount(0,{timeout:12000});
+    await expect(page.locator('.scene-card.theme-wish')).toBeVisible();
+    await page.waitForTimeout(900);
+  }finally{
+    await context.close(); // flushes Playwright's authentic .webm video to artifact
+  }
+  expect(errors).toEqual([]);
+});
+
 test('mobile viewport keeps scene and customization accessible',async ({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.emulateMedia({ reducedMotion: 'reduce' });
