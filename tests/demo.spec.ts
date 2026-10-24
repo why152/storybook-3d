@@ -106,7 +106,7 @@ test('customized final chapter and nonadjacent bookmarks turn sequentially',asyn
   await expect(page.locator('.book-shell.is-open:not(.is-turning)')).toHaveCount(1,{timeout:20000});
   await waitForChapterAssets(page,'wish');
   await expect(page.getByRole('heading',{name:'生日快乐，小雨'})).toBeVisible();
-  await expect(page.getByText('愿我们永远有新的故事。')).toBeVisible();
+  await expect(page.locator('.book-static .page-right .page-quote').getByText('愿我们永远有新的故事。')).toBeVisible();
   await page.screenshot({path:'test-results/06-personalized-final-spread.png',...screenshot});
   await page.getByRole('button',{name:'查看第 3 个故事跨页'}).click();
   await waitForChapterAssets(page,'together');
