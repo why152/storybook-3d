@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+
+<defs><linearGradient id="type" x2=".55" y2="1"><stop stop-color="#FFF1CB"/><stop offset=".56" stop-color="#F7E2BB"/><stop offset="1" stop-color="#E9BB97"/></linearGradient>
+<pattern id="grain" width="37" height="29" patternUnits="userSpaceOnUse"><path d="m4 17 13-4m9 14 9-2m-26-22 6 1" fill="none" stroke="#C37882" opacity=".45" stroke-width="3"/><circle cx="21" cy="8" r="2" fill="#A96070" opacity=".34"/></pattern>
+<mask id="mask"><rect width="1200" height="700" fill="#000"/><text x="168" y="446" font-family="Impact,'Arial Black',sans-serif" font-size="410" font-weight="900" letter-spacing="-12" textLength="872" lengthAdjust="spacingAndGlyphs" fill="#fff">WISH</text></mask></defs>
+<g transform="rotate(-3 600 340)">
+<text x="183" y="466" font-family="Impact,'Arial Black',sans-serif" font-size="410" font-weight="900" letter-spacing="-12" textLength="872" lengthAdjust="spacingAndGlyphs" fill="#945B6C" stroke="#945B6C" stroke-width="14" opacity=".45">WISH</text>
+<text x="168" y="446" font-family="Impact,'Arial Black',sans-serif" font-size="410" font-weight="900" letter-spacing="-12" textLength="872" lengthAdjust="spacingAndGlyphs" fill="url(#type)" stroke="#AD7F7D" stroke-width="6" paint-order="stroke">WISH</text>
+<rect width="1200" height="700" fill="url(#grain)" mask="url(#mask)" opacity=".85"/>
+<path d="M219 299l63-10m201 35 51-9m188 113 39-12m116-101 56 12" stroke="#FFF7DF" stroke-width="5" opacity=".51" stroke-linecap="round"/>
+</g>
+
+</svg>
