@@ -114,7 +114,13 @@ test('records a real GROW to WISH page turn for visual acceptance',async ({brows
     await page.getByRole('button',{name:'下一页'}).click();
     await expect(page.locator('.flip-leaf')).toHaveCount(0,{timeout:12000});
     await expect(page.locator('.scene-card.theme-wish')).toBeVisible();
+    // Regression guard: an unkeyed React div inherited the old GSAP
+    // rotateY(-180deg) transform and disappeared just after landing.
+    await expect(page.locator('.still-layer')).toHaveCSS('transform','none');
+    await expect(page.locator('.still-layer .scene-card')).toBeInViewport();
     await page.waitForTimeout(900);
+    await expect(page.locator('.still-layer')).toHaveCSS('transform','none');
+    await page.screenshot({path:'test-results/06-post-turn-settled.png',...snap});
     // Once the turnover is complete, the stationary art must remain fully
     // visible. It should not fade out and re-enter on a second timeline.
     const settled=page.locator('.still-layer .art-wish .art-layer:not(.layer-background)');
@@ -130,6 +136,19 @@ test('records a real GROW to WISH page turn for visual acceptance',async ({brows
     await context.close(); // flushes Playwright's authentic .webm video to artifact
   }
   expect(errors).toEqual([]);
+});
+
+test('forward and reverse page turns leave the final page front-facing',async ({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/?scene=grow');
+  await page.getByRole('button',{name:'下一页'}).click();
+  await expect(page.locator('.scene-card.theme-wish')).toBeVisible();
+  await expect(page.locator('.flip-leaf')).toHaveCount(0);
+  await expect(page.locator('.still-layer')).toHaveCSS('transform','none');
+  await page.getByRole('button',{name:'上一页'}).click();
+  await expect(page.locator('.scene-card.theme-grow')).toBeVisible();
+  await expect(page.locator('.flip-leaf')).toHaveCount(0);
+  await expect(page.locator('.still-layer')).toHaveCSS('transform','none');
 });
 
 test('mobile viewport keeps scene and customization accessible',async ({page})=>{
