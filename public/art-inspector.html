@@ -26,7 +26,7 @@ footer{padding:14px 4vw;color:#777987;font-size:11px;border-top:1px solid #fffff
 <main>
   <div class="viewport"><div id="card" class="card" aria-label="六层美术合成预览"></div></div>
   <aside class="panel">
-    <label for="scene" style="display:block;font-weight:700;font-size:14px;margin-bottom:9px">选择章节</label><select id="scene" style="background:#11131b;color:#f5dec9;border:1px solid #8b817e;padding:10px;width:100%;margin-bottom:22px"><option value="hello">HELLO / 相遇</option><option value="grow">GROW / 成长</option><option value="wish">WISH / 祝福</option></select>
+    <label for="scene" style="display:block;font-weight:700;font-size:14px;margin-bottom:9px">选择章节</label><select id="scene" style="background:#11131b;color:#f5dec9;border:1px solid #8b817e;padding:10px;width:100%;margin-bottom:22px"><option value="hello">HELLO / 相遇</option><option value="grow">GROW / 成长</option><option value="together">TOGETHER / 同行</option><option value="dream">DREAM / 远方</option><option value="wish">WISH / 祝福</option></select>
     <fieldset><legend>观察角度与分层</legend>
       <div class="control"><label for="angle">水平旋转</label><output id="angleText">0°</output></div>
       <input id="angle" type="range" min="-68" max="68" value="0"/>
@@ -41,7 +41,7 @@ footer{padding:14px 4vw;color:#777987;font-size:11px;border-top:1px solid #fffff
 <footer>Original art only · No customer data · No borrowed source illustration</footer>
 <script>
 const sceneParam=new URLSearchParams(location.search).get('scene');
-const scene=['hello','grow','wish'].includes(sceneParam)?sceneParam:'hello';
+const scene=['hello','grow','together','dream','wish'].includes(sceneParam)?sceneParam:'hello';
 document.querySelector('#scene-name').textContent=scene.toUpperCase();
 document.querySelector('#scene').value=scene;
 document.querySelector('#scene').addEventListener('change',e=>{location.search='?scene='+encodeURIComponent(e.target.value)});
