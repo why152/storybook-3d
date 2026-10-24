@@ -35,17 +35,21 @@ test('opens a story, personalizes final wish, and navigates backward', async ({p
   expect(errors).toEqual([]);
 });
 
-test('captures reproducible static 3D turn poses', async ({page}) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  for (const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()) {
+// Each pose has an independent browser context. A single browser capture
+// failure no longer blocks the remaining angles, and CI artifacts pinpoint
+// the exact orientation that needs compositor debugging.
+for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
+  test(`captures 3D pose ${pose}`,async ({page})=>{
+    await page.emulateMedia({reducedMotion:'reduce'});
     await page.goto('/?pose='+pose);
     await expect(page.locator('.flip-leaf')).toHaveCount(1);
-    await page.screenshot({
-      path:`test-results/pose-${String(step).padStart(2,'0')}.png`,
-      ...snap,
-    });
-  }
-});
+    await expect(page.locator('.art-hello .art-layer').first()).toHaveAttribute('src','/assets/hello/background.svg');
+    await expect.poll(async()=>page.locator('.art-hello .art-layer').first().evaluate(
+      el=>(el as HTMLImageElement).complete && (el as HTMLImageElement).naturalWidth===1200
+    )).toBe(true);
+    await page.screenshot({path:`test-results/pose-${String(step).padStart(2,'0')}.png`,...snap});
+  });
+}
 
 test('mobile viewport keeps scene and customization accessible',async ({page})=>{
   await page.setViewportSize({width:390,height:844});
