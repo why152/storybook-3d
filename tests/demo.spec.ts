@@ -1,169 +1,138 @@
 import { expect, test } from '@playwright/test';
 
-const snap = { fullPage: false, animations: 'disabled' as const, timeout: 15_000 };
+const screenshot={fullPage:false,animations:'disabled' as const,timeout:15000};
+const chapters=['hello','grow','together','dream','wish'] as const;
 
-test('opens a story, personalizes final wish, and navigates backward', async ({page}) => {
-  const errors: string[] = [];
-  page.on('pageerror', error=>errors.push(error.message));
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
-  await expect(page.locator('.cover-writing')).toBeVisible();
-  await expect(page.getByRole('button', {name:'上一页'})).toBeDisabled();
-  await page.screenshot({path:'test-results/00-cover.png',...snap});
-
-  await page.getByRole('button', {name:'下一页'}).click();
-  await expect(page.getByRole('button', {name:'下一页'})).toBeEnabled({timeout:8000});
-  await expect(page.locator('.scene-card.theme-hello')).toBeVisible();
-  await expect(page.locator('.art-hello .art-layer')).toHaveCount(6);
-  await expect.poll(async()=>page.locator('.art-hello .art-layer').evaluateAll((elements)=>
-    elements.every(node => (node as HTMLImageElement).complete && (node as HTMLImageElement).naturalWidth === 1200)
+async function waitForChapterAssets(page:import('@playwright/test').Page,id:string){
+  const pageArt=page.locator(`.book-static .page-surface[data-chapter="${id}"]`);
+  await expect(pageArt).toHaveCount(2);
+  const art=pageArt.locator('.scene-plane');
+  await expect(art).toHaveCount(12);
+  await expect.poll(async()=>art.evaluateAll(elements=>
+    elements.every(node=>(node as HTMLImageElement).complete&&(node as HTMLImageElement).naturalWidth===1200)
   )).toBe(true);
-  await page.screenshot({path:'test-results/04-hello.png',...snap});
+}
 
-  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
-  await page.getByLabel('收礼人的名字').fill('小雨');
-  await page.getByLabel('最后一页的祝福').fill('愿我们永远有新的故事。');
-  await page.getByRole('button',{name:/看看最后一页/}).click();
-  await expect(page.getByRole('button',{name:'上一页'})).toBeEnabled({timeout:8000});
-  await expect(page.getByRole('heading',{name:'生日快乐，小雨'})).toBeVisible();
-  await expect(page.getByText('愿我们永远有新的故事。')).toBeVisible();
-  await page.screenshot({path:'test-results/05-wish.png',...snap});
-
+test('closed portrait cover opens into two bound physical pages, then turns and returns',async ({page})=>{
+  const errors:string[]=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/');
+  await expect(page.locator('.book-shell.is-closed')).toHaveCount(1);
+  await expect(page.locator('.book-closed-cover .book-front-cover')).toBeVisible();
+  await expect(page.getByRole('button',{name:'上一页'})).toBeDisabled();
+  await page.screenshot({path:'test-results/00-closed-cover.png',...screenshot});
+  await page.getByRole('button',{name:'下一页'}).click();
+  await expect(page.locator('.book-shell.is-open:not(.is-turning)')).toHaveCount(1);
+  await waitForChapterAssets(page,'hello');
+  await expect(page.locator('.book-binding')).toBeVisible();
+  await page.screenshot({path:'test-results/01-open-two-page-book.png',...screenshot});
+  await page.getByRole('button',{name:'下一页'}).click();
+  await waitForChapterAssets(page,'grow');
   await page.getByRole('button',{name:'上一页'}).click();
-  await expect(page.getByRole('button',{name:'下一页'})).toBeEnabled({timeout:8000});
-  await expect(page.locator('.scene-card.theme-grow')).toBeVisible();
-  await expect(page.locator('.art-grow .art-layer')).toHaveCount(6);
+  await waitForChapterAssets(page,'hello');
+  await page.getByRole('button',{name:'上一页'}).click();
+  await expect(page.locator('.book-shell.is-closed')).toHaveCount(1);
+  await expect(page.locator('.book-closed-cover .book-front-cover')).toBeVisible();
   expect(errors).toEqual([]);
 });
 
-// Each pose has an independent browser context. A single browser capture
-// failure no longer blocks the remaining angles, and CI artifacts pinpoint
-// the exact orientation that needs compositor debugging.
+for(const chapter of chapters){
+  test(`renders original six-plane ${chapter} art on two real pages`,async ({page})=>{
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await page.goto('/?scene='+chapter);
+    await waitForChapterAssets(page,chapter);
+    const sides=await page.locator('.book-static .page-surface').evaluateAll(elements=>
+      elements.map(e=>e.getAttribute('data-side')));
+    expect(sides).toEqual(['left','right']);
+    await page.screenshot({path:`test-results/spread-${chapter}.png`,...screenshot});
+  });
+}
+
 for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
-  test(`captures 3D pose ${pose}`,async ({page})=>{
+  test(`physical book leaf at ${Math.round(Number(pose)*100)}% of turn`,async ({page})=>{
     await page.emulateMedia({reducedMotion:'reduce'});
-    await page.goto('/?pose='+pose);
-    await expect(page.locator('.flip-leaf')).toHaveCount(1);
-    // The old version simultaneously rendered a complete incoming still page
-    // plus the leaf's reverse side: doubled artwork and a translucent shard.
-    await expect(page.locator('.still-layer')).toHaveCount(0);
-    await expect(page.locator('.flip-leaf .leaf-face')).toHaveCount(2);
-    await expect(page.locator('.flip-leaf .art-layer')).toHaveCount(12);
-    const face=page.locator('.flip-leaf .leaf-face').first();
-    expect(await face.evaluate(el=>getComputedStyle(el).overflow)).toBe('hidden');
-    expect(await face.evaluate(el=>getComputedStyle(el).transformStyle)).toBe('flat');
-    await expect(page.locator('.art-hello .art-layer').first()).toHaveAttribute('src','/assets/hello/background.svg');
-    await expect.poll(async()=>page.locator('.art-hello .art-layer').first().evaluate(
-      el=>(el as HTMLImageElement).complete && (el as HTMLImageElement).naturalWidth===1200
-    )).toBe(true);
-    await page.screenshot({path:`test-results/pose-${String(step).padStart(2,'0')}.png`,...snap});
+    await page.goto('/?pose='+pose+'&from=grow');
+    await expect(page.locator('[data-page-role="turning-leaf"]')).toHaveCount(1);
+    await expect(page.locator('.book-static')).toHaveCount(2);
+    await expect(page.locator('.book-leaf-face')).toHaveCount(2);
+    const geometry=await page.locator('.book-shell').evaluate(shell=>{
+      const leaf=shell.querySelector<HTMLElement>('.book-turn-leaf');
+      if(!leaf)return null;
+      return {
+        binding:Math.abs(leaf.offsetLeft-shell.clientWidth/2),
+        leafWidth:Math.abs(leaf.offsetWidth-shell.clientWidth/2),
+        origin:getComputedStyle(leaf).transformOrigin,
+        faceStyles:[...shell.querySelectorAll('.book-leaf-face')].map(el=>getComputedStyle(el).backfaceVisibility)
+      };
+    });
+    expect(geometry).not.toBeNull();
+    expect(geometry!.binding).toBeLessThan(3);
+    expect(geometry!.leafWidth).toBeLessThan(3);
+    expect(geometry!.origin.startsWith('0px')).toBeTruthy();
+    expect(geometry!.faceStyles).toEqual(['hidden','hidden']);
+    await page.screenshot({path:`test-results/book-turn-${String(step).padStart(2,'0')}.png`,...screenshot});
   });
 }
 
-
-for(const scene of ['grow','wish'] as const){
-  test(`renders six original layers of ${scene} at desktop`,async ({page})=>{
-    await page.setViewportSize({width:1440,height:900});
-    await page.emulateMedia({reducedMotion:'reduce'});
-    await page.goto('/?scene='+scene);
-    await expect(page.locator(`.scene-card.theme-${scene}`)).toBeVisible();
-    const art=page.locator(`.art-${scene} .art-layer`);
-    await expect(art).toHaveCount(6);
-    await expect.poll(async()=>art.evaluateAll(elements=>elements.every(
-      node=>(node as HTMLImageElement).complete&&(node as HTMLImageElement).naturalWidth===1200
-    ))).toBe(true);
-    await page.screenshot({path:`test-results/${scene}-layered-desktop.png`,...snap});
-  });
-}
-
-test('pointer parallax varies with layer depth and resets',async ({page})=>{
-  await page.goto('/?scene=hello');
-  const book=page.locator('.book-perspective');
-  await expect(page.locator('.art-hello .art-layer')).toHaveCount(6);
-  const bounds=await book.boundingBox();
-  expect(bounds).not.toBeNull();
-  if(!bounds)return;
-  await page.mouse.move(bounds.x+bounds.width*.82,bounds.y+bounds.height*.38);
-  const char=page.locator('.still-layer .hello-characters');
-  await expect.poll(async()=>char.evaluate(el=>el.style.getPropertyValue('--hover-x'))).not.toBe('');
-  const back=page.locator('.still-layer .hello-background');
-  expect(await back.evaluate(el=>el.style.getPropertyValue('--hover-x'))).toBe('0.0px');
-  await page.mouse.move(1,1);
-  await expect.poll(async()=>char.evaluate(el=>el.style.getPropertyValue('--hover-x'))).toBe('');
+test('customized final chapter and nonadjacent bookmarks turn sequentially',async ({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/');
+  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
+  await page.getByLabel('收礼人的名字').fill('小雨');
+  await page.getByLabel('最后一页的祝福').fill('愿我们永远有新的故事。');
+  await page.getByRole('button',{name:/看看最后一章/}).click();
+  await expect(page.locator('.book-shell.is-open:not(.is-turning)')).toHaveCount(1,{timeout:20000});
+  await waitForChapterAssets(page,'wish');
+  await expect(page.getByRole('heading',{name:'生日快乐，小雨'})).toBeVisible();
+  await expect(page.getByText('愿我们永远有新的故事。')).toBeVisible();
+  await page.screenshot({path:'test-results/06-personalized-final-spread.png',...screenshot});
+  await page.getByRole('button',{name:'查看第 3 个故事跨页'}).click();
+  await waitForChapterAssets(page,'together');
+  await expect(page.locator('.book-turn-leaf')).toHaveCount(0);
 });
 
+test('keyboard and mobile touch keep book usable',async ({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/');
+  await expect(page.locator('.book-shell.is-closed')).toHaveCount(1);
+  await page.screenshot({path:'test-results/mobile-closed-book.png',...screenshot});
+  await page.keyboard.press('ArrowRight');
+  await waitForChapterAssets(page,'hello');
+  await page.screenshot({path:'test-results/mobile-open-book.png',...screenshot});
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(2);
+  const book=page.locator('.book-viewport');
+  await expect(book).toBeVisible();
+  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
+  await expect(page.getByLabel('收礼人的名字')).toBeVisible();
+});
 
-test('records a real GROW to WISH page turn for visual acceptance',async ({browser})=>{
-  // Use a real, continuous browser video rather than synthesizing a transition
-  // from the independent still-frame regression snapshots.
+test('records an actual cover opening and right-to-left/left-to-right book turnover',async ({browser})=>{
   const context=await browser.newContext({
-    viewport:{width:1280,height:720},
-    reducedMotion:'no-preference',
-    recordVideo:{dir:'test-results/motion',size:{width:1280,height:720}}
+    viewport:{width:1280,height:720},reducedMotion:'no-preference',
+    recordVideo:{dir:'test-results/book-motion',size:{width:1280,height:720}}
   });
   const page=await context.newPage();
   const errors:string[]=[];
   page.on('pageerror',error=>errors.push(error.message));
   try{
-    await page.goto('/?scene=grow');
-    await expect(page.locator('.art-grow .art-layer')).toHaveCount(6);
-    await expect.poll(async()=>page.locator('.art-grow .art-layer').evaluateAll(elements=>
-      elements.every(node=>(node as HTMLImageElement).complete&&(node as HTMLImageElement).naturalWidth===1200)
-    )).toBe(true);
-    await page.waitForTimeout(900);
+    await page.goto('/');
+    await expect(page.locator('.book-closed-cover')).toBeVisible();
+    await page.waitForTimeout(350);
     await page.getByRole('button',{name:'下一页'}).click();
-    await expect(page.locator('.flip-leaf')).toHaveCount(0,{timeout:12000});
-    await expect(page.locator('.scene-card.theme-wish')).toBeVisible();
-    // Regression guard: an unkeyed React div inherited the old GSAP
-    // rotateY(-180deg) transform and disappeared just after landing.
-    await expect(page.locator('.still-layer')).toHaveCSS('transform','none');
-    await expect(page.locator('.still-layer .scene-card')).toBeInViewport();
-    await page.waitForTimeout(900);
-    await expect(page.locator('.still-layer')).toHaveCSS('transform','none');
-    await page.screenshot({path:'test-results/06-post-turn-settled.png',...snap});
-    // Once the turnover is complete, the stationary art must remain fully
-    // visible. It should not fade out and re-enter on a second timeline.
-    const settled=page.locator('.still-layer .art-wish .art-layer:not(.layer-background)');
-    await expect(settled).toHaveCount(5);
-    for(let sample=0;sample<4;sample++){
-      const minOpacity=await settled.evaluateAll(elements=>Math.min(
-        ...elements.map(el=>Number(getComputedStyle(el).opacity))
-      ));
-      expect(minOpacity).toBeGreaterThan(.99);
-      await page.waitForTimeout(75);
-    }
+    await waitForChapterAssets(page,'hello');
+    await page.waitForTimeout(350);
+    await page.getByRole('button',{name:'下一页'}).click();
+    await waitForChapterAssets(page,'grow');
+    await page.waitForTimeout(300);
+    await page.getByRole('button',{name:'上一页'}).click();
+    await waitForChapterAssets(page,'hello');
+    await page.waitForTimeout(700);
+    await expect(page.locator('.book-turn-leaf')).toHaveCount(0);
   }finally{
-    await context.close(); // flushes Playwright's authentic .webm video to artifact
+    await context.close();
   }
   expect(errors).toEqual([]);
-});
-
-test('forward and reverse page turns leave the final page front-facing',async ({page})=>{
-  await page.emulateMedia({reducedMotion:'reduce'});
-  await page.goto('/?scene=grow');
-  await page.getByRole('button',{name:'下一页'}).click();
-  await expect(page.locator('.scene-card.theme-wish')).toBeVisible();
-  await expect(page.locator('.flip-leaf')).toHaveCount(0);
-  await expect(page.locator('.still-layer')).toHaveCSS('transform','none');
-  await page.getByRole('button',{name:'上一页'}).click();
-  await expect(page.locator('.scene-card.theme-grow')).toBeVisible();
-  await expect(page.locator('.flip-leaf')).toHaveCount(0);
-  await expect(page.locator('.still-layer')).toHaveCSS('transform','none');
-});
-
-test('mobile viewport keeps scene and customization accessible',async ({page})=>{
-  await page.setViewportSize({width:390,height:844});
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
-  await page.screenshot({path:'test-results/mobile-cover.png',...snap});
-  await page.getByRole('button',{name:'下一页'}).click();
-  await expect(page.getByRole('button',{name:'下一页'})).toBeEnabled({timeout:8000});
-  await expect(page.locator('.scene-card.theme-hello')).toBeVisible();
-  await expect(page.locator('.art-hello .art-layer')).toHaveCount(6);
-  await expect.poll(async()=>page.locator('.art-hello .art-layer').evaluateAll((elements)=>
-    elements.every(node => (node as HTMLImageElement).complete && (node as HTMLImageElement).naturalWidth === 1200)
-  )).toBe(true);
-  await page.screenshot({path:'test-results/mobile-hello.png',...snap});
-  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
-  await expect(page.getByLabel('收礼人的名字')).toBeVisible();
 });
