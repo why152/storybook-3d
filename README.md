@@ -55,7 +55,11 @@ Checks:
 npm run lint
 npm run typecheck
 npm run build
+npx playwright install chromium
+npm run test:e2e
 ```
+
+Browser tests create `test-results/desktop-demo.png` and `test-results/mobile-demo.png`. GitHub Actions uploads these as artifacts. This verifies basic interaction, not full WebGL visual fidelity.
 
 The demo uses original artwork procedurally drawn in `src/engine/textures.ts`. This is deliberate placeholder art, not a generated PNG layer kit. Refined art assets will replace it after visual approval.
 
