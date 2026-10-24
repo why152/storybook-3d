@@ -39,7 +39,7 @@ function App() {
   const navigate = useCallback((direction: -1 | 1) => {
     if (turningIndex !== null) return;
     const next = current + direction;
-    if (next < 0 || next > pages.length) return;
+    if (next < 0 || next >= pages.length) return;
     setTurningIndex(direction === 1 ? current : current - 1);
     setCurrent(next);
   }, [current, pages.length, turningIndex]);
@@ -116,14 +116,14 @@ function App() {
                   className="circle-button primary"
                   type="button"
                   onClick={() => navigate(1)}
-                  disabled={current === pages.length || turningIndex !== null}
+                  disabled={current === pages.length - 1 || turningIndex !== null}
                   aria-label="下一页"
                 >→</button>
               </div>
               <div className="page-progress" aria-live="polite">
                 <span>{String(current + 1).padStart(2, '0')}</span>
-                <div className="progress-track"><div style={{ width: `${(current / pages.length) * 100}%` }} /></div>
-                <span>{String(pages.length + 1).padStart(2, '0')}</span>
+                <div className="progress-track"><div style={{ width: `${(current / (pages.length - 1)) * 100}%` }} /></div>
+                <span>{String(pages.length).padStart(2, '0')}</span>
               </div>
               <div className="hint">点击箭头或使用 ← → 翻页</div>
             </div>
