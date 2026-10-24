@@ -1,0 +1,28 @@
+# dependencies and builds
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+.next/
+*.tsbuildinfo
+
+# local configuration and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# system/editor artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.log
+
+# large original art exports and working files: keep these outside Git unless explicitly needed
+*.psd
+*.ai
+*.blend
