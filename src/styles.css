@@ -195,3 +195,22 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 @media(prefers-reduced-motion:reduce){
  *,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
+
+
+/* Mobile book still keeps its physical double-page geometry. Reading copy is
+   repeated in a dedicated, legible caption below the spread, not enlarged
+   inside tiny pages until it clips characters or the central binding. */
+.chapter-reader{display:none}
+@media(max-width:600px){
+  .chapter-reader{display:flex;flex:none;flex-direction:column;gap:3px;
+    min-height:96px;max-height:164px;overflow:auto;
+    padding:12px 23px 13px;margin:0 16px;
+    border-top:1px solid #f5d1ad47;color:#f2e4d7;
+    background:linear-gradient(180deg,#ffffff08,transparent)}
+  .chapter-reader .reader-meta{color:#d8b894;font-size:9px;
+    font-weight:700;letter-spacing:1.8px}
+  .chapter-reader h2{font-family:'Noto Sans SC',sans-serif;font-size:15px;
+    line-height:1.35;font-weight:600;margin:0}
+  .chapter-reader p{font-size:12px;line-height:1.5;color:#dbcfc6;margin:0}
+  .page-navigation{height:54px}
+}
