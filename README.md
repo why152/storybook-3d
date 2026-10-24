@@ -52,6 +52,7 @@ Open the local URL printed by Vite (normally `http://localhost:5173`). Use the l
 Checks:
 
 ```bash
+npm run lint
 npm run typecheck
 npm run build
 ```
