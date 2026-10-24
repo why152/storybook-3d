@@ -5,6 +5,7 @@ const snap = { fullPage: false, animations: 'disabled' as const, timeout: 15_000
 test('opens a story, personalizes final wish, and navigates backward', async ({page}) => {
   const errors: string[] = [];
   page.on('pageerror', error=>errors.push(error.message));
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   await expect(page.locator('.cover-writing')).toBeVisible();
   await expect(page.getByRole('button', {name:'上一页'})).toBeDisabled();
@@ -32,6 +33,7 @@ test('opens a story, personalizes final wish, and navigates backward', async ({p
 });
 
 test('captures reproducible static 3D turn poses', async ({page}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   for (const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()) {
     await page.goto('/?pose='+pose);
     await expect(page.locator('.flip-leaf')).toHaveCount(1);
@@ -44,6 +46,7 @@ test('captures reproducible static 3D turn poses', async ({page}) => {
 
 test('mobile viewport keeps scene and customization accessible',async ({page})=>{
   await page.setViewportSize({width:390,height:844});
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   await page.screenshot({path:'test-results/mobile-cover.png',...snap});
   await page.getByRole('button',{name:'下一页'}).click();
