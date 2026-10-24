@@ -105,6 +105,7 @@ export default function App() {
   const [editorOpen,setEditorOpen]=useState(false);
   const [reduced,setReduced]=useState(()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const leaf=useRef<HTMLDivElement>(null);
+  const skipSettledIntro=useRef(false);
   const startTouch=useRef<number|null>(null);
   const turnRef=useRef<Turn|null>(null);
   turnRef.current=turn;
@@ -124,38 +125,86 @@ export default function App() {
     return()=>m.removeEventListener('change',onChange);
   },[]);
 
+  // Choreograph incoming art *during* the turn. Two copies of the incoming
+  // scene exist during turnover (static stage and back face). Both must reveal
+  // at the same time; otherwise the leaf lands on a complete scene and the
+  // separate post-turn intro visibly blinks it out and back in.
   useEffect(()=>{
-    if(!turn||!leaf.current) return;
+    if(!turn||!leaf.current)return;
     const el=leaf.current;
-    const duration=reduced?0.05:1.36;
-    const tween=gsap.fromTo(el,{rotateY:0,scale:1},{
+    const duration=reduced?.05:1.36;
+    const incomingLayers=['midground','lettering','characters','foreground'].map(key=>
+      Array.from(document.querySelectorAll<HTMLElement>(
+        `.still-layer .layer-${key}, .leaf-back .layer-${key}`
+      ))
+    );
+    const allIncoming=incomingLayers.flat();
+    const incomingCopy=Array.from(document.querySelectorAll<HTMLElement>(
+      '.still-layer .scene-story, .leaf-back .scene-story'
+    ));
+    if(!reduced){
+      gsap.set(allIncoming,{opacity:0,'--entry-y':'20px'});
+      gsap.set(incomingCopy,{opacity:0,y:10});
+    }
+    const timeline=gsap.timeline({
+      onComplete:()=>{
+        skipSettledIntro.current=true;
+        setActive(turn.to);
+        setTurn(null);
+      }
+    });
+    timeline.fromTo(el,{rotateY:0,scale:1},{
       rotateY:-180*turn.dir,
       scale:reduced?1:.988,
       duration,
       ease:'power2.inOut',
       onUpdate:()=>{
         const angle=Math.abs(Number(gsap.getProperty(el,'rotationY')))/180;
-        el.style.setProperty('--turn-shade', String(Math.sin(Math.PI*angle)*.31));
-      },
-      onComplete:()=>{setActive(turn.to);setTurn(null);}
-    });
-    return()=>{tween.kill();el.style.removeProperty('--turn-shade');};
+        el.style.setProperty('--turn-shade',String(Math.sin(Math.PI*angle)*.31));
+      }
+    },0);
+    if(!reduced){
+      incomingLayers.forEach((group,i)=>{
+        timeline.to(group,{
+          opacity:1,'--entry-y':'0px',duration:.40,ease:'power2.out'
+        },.40+i*.14);
+      });
+      timeline.to(incomingCopy,{opacity:1,y:0,duration:.35,ease:'power2.out'},.88);
+    }
+    return()=>{
+      timeline.kill();
+      el.style.removeProperty('--turn-shade');
+      gsap.set(allIncoming,{clearProps:'opacity,--entry-y'});
+      gsap.set(incomingCopy,{clearProps:'opacity,transform'});
+    };
   },[turn,reduced]);
 
-  // Stagger independent artboard planes as a scene lands. GSAP changes only
-  // opacity and the entry offset custom property: Z depth stays untouched.
+  // The independent intro is used only when a chapter opens directly from a
+  // URL. A completed page turn has already revealed these same layers above.
   useEffect(()=>{
     if(debugPose!==null||turn||reduced||active===0)return;
+    if(skipSettledIntro.current){
+      skipSettledIntro.current=false;
+      return;
+    }
     const card=document.querySelector<HTMLElement>('.still-layer .scene-card');
     if(!card)return;
-    const layers=Array.from(card.querySelectorAll<HTMLElement>('.art-layer:not(.layer-background):not(.layer-effects)'));
+    const layers=Array.from(card.querySelectorAll<HTMLElement>(
+      '.art-layer:not(.layer-background):not(.layer-effects)'
+    ));
     const words=card.querySelectorAll<HTMLElement>('.scene-story');
     const timeline=gsap.timeline();
     timeline.fromTo(layers,{opacity:0,'--entry-y':'24px'},{
       opacity:1,'--entry-y':'0px',stagger:.095,duration:.72,ease:'power3.out'
     });
-    timeline.fromTo(words,{opacity:0,y:12},{opacity:1,y:0,duration:.54,ease:'power2.out'},'<0.12');
-    return()=>{timeline.kill();gsap.set(layers,{clearProps:'opacity,--entry-y'});gsap.set(words,{clearProps:'opacity,transform'});};
+    timeline.fromTo(words,{opacity:0,y:12},{
+      opacity:1,y:0,duration:.54,ease:'power2.out'
+    },'<0.12');
+    return()=>{
+      timeline.kill();
+      gsap.set(layers,{clearProps:'opacity,--entry-y'});
+      gsap.set(words,{clearProps:'opacity,transform'});
+    };
   },[active,turn,reduced]);
 
   const moveParallax=(root:HTMLDivElement,clientX:number,clientY:number)=>{
