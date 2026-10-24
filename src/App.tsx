@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Book, type PageTurn } from './components/Book';
-import { chapters, getChapter, initialPosition, previewFrom, previewPose, totalPositions } from './data/story';
+import { getChapter, initialPosition, previewFrom, previewPose, totalPositions } from './data/story';
 import './styles.css';
 
 const debugPose=previewPose();
@@ -16,6 +16,7 @@ function Arrow({back=false}:{back?:boolean}){
 export default function App(){
   const [active,setActive]=useState(initialPosition);
   const [turn,setTurn]=useState<PageTurn|null>(null);
+  const [target,setTarget]=useState<number|null>(null);
   const [name,setName]=useState('你');
   const [wish,setWish]=useState('愿所有美好的事情，都在下一页等你。');
   const [editorOpen,setEditorOpen]=useState(false);
@@ -25,8 +26,18 @@ export default function App(){
 
   const goTo=useCallback((position:number)=>{
     if(turn||debugPose!==null||position===active||position<0||position>=totalPositions)return;
-    setTurn({from:active,to:position,direction:position>active?1:-1});
+    // Bookmarks are not portals: visiting a distant chapter turns through
+    // intervening sheets, one physical leaf at a time.
+    setTarget(position);
+    const next=active+(position>active?1:-1);
+    setTurn({from:active,to:next,direction:next>active?1:-1});
   },[turn,active]);
+  useEffect(()=>{
+    if(turn||target===null)return;
+    if(active===target){setTarget(null);return;}
+    const next=active+(target>active?1:-1);
+    setTurn({from:active,to:next,direction:next>active?1:-1});
+  },[active,turn,target]);
   const onTurnFinished=useCallback((position:number)=>{
     setActive(position);
     setTurn(null);
