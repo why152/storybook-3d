@@ -20,7 +20,14 @@ function ResponsiveCamera() {
   const { camera, size } = useThree();
   useLayoutEffect(() => {
     const ortho = camera as OrthographicCamera;
-    ortho.zoom = Math.min(size.width / 11.6, size.height / 4.8);
+    const compact = size.width < 680;
+    // Desktop frames both leaves. Phones emphasize the readable right page,
+    // leaving just enough of the binding/left stack visible for page-turn cues.
+    ortho.zoom = Math.min(
+      size.width / (compact ? 6.65 : 11.6),
+      size.height / (compact ? 4.2 : 4.8),
+    );
+    ortho.position.x = compact ? 1.55 : 0;
     ortho.updateProjectionMatrix();
   }, [camera, size.width, size.height]);
   return null;
