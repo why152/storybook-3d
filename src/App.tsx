@@ -19,96 +19,37 @@ const poseParam = new URLSearchParams(window.location.search).get('pose');
 const debugPose = poseParam === null ? null : Math.max(0, Math.min(1, Number(poseParam) || 0));
 
 
-function Bunny({ dark = false }: { dark?: boolean }) {
-  const main = dark ? '#24483d' : '#f3d5ab';
-  const shade = dark ? '#1c372f' : '#d49a85';
-  return <g className="bunny-illustration">
-    <path d="M90 184 C68 143 65 72 80 55 C102 40 113 91 117 141 C119 81 139 47 160 60 C180 75 163 147 146 184" fill={main} stroke={shade} strokeWidth="6" strokeLinejoin="round"/>
-    <ellipse cx="114" cy="242" rx="76" ry="94" fill={main}/>
-    <ellipse cx="115" cy="166" rx="67" ry="61" fill={main}/>
-    <circle cx="93" cy="161" r="6" fill="#463737"/>
-    <circle cx="138" cy="161" r="6" fill="#463737"/>
-    <ellipse cx="116" cy="185" rx="9" ry="7" fill="#bb7f77"/>
-    <circle cx="62" cy="186" r="13" fill="#ebbaa6" opacity=".8"/>
-    <circle cx="160" cy="186" r="13" fill="#ebbaa6" opacity=".8"/>
-    <ellipse cx="54" cy="325" rx="29" ry="16" fill={main}/>
-    <ellipse cx="164" cy="325" rx="29" ry="16" fill={main}/>
-    <circle cx="177" cy="279" r="25" fill={main}/>
-    <path d="M112 196 Q115 208 122 199" stroke="#9d5d61" strokeWidth="4" fill="none" strokeLinecap="round"/>
-  </g>;
-}
-
-/** Every HELLO layer is a separately editable and replaceable SVG file.
- * Each shares the same 1200×700 coordinate system and has independently
- * configured page-local depth, so the 3D turnover creates real parallax.
+/** Three original, file-based scene packages all share one artboard and depth
+ * order. Each file remains replaceable by an illustrator without React edits.
+ * Decorative display words are fixed art; personalized text remains HTML.
  */
-const helloLayers = [
-  { key: 'background', className: 'hello-background', alt: '' },
-  { key: 'midground', className: 'hello-midground', alt: '' },
-  { key: 'lettering', className: 'hello-lettering', alt: '' },
-  { key: 'characters', className: 'hello-characters', alt: '' },
-  { key: 'foreground', className: 'hello-foreground', alt: '' },
-  { key: 'effects', className: 'hello-effects', alt: '' },
+const artLayers = [
+  { key: 'background', depth: 0 },
+  { key: 'midground', depth: 11 },
+  { key: 'lettering', depth: 27 },
+  { key: 'characters', depth: 48 },
+  { key: 'foreground', depth: 68 },
+  { key: 'effects', depth: 78 },
 ] as const;
 
-function HelloArtwork() {
-  return <div className="art-hello layered-scene" aria-label="精致的插画城镇中，一只小兔与小狐狸向彼此问好">
-    {helloLayers.map(layer => <img
-      className={`art-layer ${layer.className}`}
+const artLabels: Record<'hello'|'grow'|'wish', string> = {
+  hello: '在温暖的城镇里，小兔与狐狸打招呼',
+  grow: '森林中的小兔爬梯子，狐狸给幼苗浇水',
+  wish: '生日派对的小兔与狐狸、礼物和点着蜡烛的蛋糕',
+};
+
+function IllustratedArtwork({scene}: {scene: 'hello'|'grow'|'wish'}) {
+  return <div className={`art-${scene} layered-scene`} role="img" aria-label={artLabels[scene]}>
+    {artLayers.map(layer => <img
       key={layer.key}
-      src={`/assets/hello/${layer.key}.svg`}
-      alt={layer.alt}
+      className={`art-layer ${scene}-${layer.key} layer-${layer.key}`}
+      src={`/assets/${scene}/${layer.key}.svg`}
+      data-depth={layer.depth}
+      alt=""
+      aria-hidden="true"
       draggable={false}
       loading="eager"
     />)}
-  </div>;
-}
-
-function GrowArtwork() {
-  return <div className="art-grow">
-    <svg className="illustration illustration-back" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <path d="M0 0h500v700H0z" fill="#619b73" opacity=".6"/>
-      <path d="M500 0h335v700H500z" fill="#275a4c" opacity=".7"/>
-      <path d="M835 0h365v700H835z" fill="#8cb183" opacity=".4"/>
-      <path d="M-40 -50Q160 330 470 100T1260 130" stroke="#214f42" strokeWidth="76" fill="none" opacity=".8"/>
-      <path d="M1200 -20Q960 200 1100 460" stroke="#163e38" strokeWidth="40" fill="none"/>
-      <circle cx="828" cy="136" r="31" fill="#c4d7a3" opacity=".9"/>
-      <path d="M0 631Q220 505 440 620T930 618T1220 560V700H0" fill="#39735a"/>
-      <path d="M40 640v-45m0 12-22-20m22 8 24-23m37 80v-45m0 14-15-20m15 17 14-24M980 656v-66m0 15-28-24m28 9 24-26" stroke="#1e5b49" strokeWidth="7"/>
-    </svg>
-    <div className="type-layer grow-type">GROW</div>
-    <svg className="illustration illustration-front" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <g transform="translate(258,225) scale(.7)"><Bunny dark/></g>
-      <g transform="translate(410,378) scale(.53)"><Bunny/></g>
-      <path d="M417 695 557 330m-100 365 140-365M474 633h101m-89-53h106m-86-53h103m-80-51h99m-78-50h97m-80-50h96" stroke="#1c453c" strokeWidth="13" fill="none" strokeLinecap="round"/>
-      <g className="flying-stars" fill="#cae2b0"><path d="M874 143q63 8 63 65-50 11-63-65m0 0q-40 51-5 91 50-42 5-91"/><path d="M972 240q70-6 75 44-59 24-75-44m0 0q-37 51 8 88 35-48-8-88"/></g>
-    </svg>
-  </div>;
-}
-
-function WishArtwork() {
-  return <div className="art-wish">
-    <svg className="illustration illustration-back" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <rect width="1200" height="700" fill="#f4bb8a" opacity=".25"/>
-      <circle cx="220" cy="112" r="89" fill="#f5ce9d" opacity=".48"/>
-      <path d="M0 570Q270 505 580 572T1200 544V700H0" fill="#f3bc90"/>
-      {Array.from({length:19},(_,i)=><circle key={i} cx={55+i*61} cy={79+(i%3)*37} r={4+(i%4)*2} fill="#f4d49f"/>)}
-      <path d="M40 60q170 100 360 0T800 60T1180 60" fill="none" stroke="#bb786c" strokeWidth="6" strokeDasharray="5 18"/>
-    </svg>
-    <div className="type-layer wish-type">WISH</div>
-    <svg className="illustration illustration-front" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <ellipse cx="460" cy="636" rx="302" ry="36" fill="#ae6c63" opacity=".5"/>
-      <rect x="255" y="485" width="430" height="140" rx="29" fill="#f9ebcc" stroke="#bd766f" strokeWidth="7"/>
-      <rect x="289" y="397" width="359" height="122" rx="30" fill="#fff3d6" stroke="#d38d7d" strokeWidth="7"/>
-      <path d="M296 449Q330 475 360 452T418 452T482 452T543 452T607 453T648 452" stroke="#dc9d92" strokeWidth="26" fill="none" strokeLinecap="round"/>
-      <rect x="353" y="340" width="18" height="63" rx="6" fill="#c76b71"/>
-      <rect x="457" y="340" width="18" height="63" rx="6" fill="#c76b71"/>
-      <rect x="555" y="340" width="18" height="63" rx="6" fill="#c76b71"/>
-      <g className="candle-flame" fill="#fff5b3"><path d="M361 330q-25-22 0-46 26 24 0 46M466 330q-25-22 0-46 26 24 0 46M564 330q-25-22 0-46 26 24 0 46"/></g>
-      <g transform="translate(761,344) scale(.53)"><Bunny/></g>
-      <g className="flying-stars" fill="#fff6d6"><path d="m155 358 14 38 39 14-39 13-14 38-13-38-40-13 40-14zM965 180l9 27 27 9-27 10-9 27-10-27-27-10 27-9z"/></g>
-      <g fill="#b6676f"><rect x="87" y="495" width="25" height="13" rx="4" transform="rotate(-30 87 495)"/><rect x="950" y="475" width="18" height="12" rx="4" transform="rotate(21 950 475)"/><rect x="840" y="123" width="24" height="9" rx="4" transform="rotate(33 840 123)"/></g>
-    </svg>
   </div>;
 }
 
@@ -136,7 +77,7 @@ function SceneCard({scene, name, wish}: {scene:Scene; name:string; wish:string})
   const description = scene.description.replace('{wish}', wish || '愿生活总有惊喜。');
   if(scene.id==='cover') return <div className="cover-holder"><div className="cover-scene"><CoverArtwork/></div></div>;
   return <article className={`scene-card theme-${scene.id}`}>
-    {scene.id==='hello' ? <HelloArtwork/> : scene.id==='grow' ? <GrowArtwork/> : <WishArtwork/>}
+    <IllustratedArtwork scene={scene.id}/>
     <div className="scene-corner">{scene.label}<span className="mini-star">✳</span></div>
     <div className="scene-micro">{scene.micro}</div>
     <div className="scene-story">
@@ -184,9 +125,53 @@ export default function App() {
     if(!turn||!leaf.current) return;
     const el=leaf.current;
     const duration=reduced?0.05:1.36;
-    const tween=gsap.fromTo(el,{rotateY:0,scale:1},{rotateY:-180*turn.dir,scale:0.99,duration,ease:'power2.inOut',onComplete:()=>{setActive(turn.to);setTurn(null);}});
-    return()=>{tween.kill();};
+    const tween=gsap.fromTo(el,{rotateY:0,scale:1},{
+      rotateY:-180*turn.dir,
+      scale:reduced?1:.988,
+      duration,
+      ease:'power2.inOut',
+      onUpdate:()=>{
+        const angle=Math.abs(Number(gsap.getProperty(el,'rotationY')))/180;
+        el.style.setProperty('--turn-shade', String(Math.sin(Math.PI*angle)*.31));
+      },
+      onComplete:()=>{setActive(turn.to);setTurn(null);}
+    });
+    return()=>{tween.kill();el.style.removeProperty('--turn-shade');};
   },[turn,reduced]);
+
+  // Stagger independent artboard planes as a scene lands. GSAP changes only
+  // opacity and the entry offset custom property: Z depth stays untouched.
+  useEffect(()=>{
+    if(debugPose!==null||turn||reduced||active===0)return;
+    const card=document.querySelector<HTMLElement>('.still-layer .scene-card');
+    if(!card)return;
+    const layers=Array.from(card.querySelectorAll<HTMLElement>('.art-layer:not(.layer-background):not(.layer-effects)'));
+    const words=card.querySelectorAll<HTMLElement>('.scene-story');
+    const timeline=gsap.timeline();
+    timeline.fromTo(layers,{opacity:0,'--entry-y':'24px'},{
+      opacity:1,'--entry-y':'0px',stagger:.095,duration:.72,ease:'power3.out'
+    });
+    timeline.fromTo(words,{opacity:0,y:12},{opacity:1,y:0,duration:.54,ease:'power2.out'},'<=0.12');
+    return()=>{timeline.kill();gsap.set(layers,{clearProps:'opacity,--entry-y'});gsap.set(words,{clearProps:'opacity,transform'});};
+  },[active,turn,reduced]);
+
+  const moveParallax=(root:HTMLDivElement,clientX:number,clientY:number)=>{
+    const rect=root.getBoundingClientRect();
+    const nx=Math.max(-1,Math.min(1,((clientX-rect.left)/rect.width-.5)*2));
+    const ny=Math.max(-1,Math.min(1,((clientY-rect.top)/rect.height-.5)*2));
+    root.querySelectorAll<HTMLElement>('.still-layer .art-layer:not(.layer-effects)').forEach(node=>{
+      const factor=Number(node.dataset.depth||0)/78;
+      node.style.setProperty('--hover-x',`${(-nx*14*factor).toFixed(1)}px`);
+      node.style.setProperty('--hover-y',`${(-ny*10*factor).toFixed(1)}px`);
+    });
+  };
+  const resetParallax=(root:HTMLDivElement)=>{
+    root.querySelectorAll<HTMLElement>('.art-layer').forEach(node=>{
+      node.style.removeProperty('--hover-x');
+      node.style.removeProperty('--hover-y');
+    });
+  };
+
 
   useEffect(()=>{
     const onKey=(e:KeyboardEvent)=>{
@@ -213,7 +198,9 @@ export default function App() {
       if(Math.abs(dist)>65)navigate(dist<0?1:-1);
     }}>
       <button type="button" aria-label="上一页" className="turn-button turn-prev" disabled={active===0||!!turn} onClick={()=>navigate(-1)}><Arrow left/></button>
-      <div className="exhibition-center">
+      <div className="exhibition-center"
+        onPointerMove={e=>{if(!reduced&&!visibleTurn&&e.pointerType==='mouse')moveParallax(e.currentTarget,e.clientX,e.clientY);}}
+        onPointerLeave={e=>resetParallax(e.currentTarget)}>
         <div className="book-perspective" aria-label="3D 互动绘本">
           {visibleTurn ? <>
             <div className="still-layer"><SceneCard scene={scenes[visibleTurn.to]} name={name} wish={wish}/></div>
