@@ -13,6 +13,12 @@ const scenes: Scene[] = [
 ];
 const dots = ['#2f3345', '#e87961', '#477f65', '#e4a55d'];
 
+// Screenshot-only deterministic turn poses, e.g. ?pose=0.5.
+// No GSAP timer is running in this mode, making frame comparisons reproducible.
+const poseParam = new URLSearchParams(window.location.search).get('pose');
+const debugPose = poseParam === null ? null : Math.max(0, Math.min(1, Number(poseParam) || 0));
+
+
 function Bunny({ dark = false }: { dark?: boolean }) {
   const main = dark ? '#24483d' : '#f3d5ab';
   const shade = dark ? '#1c372f' : '#d49a85';
@@ -161,7 +167,7 @@ function Arrow({left=false}: {left?:boolean}) {
 }
 
 export default function App() {
-  const [active,setActive]=useState(0);
+  const [active,setActive]=useState(debugPose === null ? 0 : 1);
   const [turn,setTurn]=useState<Turn|null>(null);
   const [name,setName]=useState('你');
   const [wish,setWish]=useState('愿所有美好的事情，都在下一页等你。');
@@ -171,6 +177,7 @@ export default function App() {
   const startTouch=useRef<number|null>(null);
   const turnRef=useRef<Turn|null>(null);
   turnRef.current=turn;
+  const visibleTurn = debugPose === null ? turn : { from: 1, to: 2, dir: 1 as const };
 
   const navigate=useCallback((dir:-1|1)=>{
     if(turnRef.current) return;
@@ -221,10 +228,10 @@ export default function App() {
       <button type="button" aria-label="上一页" className="turn-button turn-prev" disabled={active===0||!!turn} onClick={()=>navigate(-1)}><Arrow left/></button>
       <div className="exhibition-center">
         <div className="book-perspective" aria-label="3D 互动绘本">
-          {turn ? <>
-            <div className="still-layer"><SceneCard scene={scenes[turn.to]} name={name} wish={wish}/></div>
-            <div className="flip-leaf" ref={leaf}>
-              <div className="leaf-face leaf-front"><SceneCard scene={scenes[turn.from]} name={name} wish={wish}/></div>
+          {visibleTurn ? <>
+            <div className="still-layer"><SceneCard scene={scenes[visibleTurn.to]} name={name} wish={wish}/></div>
+            <div className="flip-leaf" ref={leaf} style={debugPose === null ? undefined : { transform: `rotateY(${-180 * debugPose}deg)` }}>
+              <div className="leaf-face leaf-front"><SceneCard scene={scenes[visibleTurn.from]} name={name} wish={wish}/></div>
               <div className="leaf-face leaf-back"><SceneCard scene={scenes[turn.to]} name={name} wish={wish}/></div>
             </div>
           </> : <div className="still-layer"><SceneCard scene={scenes[active]} name={name} wish={wish}/></div>}
