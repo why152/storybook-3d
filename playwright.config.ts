@@ -3,7 +3,8 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   timeout: 100_000,
-  retries: 0,
+  retries: process.env.CI ? 1 : 0,
+  workers: 1,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     ...devices['Desktop Chrome'],
@@ -11,9 +12,6 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:5173',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
-    launchOptions: {
-      args: ['--enable-webgl', '--use-gl=angle', '--use-angle=swiftshader'],
-    },
   },
   webServer: {
     command: 'npm run dev -- --host 127.0.0.1',
