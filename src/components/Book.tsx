@@ -47,14 +47,26 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
         leaf.style.setProperty('--leaf-shade',String(Math.sin(Math.PI*progress)*.34));
       }},0);
     if(fromShift!==toShift){
+      const moveDuration=reducedMotion ? 0.025 : 1.28;
       timeline.fromTo(shell,{xPercent:fromShift},
-        {xPercent:toShift,duration:reducedMotion ? 0.025 : 1.28,ease:'power2.inOut'},0);
+        {xPercent:toShift,duration:moveDuration,ease:'power2.inOut'},0);
+      // A closed cover must not reveal the full-width pale page block before
+      // its spine opens. Unfold the physical paper stack with the cover.
+      const paperStack=shell.querySelector<HTMLElement>('.book-depth');
+      if(paperStack)timeline.fromTo(paperStack,{
+        clipPath:turning.from===0?'inset(0 0 0 50%)':'inset(0 0 0 0%)'
+      },{
+        clipPath:turning.to===0?'inset(0 0 0 50%)':'inset(0 0 0 0%)',
+        duration:moveDuration,ease:'power2.inOut'
+      },0);
     }
     return()=>{
       timeline.kill();
       leaf.style.removeProperty('--leaf-shade');
       gsap.set(leaf,{clearProps:'transform'});
       gsap.set(shell,{clearProps:'transform'});
+      const stack=shell.querySelector<HTMLElement>('.book-depth');
+      if(stack)gsap.set(stack,{clearProps:'clipPath'});
     };
   },[turning,debugPose,reducedMotion,onTurnFinished]);
 
@@ -97,7 +109,9 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     <div className={`book-shell ${closed?'is-closed':'is-open'} ${showingTurn?'is-turning':''} ${showingTurn?.from===0?'is-opening':''} ${showingTurn?.to===0?'is-closing':''}`}
       ref={shellRef} data-book-mode={closed?'closed':'open'}
       style={stageShift===undefined?undefined:{transform:`translateX(${stageShift}%)`}}>
-      <div className="book-depth" aria-hidden="true"/>
+      <div className="book-depth" aria-hidden="true"
+        style={debugPose!==null&&showingTurn?.from===0?
+          {clipPath:`inset(0 0 0 ${50*(1-debugPose)}%)`}:undefined}/>
       {(!closed||showingTurn)&&<>
         <div className="book-static book-left" data-page-role="left-under">
           <Half position={leftUnder} side="left" name={name} wish={wish}/>
