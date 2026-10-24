@@ -132,7 +132,7 @@ export default function App() {
   useEffect(()=>{
     if(!turn||!leaf.current)return;
     const el=leaf.current;
-    const duration=reduced?.05:1.36;
+    const duration=reduced ? 0.05 : 1.36;
     const incomingLayers=['midground','lettering','characters','foreground'].map(key=>
       Array.from(document.querySelectorAll<HTMLElement>(
         `.still-layer .layer-${key}, .leaf-back .layer-${key}`
