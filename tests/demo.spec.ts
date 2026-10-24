@@ -26,6 +26,10 @@ test('closed portrait cover opens into two bound physical pages, then turns and 
   await expect(page.locator('.book-shell.is-open:not(.is-turning)')).toHaveCount(1);
   await waitForChapterAssets(page,'hello');
   await expect(page.locator('.book-binding')).toBeVisible();
+  // A clean 2-page spread must remain after the cover has fully opened.
+  await expect(page.locator('.book-turn-leaf')).toHaveCount(0);
+  await expect(page.locator('.book-static .page-surface[data-chapter="hello"]')).toHaveCount(2);
+  await page.waitForTimeout(180);
   await page.screenshot({path:'test-results/01-open-two-page-book.png',...screenshot});
   await page.getByRole('button',{name:'下一页'}).click();
   await waitForChapterAssets(page,'grow');
@@ -46,6 +50,23 @@ for(const chapter of chapters){
       elements.map(e=>e.getAttribute('data-side')));
     expect(sides).toEqual(['left','right']);
     await page.screenshot({path:`test-results/spread-${chapter}.png`,...screenshot});
+  });
+}
+
+for(const [step,pose] of ['0','0.5','1'].entries()){
+  test(`cover opens by turning a bound right leaf at ${Math.round(Number(pose)*100)}%`,async ({page})=>{
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await page.goto('/?pose='+pose+'&from=cover');
+    const leaf=page.locator('.book-turn-leaf');
+    await expect(leaf).toHaveCount(1);
+    await expect(leaf.locator('.book-front-cover')).toHaveCount(1);
+    await expect(leaf.locator('.page-surface[data-chapter="hello"]')).toHaveCount(1);
+    // The cover is not a rotating full landscape card: width is book/2.
+    const widths=await page.locator('.book-shell').evaluate(book=>({
+      book:book.clientWidth,leaf:book.querySelector<HTMLElement>('.book-turn-leaf')?.offsetWidth??0
+    }));
+    expect(Math.abs(widths.leaf-widths.book/2)).toBeLessThan(3);
+    await page.screenshot({path:`test-results/cover-opening-${String(step).padStart(2,'0')}.png`,...screenshot});
   });
 }
 
