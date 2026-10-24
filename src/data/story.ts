@@ -38,6 +38,7 @@ export function previewPose(){
 }
 export function previewFrom(){
   const p=new URLSearchParams(window.location.search).get('from');
+  if(p==='cover')return 0;
   const found=chapters.findIndex(ch=>ch.id===p);
   return found>=0&&found<chapters.length-1?found+1:2;
 }
