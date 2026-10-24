@@ -35,6 +35,7 @@ Node.js 22+.
 ```bash
 npm install
 npm run dev
+npm run test:assets
 npm run lint
 npm run typecheck
 npm run build
@@ -65,13 +66,14 @@ Passing CI is not proof of artistic equivalence.
 
 ## Source
 
-- `AGENTS.md`: **authoritative goal, no-card rule and acceptance gates**
+- `AGENTS.md`: **authoritative book-first goal and AI-first full-rewrite policy**
 - `src/data/story.ts`: chapter data and routing
 - `src/components/Book.tsx`: bound book and GSAP leaf mechanics
 - `src/components/SceneArt.tsx`: original artwork, cover, page half
 - `src/App.tsx`: accessible input and customization
 - `src/styles.css`: open book and paper stage styling
 - `docs/architecture.md`: physical page order explained
+- `docs/reference-gap-analysis.md`: official source-backed craft comparison and ordered improvements
 
 ## Known limitations
 
@@ -80,3 +82,15 @@ deformable page curl. Illustration is original and still needs
 professional art refinement, scene-specific character acting and
 performance profiling. No back end, payments, accounts or customer
 file uploads. **Draft PR #9 remains unmerged pending review.**
+
+## AI-first engineering and project tracking
+
+This is an AI-led implementation. **Large refactors, wholesale replacement of
+bad ideas and deletion of obsolete assets are explicitly welcome.** We favor
+high-iteration experimentation and final visual quality over minimizing changed
+lines. Each chosen version still needs test evidence and a reversible Git PR.
+See `AGENTS.md` (authoritative).
+
+Project plan and status: [Notion — Storybook 3D](https://app.notion.com/p/403d0befadbd81cbaba2e9061105d171), with a dedicated task database.
+Mobile readers can read the full chapter text in a legible caption below the
+small physical book; the double-page geometry remains unchanged.
