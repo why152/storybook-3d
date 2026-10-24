@@ -16,19 +16,22 @@ test('editorial stage, true flip, and personalized final page', async ({ page })
   await page.screenshot({ path: 'test-results/02-turn-middle.png', fullPage: true });
   await page.waitForTimeout(420);
   await page.screenshot({ path: 'test-results/03-turn-three-quarter.png', fullPage: true });
-  await expect(page.getByText('HELLO', { exact: true })).toBeVisible({ timeout: 6_000 });
+  await expect(page.getByRole('button', { name: '下一页' })).toBeEnabled({ timeout: 6_000 });
+  await expect(page.getByText('HELLO', { exact: true })).toBeVisible();
   await page.screenshot({ path: 'test-results/04-hello.png', fullPage: true });
 
   await page.getByRole('button', { name: 'CUSTOMIZE' }).click();
   await page.getByLabel('收礼人的名字').fill('小雨');
   await page.getByLabel('最后一页的祝福').fill('愿我们永远有新的故事。');
   await page.getByRole('button', { name: '看看最后一页' }).click();
-  await expect(page.getByRole('heading', { name: '生日快乐，小雨' })).toBeVisible({ timeout: 7_000 });
+  await expect(page.getByRole('button', { name: '上一页' })).toBeEnabled({ timeout: 7_000 });
+  await expect(page.getByRole('heading', { name: '生日快乐，小雨' })).toBeVisible();
   await expect(page.getByText('愿我们永远有新的故事。')).toBeVisible();
   await page.screenshot({ path: 'test-results/05-wish.png', fullPage: true });
 
   await page.getByRole('button', { name: '上一页' }).click();
-  await expect(page.getByText('GROW', { exact: true })).toBeVisible({ timeout: 7_000 });
+  await expect(page.getByRole('button', { name: '下一页' })).toBeEnabled({ timeout: 7_000 });
+  await expect(page.getByText('GROW', { exact: true })).toBeVisible();
   expect(runtimeErrors).toEqual([]);
 });
 
@@ -40,7 +43,8 @@ test('mobile screenshot and swipe navigation', async ({ page }) => {
   const bounds = await stage.boundingBox();
   expect(bounds).not.toBeNull();
   await page.getByRole('button', { name: '下一页' }).click();
-  await expect(page.getByText('HELLO', { exact: true })).toBeVisible({ timeout: 7_000 });
+  await expect(page.getByRole('button', { name: '下一页' })).toBeEnabled({ timeout: 7_000 });
+  await expect(page.getByText('HELLO', { exact: true })).toBeVisible();
   await page.screenshot({ path: 'test-results/mobile-hello.png', fullPage: true });
   await page.getByRole('button', { name: 'CUSTOMIZE' }).click();
   await expect(page.getByLabel('收礼人的名字')).toBeVisible();
