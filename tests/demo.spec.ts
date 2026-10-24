@@ -31,7 +31,8 @@ test('opens a story, personalizes final wish, and navigates backward', async ({p
 
   await page.getByRole('button',{name:'上一页'}).click();
   await expect(page.getByRole('button',{name:'下一页'})).toBeEnabled({timeout:8000});
-  await expect(page.getByText('GROW',{exact:true})).toBeVisible();
+  await expect(page.locator('.scene-card.theme-grow')).toBeVisible();
+  await expect(page.locator('.art-grow .art-layer')).toHaveCount(6);
   expect(errors).toEqual([]);
 });
 
@@ -50,6 +51,38 @@ for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
     await page.screenshot({path:`test-results/pose-${String(step).padStart(2,'0')}.png`,...snap});
   });
 }
+
+
+for(const scene of ['grow','wish'] as const){
+  test(`renders six original layers of ${scene} at desktop`,async ({page})=>{
+    await page.setViewportSize({width:1440,height:900});
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await page.goto('/?scene='+scene);
+    await expect(page.locator(`.scene-card.theme-${scene}`)).toBeVisible();
+    const art=page.locator(`.art-${scene} .art-layer`);
+    await expect(art).toHaveCount(6);
+    await expect.poll(async()=>art.evaluateAll(elements=>elements.every(
+      node=>(node as HTMLImageElement).complete&&(node as HTMLImageElement).naturalWidth===1200
+    ))).toBe(true);
+    await page.screenshot({path:`test-results/${scene}-layered-desktop.png`,...snap});
+  });
+}
+
+test('pointer parallax varies with layer depth and resets',async ({page})=>{
+  await page.goto('/?scene=hello');
+  const book=page.locator('.book-perspective');
+  await expect(page.locator('.art-hello .art-layer')).toHaveCount(6);
+  const bounds=await book.boundingBox();
+  expect(bounds).not.toBeNull();
+  if(!bounds)return;
+  await page.mouse.move(bounds.x+bounds.width*.82,bounds.y+bounds.height*.38);
+  const char=page.locator('.still-layer .hello-characters');
+  await expect.poll(async()=>char.evaluate(el=>el.style.getPropertyValue('--hover-x'))).not.toBe('');
+  const back=page.locator('.still-layer .hello-background');
+  expect(await back.evaluate(el=>el.style.getPropertyValue('--hover-x'))).toBe('0.0px');
+  await page.mouse.move(1,1);
+  await expect.poll(async()=>char.evaluate(el=>el.style.getPropertyValue('--hover-x'))).toBe('');
+});
 
 test('mobile viewport keeps scene and customization accessible',async ({page})=>{
   await page.setViewportSize({width:390,height:844});
