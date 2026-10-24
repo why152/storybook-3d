@@ -1,86 +1,53 @@
-# Art direction and asset pipeline
+# Illustration system — bound 3D book
 
-## Visual target
-An illustrated storybook with a dark stage/background, vivid editorial compositions, recognizable page-to-page changes, layered parallax and restrained but expressive transitions. The reference video guides *interaction quality*, not asset copying.
+## Creative direction
 
-## Demo concept (provisional)
-A short, original birthday-themed story: cover → chance encounter → a shared moment → a final wish. This is replaceable and should not block building the rendering proof of concept.
+Original birthday-themed illustrated journey:
+COVER → HELLO → GROW → TOGETHER → DREAM → WISH.
 
-## Visual style decision
-Initial candidate: geometric paper-cut/editorial illustration with warm muted peach, amber, teal and navy accents. Keep figures and backgrounds simple enough to split into depth layers. Do not generate final assets until a single style master is approved.
+Five interior chapters are distinct 1200×700 landscape **double-page
+compositions**. Every scene is read in **two facing physical book pages**;
+important faces, handwritten title details and customizable text should
+avoid the central 5% gutter.
 
-## Rendering contract
-- Logical design canvas: 1920 × 1080 (16:9) for interior pages; distinguish cover ratio if needed.
-- Typical per-scene exports: `background.webp` (opaque), `character.png` (alpha), `foreground.png` (alpha), `effects.png` (alpha).
-- All full-canvas layers use consistent canvas bounds. Alternatively use a sprite atlas with documented per-element bounds.
-- Never bake customizable names or messages into artwork.
-- Text uses an explicit region, alignment, type scale, contrast and maximum line count.
-- Keep 5–10% safe margins for readable copy; verify mobile layout.
-- Name files by story/page/role, e.g. `public/assets/demo/p02/character.png`.
-- Add metadata for license/source, dimensions, crop bounding box, anchor and intended depth if needed.
+Our craft inspiration is the editorial quality of
+https://howtotalktowhitekidsaboutracism.com/, **not its licensed assets
+or card-flip geometry**. The target product is a physically hinged book.
 
-## Recommended generation process
-1. Produce one **style master** for approval.
-2. Create stable recurring character sheets to establish proportions, clothes and palette.
-3. Generate scene art without embedded lettering.
-4. Derive compatible layered assets and inspect their transparency/edges on dark and light backgrounds.
-5. Verify composition against the page-turn at multiple angles; refine assets for parallax.
-6. Export web-optimized files; preserve full-quality masters outside git if huge.
+## Current original scenes
 
-## Demo scenes
-- Cover: central illustrated gift/book, bold shape design and a clear open action.
-- Scene 1: first meeting; minimum three parallax depths and an entry animation.
-- Scene 2: starry or city evening; two moving decorative elements.
-- Scene 3: final wish; gift reveal/confetti and replaceable greeting.
+| Scene | Palette / story | Illustration files |
+|---|---|---|
+| HELLO | Coral town, two characters greeting | `public/assets/hello/` |
+| GROW | Green forest, watering a plant | `public/assets/grow/` |
+| TOGETHER | Peach seashore, friends sharing tea | `public/assets/together/` |
+| DREAM | Indigo night sky, stargazing / paper boat | `public/assets/dream/` |
+| WISH | Rose-colored celebration, gifts and cake | `public/assets/wish/` |
 
-## Acceptance criteria
-- Distinct depth is visible at oblique angles, not just flat images pasted onto planes.
-- Character identity and palette remain consistent across pages.
-- No unintended cutout halos, mirrored text, clipped important subjects, or illegible copy.
-- Asset sizes and combined GPU usage documented after integration.
+Each asset directory holds these **six independent original SVG planes**:
+`background.svg`, `midground.svg`, `lettering.svg`,
+`characters.svg`, `foreground.svg`, `effects.svg`.
+All art shares the exact same 1200×700 `viewBox`, including transparent
+unoccupied regions. Editing a layer must never crop or rescale its artboard.
 
+The active renderer is `src/components/SceneArt.tsx`; do not put SVG
+inline in `src/App.tsx`. Data/text lives in `src/data/story.ts`;
+name and wish are accessible HTML, never baked into SVG.
 
-## HELLO scene — actual layered asset delivery (2026-10-25)
+## Layer preview
 
-The first complete file-based illustration scene now lives at
-`public/assets/hello/` and uses **six independent SVG layers**, not a
-flattened infographic image. Each is a real vector file with the same
-`1200 × 700` viewport; the underlying background is opaque and the other
-five artworks have transparent outer regions.
+Run Vite and open `/art-inspector.html?scene=hello` to inspect all
+six planes with an independent angle, fan-out control and visibility toggles.
+Use `scene=grow`, `together`, `dream`, or `wish` for the other sets.
 
-| File | Local page Z | Function |
-|---|---:|---|
-| `background.svg` | 0 | Sunset sky, distant town, hills |
-| `midground.svg` | 11 | Branches, architectural facades, lamps and footbridge |
-| `lettering.svg` | 27 | Oversized distressed *HELLO* display letters |
-| `characters.svg` | 48 | Rabbit and fox interacting with the word |
-| `foreground.svg` | 68 | Plants and flowers framing the scene |
-| `effects.svg` | 78 | Floating petals, stars and butterflies |
+For integrated book screenshots use `/?scene=hello` etc. For the actual
+rigid half-page rotation use `/?pose=0.25&from=grow`, and compare all
+0/25/50/75/100% poses in Playwright.
 
-Full metadata: [HELLO layer manifest](../public/assets/hello/manifest.json).
-The file-based renderer lives in `HelloArtwork()` in `src/App.tsx`,
-with each Z depth and optional motion defined in `src/styles.css`.
+## Remaining creative work
 
-### Distinction between assets and moodboards
-
-Earlier generated images in the conversation were **composite concept boards**.
-They are **not** transparent PNG exports, and we have **not** inserted
-them into the application. These SVG files are the usable layered assets.
-The art is a deliberately original, editable vector interpretation;
-it is still below the supplied reference's hand-painted sophistication.
-
-### Remaining visual QA
-
-- Open the page in desktop Chrome and validate the six images actually load.
-- Capture still frames at 0, 25, 50, 75, and 100% turnover.
-- Inspect characters' outlines, intentional overlaps, layered z-depth, and
-  clipping at oblique angles. Revise if any SVG is cropped unexpectedly.
-- Check desktop / mobile readability and CPU usage.
-- Only after user approves the master scene, extend the system to other pages.
-
-### Production guidance
-
-Do **not** bake the recipient's name/wish into `lettering.svg`. The
-decorative word HELLO is a fixed page illustration; customer copy stays
-in accessible HTML. Real customer-provided image uploads are not part
-of this work.
+These illustrations are vector originals, not borrowed copyrighted
+site art. They are still an early candidate: character illustration,
+motion timing, brush grain, typographic art direction, lighting and
+the realism of the binding require further polish. Passing build/test
+is not a claim of matching the reference's expert visual art.
