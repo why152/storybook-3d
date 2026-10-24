@@ -62,6 +62,10 @@ export default function App(){
 
   const currentIndex=debugPose===null?active:debugFrom;
   const shownChapter=currentIndex>0?getChapter(currentIndex):null;
+  const readableTitle=shownChapter?.title.replace('{name}',name.trim()||'你');
+  const readableMessage=shownChapter?.description.replace(
+    '{wish}',wish.trim()||'愿所有美好都在下一页等你。'
+  );
 
   return <div className="showroom">
     <header className="site-head">
@@ -91,6 +95,19 @@ export default function App(){
         disabled={active===totalPositions-1||!!turn||debugPose!==null}
         onClick={()=>goTo(active+1)}><Arrow/></button>
     </main>
+    <section className="chapter-reader" aria-label="故事朗读文字" aria-live="polite">
+      {shownChapter
+        ? <>
+          <div className="reader-meta">{shownChapter.label} · {shownChapter.word}</div>
+          <h2>{readableTitle}</h2>
+          <p>{readableMessage}</p>
+        </>
+        : <>
+          <div className="reader-meta">THE BEGINNING</div>
+          <h2>一本为特别的你准备的小书</h2>
+          <p>点击右侧箭头翻开封面，开始阅读。</p>
+        </>}
+    </section>
     <div className="page-navigation">
       <div className="chapter-current">
         {shownChapter? <><span>{shownChapter.label}</span><strong>{shownChapter.word}</strong></>:

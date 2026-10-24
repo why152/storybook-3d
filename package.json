@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "lint": "eslint .",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:assets": "node scripts/verify-assets.mjs"
   },
   "dependencies": {
     "gsap": "^3.14.0",

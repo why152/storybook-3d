@@ -106,7 +106,7 @@ test('customized final chapter and nonadjacent bookmarks turn sequentially',asyn
   await expect(page.locator('.book-shell.is-open:not(.is-turning)')).toHaveCount(1,{timeout:20000});
   await waitForChapterAssets(page,'wish');
   await expect(page.getByRole('heading',{name:'生日快乐，小雨'})).toBeVisible();
-  await expect(page.getByText('愿我们永远有新的故事。')).toBeVisible();
+  await expect(page.locator('.book-static .page-right .page-quote').getByText('愿我们永远有新的故事。')).toBeVisible();
   await page.screenshot({path:'test-results/06-personalized-final-spread.png',...screenshot});
   await page.getByRole('button',{name:'查看第 3 个故事跨页'}).click();
   await waitForChapterAssets(page,'together');
@@ -121,6 +121,12 @@ test('keyboard and mobile touch keep book usable',async ({page})=>{
   await page.screenshot({path:'test-results/mobile-closed-book.png',...screenshot});
   await page.keyboard.press('ArrowRight');
   await waitForChapterAssets(page,'hello');
+  const reader=page.getByRole('region',{name:'故事朗读文字'});
+  await expect(reader).toBeVisible();
+  await expect(reader.getByRole('heading',{name:'遇见，是故事的开头。'})).toBeVisible();
+  await expect(reader.getByText('在无数平凡的日子里，刚好遇见了你。')).toBeVisible();
+  const fontSize=await reader.locator('p').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  expect(fontSize).toBeGreaterThanOrEqual(12);
   await page.screenshot({path:'test-results/mobile-open-book.png',...screenshot});
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(2);
@@ -128,6 +134,22 @@ test('keyboard and mobile touch keep book usable',async ({page})=>{
   await expect(book).toBeVisible();
   await page.getByRole('button',{name:/CUSTOMIZE/}).click();
   await expect(page.getByLabel('收礼人的名字')).toBeVisible();
+});
+
+test('mobile final chapter remains readable after customization',async ({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/?scene=wish');
+  const reader=page.getByRole('region',{name:'故事朗读文字'});
+  await expect(reader).toBeVisible();
+  await expect(reader.getByText('生日快乐，你')).toBeVisible();
+  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
+  await page.getByLabel('收礼人的名字').fill('小雨');
+  await page.getByLabel('最后一页的祝福').fill('愿一切美好都如约而至。');
+  await page.getByRole('button',{name:'关闭定制面板'}).click();
+  await expect(reader.getByText('生日快乐，小雨')).toBeVisible();
+  await expect(reader.getByText('愿一切美好都如约而至。')).toBeVisible();
+  await page.screenshot({path:'test-results/mobile-readable-wish.png',...screenshot});
 });
 
 test('records an actual cover opening and right-to-left/left-to-right book turnover',async ({browser})=>{
