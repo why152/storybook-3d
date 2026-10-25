@@ -43,7 +43,8 @@ jobs:
             test -f "dist/assets/$chapter/background.svg"
             test -f "dist/assets/$chapter/actors/rabbit.svg"
           done
-          grep -q '/storybook-3d/assets/' dist/assets/*.js
+          grep -q '/storybook-3d/' dist/index.html
+          grep -q '/storybook-3d/' dist/assets/*.js
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Verify book turns, customization and mobile navigation
