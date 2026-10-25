@@ -7,7 +7,7 @@ async function waitForChapterAssets(page:import('@playwright/test').Page,id:stri
   const pageArt=page.locator(`.book-static .page-surface[data-chapter="${id}"]`);
   await expect(pageArt).toHaveCount(2);
   const art=pageArt.locator('.scene-plane');
-  const expectedImages=id==='hello'?14:id==='grow'?16:12;
+  const expectedImages=id==='hello'?14:16;
   await expect(art).toHaveCount(expectedImages);
   await expect.poll(async()=>art.evaluateAll(elements=>
     elements.every(node=>(node as HTMLImageElement).complete&&(node as HTMLImageElement).naturalWidth===1200)
@@ -154,7 +154,7 @@ test('mobile final chapter remains readable after customization',async ({page})=
 });
 
 test('layer inspector compares the six-plane original against transparent actor sources',async ({page})=>{
-  for(const [chapter,count] of [['hello',7],['grow',8]] as const){
+  for(const [chapter,count] of [['hello',7],['grow',8],['together',8],['dream',8],['wish',8]] as const){
     await page.goto('/art-inspector.html?scene='+chapter+'&actors=1');
     await expect(page.locator('#actor-mode')).toBeChecked();
     const layers=page.locator('#card img');
@@ -170,8 +170,10 @@ test('layer inspector compares the six-plane original against transparent actor 
 
 test('independent actors reproduce the original composite illustration at rest',async ({page})=>{
   await page.goto('/?scene=hello');
-  for(const scene of ['hello','grow'] as const){
-    const parts=scene==='hello'?['rabbit','fox']:['rabbit','fox','props'];
+  for(const scene of ['hello','grow','together','dream','wish'] as const){
+    const parts=scene==='hello'?['rabbit','fox']
+      :['together','wish'].includes(scene)?['fox','rabbit','props']
+      :['rabbit','fox','props'];
     const comparison=await page.evaluate(async ({scene,parts})=>{
       const W=1200,H=700;
       const makeCanvas=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;return c;};
@@ -267,6 +269,46 @@ test('records distinct illustrated characters greeting and watering in real brow
     await waitForChapterAssets(page,'grow');
     await page.waitForTimeout(4300);
   }finally{await ctx.close();}
+  expect(errors).toEqual([]);
+});
+
+test('all five chapters animate independent characters with different story-specific timing',async ({page})=>{
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  const cases=[
+    ['together','story-tea-fox','story-tea-rabbit','story-tea-cups'],
+    ['dream','story-stargaze-fox','story-stargaze-rabbit','story-star-map'],
+    ['wish','story-wish-present','story-wish-cheer','story-wish-gift'],
+  ] as const;
+  for(const [scene,foxName,rabbitName,propsName] of cases){
+    await page.goto('/?scene='+scene);
+    await waitForChapterAssets(page,scene);
+    await expect(page.locator('.book-static.book-left .actor-fox').first()).toHaveCSS('animation-name',foxName);
+    await expect(page.locator('.book-static.book-right .actor-rabbit').first()).toHaveCSS('animation-name',rabbitName);
+    await expect(page.locator('.book-static .actor-props').first()).toHaveCSS('animation-name',propsName);
+    await page.screenshot({path:`test-results/acting-${scene}-rest.png`,fullPage:false,animations:'disabled'});
+  }
+});
+
+test('five-chapter continuous real-browser recording includes distinct acting and real bound-page turns',async ({browser})=>{
+  const context=await browser.newContext({
+    viewport:{width:1280,height:720},reducedMotion:'no-preference',
+    recordVideo:{dir:'test-results/five-story-actor-motion',size:{width:1280,height:720}}
+  });
+  const page=await context.newPage();
+  const errors:string[]=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  try{
+    await page.goto('/?scene=hello');
+    for(const scene of ['hello','grow','together','dream','wish']){
+      await waitForChapterAssets(page,scene);
+      await page.waitForTimeout(scene==='hello'?1600:2100);
+      if(scene==='wish')break;
+      await page.getByRole('button',{name:'下一页'}).click();
+      await expect(page.locator('.book-turn-leaf')).toHaveCount(1);
+      await expect(page.locator('.book-turn-leaf .scene-actor').first()).toHaveCSS('animation-name','none');
+      await expect(page.locator('.book-turn-leaf')).toHaveCount(0,{timeout:12000});
+    }
+  }finally{await context.close();}
   expect(errors).toEqual([]);
 });
 
