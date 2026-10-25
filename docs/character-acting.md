@@ -57,6 +57,29 @@ The checkbox toggles between source and separated modes. You can
 individually hide each actor to inspect its actual transparency and
 alignment. Preserve this tool for future automated image critique.
 
+### Repeatable, low-cost bulk sprite generation
+
+Do not pay a premium reasoning model to manually cut the same old SVG
+shapes into multiple image files. The new dependency-free
+`scripts/extract-actors.mjs` walks top-level groups of each original
+`characters.svg`, preserves the full original `<defs>` and 1200×700
+alignment, and assigns groups in `manifest.json` actor order. The last
+actor receives remaining root-level groups (e.g. GROW watering can and
+its particles).
+
+- `npm run test:actors`: strict check that all **14** actor SVG files
+  still match the original canonical illustration groups byte-for-byte,
+  excluding harmless wrapping comments.
+- `npm run art:actors`: **explicitly overwrites** the actor files from
+  the original character art after a deliberate source edit.
+- Both the existing `npm run test:assets` validator and Playwright
+  pixel-restoration assertions remain independent safety gates.
+
+This generator is for the current faithful split. Future intentionally
+redesigned actor body parts should update the canonical source or graduate
+to an explicitly versioned rig format; never silently erase hand-edited
+premium-quality new artwork.
+
 ### QA acceptance
 
 1. Stationary HELLO shows two independent image sources with different
