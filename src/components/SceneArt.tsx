@@ -1,4 +1,4 @@
-import type { Chapter } from '../data/story';
+import type { Chapter, ChapterId } from '../data/story';
 
 const planes=['background','midground','lettering','characters','foreground','effects'] as const;
 
@@ -6,9 +6,12 @@ const planes=['background','midground','lettering','characters','foreground','ef
  * remains available for original six-plane Shader Labs and reproducible art.
  * Only HELLO/GROW use articulated actors in stationary book scenes.
  */
-const actingScenes: Readonly<Record<string,readonly string[]>>={
+const actingScenes: Readonly<Record<ChapterId,readonly string[]>>={
   hello:['rabbit','fox'],
   grow:['rabbit','fox','props'],
+  together:['fox','rabbit','props'],
+  dream:['rabbit','fox','props'],
+  wish:['fox','rabbit','props'],
 };
 
 
