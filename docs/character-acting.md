@@ -37,6 +37,18 @@ together like one postcard.
   with file alignment verified by `npm run test:assets`.
 - All other chapter scenes are byte-for-byte unchanged.
 
+### Inspector for artists and AI agents
+
+Use the existing original-art inspector with exactly the same scene artboard:
+
+- `/art-inspector.html?scene=hello` — original combined `characters.svg`.
+- `/art-inspector.html?scene=hello&actors=1` — registered rabbit and fox.
+- `/art-inspector.html?scene=grow&actors=1` — rabbit, fox and watering props.
+
+The checkbox toggles between source and separated modes. You can
+individually hide each actor to inspect its actual transparency and
+alignment. Preserve this tool for future automated image critique.
+
 ### QA acceptance
 
 1. Stationary HELLO shows two independent image sources with different
