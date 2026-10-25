@@ -1,6 +1,19 @@
-import type { Chapter } from '../data/story';
+import type { Chapter, ChapterId } from '../data/story';
 
 const planes=['background','midground','lettering','characters','foreground','effects'] as const;
+
+/** Registered 1200×700 transparent sprites; same authored characters.svg
+ * remains available for original six-plane Shader Labs and reproducible art.
+ * Only HELLO/GROW use articulated actors in stationary book scenes.
+ */
+const actingScenes: Readonly<Record<ChapterId,readonly string[]>>={
+  hello:['rabbit','fox'],
+  grow:['rabbit','fox','props'],
+  together:['fox','rabbit','props'],
+  dream:['rabbit','fox','props'],
+  wish:['fox','rabbit','props'],
+};
+
 
 export type PageSide='left'|'right';
 type PageHalfProps={chapter:Chapter;side:PageSide;name:string;wish:string};
@@ -11,11 +24,21 @@ export function PageHalf({chapter,side,name,wish}:PageHalfProps){
   return <div className={`page-surface theme-${chapter.id} page-${side}`} data-chapter={chapter.id} data-side={side}>
     <div className="page-window">
       <div className="spread-composition" aria-hidden="true">
-        {planes.map((plane,index)=><img
-          key={plane} className={`scene-plane plane-${plane}`}
-          src={`/assets/${chapter.id}/${plane}.svg`}
-          data-depth={index} alt="" draggable={false}
-        />)}
+        {planes.map((plane,index)=>
+          plane==='characters'&&actingScenes[chapter.id]
+            ? actingScenes[chapter.id].map(actor=><img
+                key={`actor-${actor}`}
+                className={`scene-plane scene-actor actor-${actor} acting-${chapter.id}`}
+                src={`/assets/${chapter.id}/actors/${actor}.svg`}
+                data-depth={index} data-actor={actor} alt=""
+                draggable={false}
+              />)
+            : <img
+                key={plane} className={`scene-plane plane-${plane}`}
+                src={`/assets/${chapter.id}/${plane}.svg`}
+                data-depth={index} alt="" draggable={false}
+              />
+        )}
       </div>
       <div className="page-print-grain" aria-hidden="true"/>
       {side==='right'&&<>

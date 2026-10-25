@@ -28,6 +28,14 @@ foreground and effects, all in a common 1200×700 coordinate system.
 The renderer cuts the full-spread illustration into two physically
 independent page halves at the binding without flattening source art.
 
+Across **all five chapters**, the original combined `characters.svg`
+stays intact, while stationary book pages render **14 independently
+registered transparent character/prop SVG sprites** (rabbit, fox and
+scene-specific objects) with restrained, story-specific choreography. Motion pauses during page turns and for reduced-motion
+users. See `docs/character-acting.md`; this is early character acting, not
+finished limb animation.
+
+
 ## Development
 
 Node.js 22+.
@@ -36,6 +44,7 @@ Node.js 22+.
 npm install
 npm run dev
 npm run test:assets
+npm run test:actors
 npm run lint
 npm run typecheck
 npm run build
@@ -94,3 +103,19 @@ See `AGENTS.md` (authoritative).
 Project plan and status: [Notion — Storybook 3D](https://app.notion.com/p/403d0befadbd81cbaba2e9061105d171), with a dedicated task database.
 Mobile readers can read the full chapter text in a legible caption below the
 small physical book; the double-page geometry remains unchanged.
+
+### Bulk SVG actor maintenance (no premium model required)
+
+The original `public/assets/*/characters.svg` remains the canonical
+hand-authored artwork; the 14 separately registered actors are deliberately
+reproducible extracts, not alternative copies of copyrighted images.
+
+```bash
+npm run test:actors   # CI: verify every actor preserves original SVG geometry
+npm run art:actors    # explicit regeneration after canonical character edits
+```
+
+Only run the second command when you intend to **replace** all generated actor
+sources from their canonical chapter art. Future custom limb art should first
+update the authoring source or create a separate intentional motion layer.
+The validator checks all five chapters, including the GROW props group.

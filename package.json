@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test:e2e": "playwright test",
-    "test:assets": "node scripts/verify-assets.mjs"
+    "test:assets": "node scripts/verify-assets.mjs",
+    "test:actors": "node scripts/extract-actors.mjs --check",
+    "art:actors": "node scripts/extract-actors.mjs --write"
   },
   "dependencies": {
     "gsap": "^3.14.0",

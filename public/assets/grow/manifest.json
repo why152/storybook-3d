@@ -66,7 +66,30 @@
       "transparent": true
     }
   ],
-  "renderer": "src/App.tsx IllustratedArtwork",
-  "motion": "src/App.tsx GSAP entrance timeline; CSS float on effects and pointer-driven parallax; respect prefers-reduced-motion",
-  "note": "Each layer covers a full transparent 1200×700 canvas; preserve alignment when editing. Text personalization is real HTML outside SVG."
+  "renderer": "src/components/SceneArt.tsx (registered separate actor sprites on stationary book pages)",
+  "motion": "Each actor has separate subtle story-specific CSS motion. Book-turn faces and reduced-motion users show still art. Original characters.svg remains unchanged as reference and WebGL atlas input.",
+  "note": "Each layer covers a full transparent 1200×700 canvas; preserve alignment when editing. Text personalization is real HTML outside SVG.",
+  "actors": [
+    {
+      "id": "rabbit",
+      "file": "actors/rabbit.svg",
+      "artboard": "0 0 1200 700",
+      "pivot": "torso-left",
+      "motion": "grow-rabbit-independent"
+    },
+    {
+      "id": "fox",
+      "file": "actors/fox.svg",
+      "artboard": "0 0 1200 700",
+      "pivot": "torso-right",
+      "motion": "grow-fox-independent"
+    },
+    {
+      "id": "props",
+      "file": "actors/props.svg",
+      "artboard": "0 0 1200 700",
+      "pivot": "watering-can",
+      "motion": "shared-watering-prop"
+    }
+  ]
 }

@@ -30,6 +30,32 @@ for(const id of ids){
   const actualIds=(manifest.layers||[]).map(x=>x.id);
   check(JSON.stringify(actualIds)===JSON.stringify(expectedPlanes),
     `${id}: plane order must remain ${expectedPlanes.join(', ')}`);
+  // Optional *additional* articulated sprites. A chapter's original
+  // six-plane characters.svg remains intact for Shader Lab parity.
+  {
+    const expectedActors=id==='hello'?['rabbit','fox'] :
+      ['together','wish'].includes(id)?['fox','rabbit','props']:
+      ['rabbit','fox','props'];
+    check(JSON.stringify((manifest.actors||[]).map(actor=>actor.id))===JSON.stringify(expectedActors),
+      `${id}: independent actor manifest entries missing/out of order`);
+    for(const actor of expectedActors){
+      const entry=manifest.actors?.find(item=>item.id===actor);
+      const expectedFile=`actors/${actor}.svg`;
+      check(entry?.file===expectedFile,`${id}: actor asset mismatch ${actor}`);
+      const file=resolve(directory,expectedFile);
+      check(existsSync(file),`${id}: registered actor SVG missing: ${expectedFile}`);
+      if(!existsSync(file))continue;
+      const data=readFileSync(file,'utf8');
+      const bounds=data.match(/\bviewBox\s*=\s*["']\s*0\s+0\s+(\d+)\s+(\d+)\s*["']/i);
+      check(Boolean(bounds)&&Number(bounds[1])===1200&&Number(bounds[2])===700,
+        `${id}: ${actor} artboard must align exactly to 1200x700 spread`);
+      check(/<svg\b/.test(data)&&/<\/svg>\s*$/.test(data),
+        `${id}: ${actor} is not a standalone SVG`);
+      check(!/<\s*(script|foreignObject)\b/i.test(data)&&
+        !/\b(?:href|xlink:href)\s*=\s*["']https?:/i.test(data),
+        `${id}: ${actor} contains embedded scripts or remote references`);
+    }
+  }
   for(const plane of expectedPlanes){
     const found=manifest.layers?.find(x=>x.id===plane);
     check(Boolean(found)&&found.file===plane+'.svg',

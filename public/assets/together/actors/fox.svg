@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+<defs>
+<linearGradient id="orange" x2="1" y2="1"><stop stop-color="#FFCF9B"/><stop offset=".55" stop-color="#EAA276"/><stop offset="1" stop-color="#C37C6A"/></linearGradient>
+<linearGradient id="cream" x2="1" y2="1"><stop stop-color="#FFFADE"/><stop offset=".7" stop-color="#EDD7B7"/><stop offset="1" stop-color="#D8B69F"/></linearGradient>
+<linearGradient id="coat" x2="1" y2="1"><stop stop-color="#477D81"/><stop offset="1" stop-color="#2F5D69"/></linearGradient>
+<pattern id="grain" width="18" height="19" patternUnits="userSpaceOnUse"><path d="m2 7 5-1m10 7-3 2" stroke="#9E806F" stroke-width="1.4" opacity=".31"/></pattern>
+</defs>
+<!-- Original TOGETHER fox artwork from registered characters.svg; kept pixel-aligned. -->
+<g transform="translate(212 339) rotate(-5 125 150)">
+<ellipse cx="147" cy="294" rx="115" ry="17" fill="#805D59" opacity=".27"/>
+<path d="M173 219q111-95 150-24q13 48-69 67" fill="url(#orange)" stroke="#9F6963" stroke-width="6"/>
+<path d="M267 250q43-21 42-45q-26 18-59 20" fill="#FFF3D8"/>
+<path d="M85 228q-34 32-36 67m147-60 19 61" stroke="#4E626B" stroke-width="33" fill="none" stroke-linecap="round"/>
+<ellipse cx="47" cy="298" rx="34" ry="16" fill="#4E5E66"/><ellipse cx="218" cy="298" rx="38" ry="16" fill="#4D5D66"/>
+<ellipse cx="145" cy="214" rx="87" ry="86" fill="url(#coat)" stroke="#375D66" stroke-width="6"/>
+<path d="M88 197q58 28 118-5" stroke="#E6BC8B" stroke-width="26" fill="none"/>
+<path d="M88 138 62 27q37-11 73 72l57-68q34 34 5 113" fill="url(#orange)" stroke="#B07467" stroke-width="5"/>
+<path d="M81 63l32 51m63-51-7 46" stroke="#FFD6B4" stroke-width="16" fill="none" stroke-linecap="round"/>
+<ellipse cx="144" cy="161" rx="83" ry="72" fill="url(#orange)" stroke="#A96860" stroke-width="6"/>
+<path d="M64 166q49 61 81 37q41 15 81-43q-12 68-81 76q-70-8-81-70" fill="#FFF4D9"/>
+<ellipse cx="110" cy="158" rx="6" ry="8" fill="#413F47"/><ellipse cx="177" cy="155" rx="6" ry="8" fill="#413F47"/>
+<ellipse cx="146" cy="188" rx="11" ry="8" fill="#975F62"/>
+<path d="M146 195q-12 15-25 2m25-2q12 14 27 0" stroke="#986C64" stroke-width="3" fill="none" stroke-linecap="round"/>
+<ellipse cx="89" cy="188" rx="17" ry="10" fill="#EFAB9E" opacity=".76"/>
+<ellipse cx="195" cy="184" rx="17" ry="10" fill="#ECA99A" opacity=".76"/>
+<path d="M79 236Q50 237 23 262" stroke="#EEAA83" stroke-width="26" fill="none" stroke-linecap="round"/>
+<path d="M200 232Q252 227 271 255" stroke="#EFA780" stroke-width="26" fill="none" stroke-linecap="round"/>
+<ellipse cx="275" cy="262" rx="16" ry="17" fill="#F7B995"/>
+<ellipse cx="20" cy="266" rx="16" ry="18" fill="#F2B58E"/>
+<ellipse cx="142" cy="162" rx="86" ry="76" fill="url(#grain)" opacity=".25"/>
+</g>
+</svg>

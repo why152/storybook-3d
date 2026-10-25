@@ -66,7 +66,27 @@
       "transparent": true
     }
   ],
-  "renderer": "src/App.tsx IllustratedArtwork",
-  "motion": "src/App.tsx GSAP entrance timeline; CSS float on effects and pointer-driven parallax; respect prefers-reduced-motion",
-  "note": "Each layer covers a full transparent 1200×700 canvas; preserve alignment when editing. Text personalization is real HTML outside SVG."
+  "renderer": "src/components/SceneArt.tsx — independent registered actors on stationary book page; keep original combined characters.svg for WebGL single-pass studies",
+  "motion": "Full-character independent story-keyframe animation. No independent motion on turning sheets or reduced-motion; per-paw/ear rig is next-stage art task.",
+  "note": "Each layer covers a full transparent 1200×700 canvas; preserve alignment when editing. Text personalization is real HTML outside SVG.",
+  "actors": [
+    {
+      "id": "fox",
+      "file": "actors/fox.svg",
+      "artboard": "0 0 1200 700",
+      "motion": "wish-fox-independent"
+    },
+    {
+      "id": "rabbit",
+      "file": "actors/rabbit.svg",
+      "artboard": "0 0 1200 700",
+      "motion": "wish-rabbit-independent"
+    },
+    {
+      "id": "props",
+      "file": "actors/props.svg",
+      "artboard": "0 0 1200 700",
+      "motion": "wish-props-independent"
+    }
+  ]
 }

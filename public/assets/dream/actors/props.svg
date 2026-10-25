@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+<defs>
+<linearGradient id="rabbit" x2="1" y2="1"><stop stop-color="#FFFAE1"/><stop offset=".66" stop-color="#F0DCC8"/><stop offset="1" stop-color="#CBB8B9"/></linearGradient>
+<linearGradient id="fox" x2="1" y2="1"><stop stop-color="#F2C49B"/><stop offset=".55" stop-color="#E69B89"/><stop offset="1" stop-color="#B97481"/></linearGradient>
+<linearGradient id="coat" x2="1" y2="1"><stop stop-color="#8E8AB0"/><stop offset="1" stop-color="#535C87"/></linearGradient>
+<pattern id="rough" width="17" height="22" patternUnits="userSpaceOnUse"><path d="m2 7 4-2m8 12 3 1" stroke="#725D77" stroke-width="1.5" opacity=".24"/></pattern>
+</defs>
+<!-- Original DREAM props artwork from registered characters.svg; kept pixel-aligned. -->
+<g transform="translate(554 547) rotate(7)">
+<path d="M-24 0h166l-10 89H-40Z" fill="#E1D4CE" stroke="#7D7A9F" stroke-width="7"/>
+<path d="M-24 0q40 17 83 5t83-5M60 7l-4 80" stroke="#9DA5B5" stroke-width="6" fill="none"/>
+<path d="m14 53 11-23 11 23-11 8zM97 47l8-17 8 17-8 6z" fill="#E7BE9D"/>
+<path d="M12 20q35-10 68 2" stroke="#B9A6B3" stroke-dasharray="4 8" stroke-width="4" fill="none"/>
+</g>
+</svg>

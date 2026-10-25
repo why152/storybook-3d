@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+<defs>
+<linearGradient id="cream" x2="1" y2="1"><stop stop-color="#FFF8D9"/><stop offset=".7" stop-color="#F4D3AC"/><stop offset="1" stop-color="#DDB28E"/></linearGradient>
+<linearGradient id="orange" x2="1" y2="1"><stop stop-color="#F5B070"/><stop offset=".65" stop-color="#DB8355"/><stop offset="1" stop-color="#BC5B50"/></linearGradient>
+<linearGradient id="shirt" x2="1" y2="1"><stop stop-color="#DAB66F"/><stop offset="1" stop-color="#BA8C61"/></linearGradient>
+<pattern id="flecks" width="17" height="22" patternUnits="userSpaceOnUse"><path d="m3 3 2 2m10 8-3 3" fill="none" stroke="#9B785F" stroke-width="1.5" opacity=".24"/></pattern>
+</defs>
+<!-- Independently animated grow/props art, extracted without altering original brushwork. -->
+<g transform="translate(999 532) rotate(-21)">
+<path d="M0 11q52-25 90 0l-6 72H11z" fill="#BDAD7F" stroke="#517266" stroke-width="7"/>
+<path d="M80 27q48-30 60-13l-9 13-39 39" fill="#8BA384" stroke="#527063" stroke-width="7"/>
+<path d="M14 7q22-24 59-1" stroke="#4E6D5C" stroke-width="11" fill="none" stroke-linecap="round"/>
+<path d="M136 11q17-12 25 4" stroke="#607C6A" stroke-width="5" fill="none"/>
+</g>
+<g fill="#C5DCB3" opacity=".87"><ellipse cx="1107" cy="557" rx="5" ry="11" transform="rotate(35 1107 557)"/><ellipse cx="1134" cy="582" rx="6" ry="12" transform="rotate(30 1134 582)"/><circle cx="1095" cy="576" r="5"/></g>
+</svg>
