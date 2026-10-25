@@ -29,6 +29,16 @@ export function posePaper(leaf: HTMLElement, progress: number) {
     const {x, z, angle} = geometry[index];
     segment.style.transform = `translate3d(${x * width}px,0,${z * width}px) rotateY(${angle}rad)`;
     segment.style.width = `${width / segments.length}px`;
+    // WebKit can paint the *mirrored reverse texture* of clipped 3D faces
+    // even when backface-visibility:hidden is set. The physical facing side
+    // is determined by the world-space normal of each curved strip, not by
+    // a global halfway toggle. At edge-on poses, adjacent strips can face
+    // different directions; only the correct side may paint.
+    const frontFacing = Math.cos(-Math.PI * progress + angle) >= 0;
+    const front = segment.querySelector<HTMLElement>('.paper-front');
+    const back = segment.querySelector<HTMLElement>('.paper-back');
+    if (front) front.style.visibility = frontFacing ? 'visible' : 'hidden';
+    if (back) back.style.visibility = frontFacing ? 'hidden' : 'visible';
     segment.querySelectorAll<HTMLElement>('.paper-print').forEach((print, side) => {
       print.style.width = `${width}px`;
       // Symmetric subpixel coverage hides compositor antialias cracks.
