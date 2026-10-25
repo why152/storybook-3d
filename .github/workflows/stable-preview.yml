@@ -1,0 +1,73 @@
+name: Preview — Stable Storybook
+
+on:
+  push:
+    branches:
+      - preview/stable-storybook
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: storybook-stable-preview
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install reproducible dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Validate original art and actor sprites
+        run: |
+          npm run test:assets
+          npm run test:actors
+      - name: Lint and type check
+        run: |
+          npm run lint
+          npm run typecheck
+      - name: Build under the GitHub Pages project path
+        run: npm run build -- --mode pages
+      - name: Verify all original story assets were emitted
+        run: |
+          test -f dist/index.html
+          for chapter in hello grow together dream wish; do
+            test -f "dist/assets/$chapter/background.svg"
+            test -f "dist/assets/$chapter/actors/rabbit.svg"
+          done
+          grep -q '/storybook-3d/assets/' dist/assets/*.js
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify book turns, customization and mobile navigation
+        run: npm run test:e2e
+      - name: Save inspectable static build
+        uses: actions/upload-artifact@v4
+        with:
+          name: stable-storybook-preview-dist
+          path: dist/
+          retention-days: 14
+      - name: Stage GitHub Pages publication
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Verify Pages enabled for this private repository
+        uses: actions/configure-pages@v5
+      - name: Publish validated preview (not the experimental PR #16)
+        id: deployment
+        uses: actions/deploy-pages@v4
