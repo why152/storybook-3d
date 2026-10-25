@@ -7,7 +7,8 @@ async function waitForChapterAssets(page:import('@playwright/test').Page,id:stri
   const pageArt=page.locator(`.book-static .page-surface[data-chapter="${id}"]`);
   await expect(pageArt).toHaveCount(2);
   const art=pageArt.locator('.scene-plane');
-  await expect(art).toHaveCount(12);
+  const expectedImages=id==='hello'?14:id==='grow'?16:12;
+  await expect(art).toHaveCount(expectedImages);
   await expect.poll(async()=>art.evaluateAll(elements=>
     elements.every(node=>(node as HTMLImageElement).complete&&(node as HTMLImageElement).naturalWidth===1200)
   )).toBe(true);
@@ -150,6 +151,66 @@ test('mobile final chapter remains readable after customization',async ({page})=
   await expect(reader.getByText('生日快乐，小雨')).toBeVisible();
   await expect(reader.getByText('愿一切美好都如约而至。')).toBeVisible();
   await page.screenshot({path:'test-results/mobile-readable-wish.png',...screenshot});
+});
+
+test('HELLO and GROW actors are independently registered, animated and still on turning paper',async ({page})=>{
+  await page.setViewportSize({width:1280,height:720});
+  await page.goto('/?scene=hello');
+  await waitForChapterAssets(page,'hello');
+  const rabbit=page.locator('.book-static .book-left .actor-rabbit').first();
+  const fox=page.locator('.book-static .book-right .actor-fox').first();
+  await expect(rabbit).toBeVisible();
+  await expect(fox).toBeVisible();
+  await expect(rabbit).toHaveCSS('animation-name','hello-rabbit-greeting');
+  await expect(fox).toHaveCSS('animation-name','hello-fox-reply');
+  const rabbitTransform=await rabbit.evaluate(el=>getComputedStyle(el).transform);
+  await expect.poll(async()=>rabbit.evaluate(el=>getComputedStyle(el).transform),{
+    timeout:2500,intervals:[220,260,260]
+  }).not.toBe(rabbitTransform);
+  await page.screenshot({path:'test-results/acting-hello-live.png',fullPage:false});
+  await page.getByRole('button',{name:'下一页'}).click();
+  await expect(page.locator('.book-turn-leaf')).toHaveCount(1);
+  await expect(page.locator('.book-turn-leaf .actor-rabbit').first()).toHaveCSS('animation-name','none');
+  await expect(page.locator('.book-turn-leaf')).toHaveCount(0,{timeout:15000});
+  await waitForChapterAssets(page,'grow');
+  await expect(page.locator('.book-static .book-left .acting-grow.actor-rabbit').first()).toHaveCSS('animation-name','grow-rabbit-reaching');
+  await expect(page.locator('.book-static .book-right .acting-grow.actor-fox').first()).toHaveCSS('animation-name','grow-fox-watering');
+  await expect(page.locator('.book-static .actor-props')).toHaveCount(2);
+  await page.screenshot({path:'test-results/acting-grow-live.png',fullPage:false});
+});
+
+test('actor performances respect reduced motion and remain aligned with the 2-page print',async ({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});
+  for(const chapter of ['hello','grow']){
+    await page.goto('/?scene='+chapter);
+    await waitForChapterAssets(page,chapter);
+    await expect(page.locator('.book-static .actor-rabbit').first()).toHaveCSS('animation-name','none');
+    await expect(page.locator('.book-static .actor-fox').first()).toHaveCSS('animation-name','none');
+    const halves=page.locator('.book-static .scene-actor');
+    await expect.poll(async()=>halves.evaluateAll(items=>items.every(node=>
+      (node as HTMLImageElement).naturalWidth===1200 &&
+      (node as HTMLImageElement).naturalHeight===700
+    ))).toBe(true);
+    await page.screenshot({path:`test-results/${chapter}-actor-rest-frame.png`,fullPage:false,animations:'disabled'});
+  }
+});
+
+test('records distinct illustrated characters greeting and watering in real browser',async ({browser})=>{
+  const ctx=await browser.newContext({
+    viewport:{width:1280,height:720},reducedMotion:'no-preference',
+    recordVideo:{dir:'test-results/actor-story-motion',size:{width:1280,height:720}}
+  });
+  const page=await ctx.newPage();
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  try{
+    await page.goto('/?scene=hello');
+    await waitForChapterAssets(page,'hello');
+    await page.waitForTimeout(4800);
+    await page.getByRole('button',{name:'下一页'}).click();
+    await waitForChapterAssets(page,'grow');
+    await page.waitForTimeout(4300);
+  }finally{await ctx.close();}
+  expect(errors).toEqual([]);
 });
 
 test('records an actual cover opening and right-to-left/left-to-right book turnover',async ({browser})=>{
