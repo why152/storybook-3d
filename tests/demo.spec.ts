@@ -153,6 +153,21 @@ test('mobile final chapter remains readable after customization',async ({page})=
   await page.screenshot({path:'test-results/mobile-readable-wish.png',...screenshot});
 });
 
+test('layer inspector compares the six-plane original against transparent actor sources',async ({page})=>{
+  for(const [chapter,count] of [['hello',7],['grow',8]] as const){
+    await page.goto('/art-inspector.html?scene='+chapter+'&actors=1');
+    await expect(page.locator('#actor-mode')).toBeChecked();
+    const layers=page.locator('#card img');
+    await expect(layers).toHaveCount(count);
+    await expect.poll(async()=>layers.evaluateAll(nodes=>nodes.every(
+      node=>(node as HTMLImageElement).complete&&(node as HTMLImageElement).naturalWidth===1200
+    ))).toBe(true);
+    await page.locator('#actor-mode').uncheck();
+    await expect(page.locator('#card img')).toHaveCount(6);
+    await expect(page.locator('#actor-mode')).not.toBeChecked();
+  }
+});
+
 test('independent actors reproduce the original composite illustration at rest',async ({page})=>{
   await page.goto('/?scene=hello');
   for(const scene of ['hello','grow'] as const){
