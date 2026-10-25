@@ -3,7 +3,7 @@ import type { PointerEvent } from 'react';
 import { gsap } from 'gsap';
 import { getChapter } from '../data/story';
 import { BlankPage, FrontCover, PageHalf } from './SceneArt';
-import { PAPER_SEGMENTS, posePaper } from './paperGeometry';
+import { PAPER_SEGMENTS, layoutPaper, posePaper } from './paperGeometry';
 
 export type PageTurn = Readonly<{from:number;to:number;direction:-1|1}>;
 type Props={
@@ -71,9 +71,14 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
   useLayoutEffect(()=>{
     if(!flexible||!leafRef.current)return;
     const leaf=leafRef.current;
-    const update=()=>posePaper(leaf,debugPose??Math.abs(Number(gsap.getProperty(leaf,'rotationY')))/180);
-    update();
-    const observer=new ResizeObserver(update);
+    // Paper print width/offset is invariant while the page turns. Initialize
+    // once per layout change; only the curved vertex poses change per frame.
+    const relayout=()=>{
+      layoutPaper(leaf);
+      posePaper(leaf,debugPose??Math.abs(Number(gsap.getProperty(leaf,'rotationY')))/180);
+    };
+    relayout();
+    const observer=new ResizeObserver(relayout);
     observer.observe(leaf);
     return()=>observer.disconnect();
   },[flexible,debugPose,turning]);
