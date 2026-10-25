@@ -28,7 +28,7 @@ footer{padding:14px 4vw;color:#777987;font-size:11px;border-top:1px solid #fffff
   <aside class="panel">
     <label for="scene" style="display:block;font-weight:700;font-size:14px;margin-bottom:9px">选择章节</label><select id="scene" style="background:#11131b;color:#f5dec9;border:1px solid #8b817e;padding:10px;width:100%;margin-bottom:22px"><option value="hello">HELLO / 相遇</option><option value="grow">GROW / 成长</option><option value="together">TOGETHER / 同行</option><option value="dream">DREAM / 远方</option><option value="wish">WISH / 祝福</option></select>
     <label id="actor-mode-label" style="display:none;margin-bottom:18px;align-items:center;gap:10px;font-size:13px;color:#e8c4a9">
-      <input id="actor-mode" type="checkbox" style="accent-color:#e6a883"/> 使用独立角色素材（适用于 HELLO / GROW）
+      <input id="actor-mode" type="checkbox" style="accent-color:#e6a883"/> 使用独立角色素材（适用于全部五个章节）
     </label>
     <fieldset><legend>观察角度与分层</legend>
       <div class="control"><label for="angle">水平旋转</label><output id="angleText">0°</output></div>
@@ -47,10 +47,17 @@ const sceneParam=new URLSearchParams(location.search).get('scene');
 const scene=['hello','grow','together','dream','wish'].includes(sceneParam)?sceneParam:'hello';
 document.querySelector('#scene-name').textContent=scene.toUpperCase();
 document.querySelector('#scene').value=scene;
-document.querySelector('#scene').addEventListener('change',e=>{location.search='?scene='+encodeURIComponent(e.target.value)});
+document.querySelector('#scene').addEventListener('change',e=>{
+  const p=new URLSearchParams(location.search);
+  p.set('scene',e.target.value);
+  location.search=p.toString();
+});
 const actorParts={
   hello:[{name:"rabbit",path:"actors/rabbit.svg",z:48,description:"兔子 / 独立原画"},{name:"fox",path:"actors/fox.svg",z:48,description:"狐狸 / 独立原画"}],
-  grow:[{name:"rabbit",path:"actors/rabbit.svg",z:48,description:"兔子 / 攀爬"},{name:"fox",path:"actors/fox.svg",z:48,description:"狐狸 / 浇水"},{name:"props",path:"actors/props.svg",z:48,description:"水壶 / 道具"}]
+  grow:[{name:"rabbit",path:"actors/rabbit.svg",z:48,description:"兔子 / 攀爬"},{name:"fox",path:"actors/fox.svg",z:48,description:"狐狸 / 浇水"},{name:"props",path:"actors/props.svg",z:48,description:"水壶 / 道具"}],
+  together:[{name:"fox",path:"actors/fox.svg",z:48,description:"狐狸 / 分享茶点"},{name:"rabbit",path:"actors/rabbit.svg",z:48,description:"兔子 / 一起聊天"},{name:"props",path:"actors/props.svg",z:48,description:"茶具 / 蒸汽"}],
+  dream:[{name:"rabbit",path:"actors/rabbit.svg",z:48,description:"兔子 / 望向星空"},{name:"fox",path:"actors/fox.svg",z:48,description:"狐狸 / 夜间远行"},{name:"props",path:"actors/props.svg",z:48,description:"星图 / 道具"}],
+  wish:[{name:"fox",path:"actors/fox.svg",z:48,description:"狐狸 / 送出礼物"},{name:"rabbit",path:"actors/rabbit.svg",z:48,description:"兔子 / 欢呼"},{name:"props",path:"actors/props.svg",z:48,description:"包装礼物"}]
 };
 const acting=new URLSearchParams(location.search).get('actors')==='1';
 const actingLabel=document.querySelector('#actor-mode-label');
