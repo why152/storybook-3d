@@ -28,9 +28,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 
 /* BOOK: one full-width landscape spread is bound at its midpoint.
    This is fundamentally different from the removed whole-card rotation. */
-.book-viewport{width:min(100%,1100px,calc((100dvh - 230px)*12/7));aspect-ratio:12/7;position:relative;
- margin:auto;perspective:2300px;touch-action:pan-y}
-.book-shell{height:100%;width:100%;position:relative;transform-style:preserve-3d;perspective:2400px;
+.book-viewport{width:min(100%,1100px,calc((100dvh - 300px)*12/7));aspect-ratio:12/7;position:relative;
+ margin:auto;perspective:4000px;touch-action:pan-y}
+.book-shell{height:100%;width:100%;position:relative;transform-style:preserve-3d;
  filter:none}
 .book-shell.is-closed{transform:translateX(-25%)}
 .book-depth{position:absolute;inset:1.1% .45% -1.8%;border-radius:14px;
@@ -109,6 +109,18 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
  background:#e9d9ba;z-index:13;box-shadow:1px 0 2px #35273370}
 .book-leaf-face .plane-effects{animation:none}
 .book-leaf-face .page-chapter-left{text-shadow:0 1px 3px #3d303790}
+
+/* One connected, developable leaf; clip only its individual printed surfaces. */
+.paper-segment{position:absolute;left:0;top:0;height:100%;transform-origin:0 50%;transform-style:preserve-3d}
+.paper-segment-face{position:absolute;top:0;left:-.75px;width:calc(100% + 1.5px);height:100%;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.paper-front{transform:translateZ(.05px)}
+.paper-back{transform:rotateY(180deg) translateZ(.05px)}
+.paper-print{position:absolute;top:0;height:100%}
+.paper-segment-face::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgb(40 33 44 / var(--shade-start,0)),rgb(40 33 44 / var(--shade-end,0)));pointer-events:none}
+.paper-back::after{background:linear-gradient(90deg,rgb(40 33 44 / var(--shade-end,0)),rgb(40 33 44 / var(--shade-start,0)))}
+.paper-segment .scene-plane{animation:none!important;transition:none!important;transform:none}
+.paper-segment .page-surface{backface-visibility:visible;-webkit-backface-visibility:visible}
+.paper-segment .page-chapter-left{text-shadow:0 1px 3px #3d303790}
 
 /* Navy fabric cover: the closed state is a real portrait front leaf. */
 .book-front-cover{border-radius:3px 15px 15px 3px;color:#f6e4c8;

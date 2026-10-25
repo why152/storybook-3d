@@ -78,6 +78,13 @@ This is how “AI development wins through many attempts” becomes a
 
 ## Model-cost discipline and escalation policy — owner decision (2026-10-25)
 
+**Current-session owner authorization (2026-10-25):** the owner explicitly
+asked the current AI to tackle the hardest product-critical problem directly,
+including replacing or rebuilding the renderer when justified. This work is
+authorized now; do not ask again for permission to undertake it. Preserve this
+decision across handoffs. It does not authorize launching additional paid models,
+unvalidated merges, or abandoning the physical-book and evidence requirements.
+
 **Default: solve with the current available agent and ordinary tools first.**
 This AI-developed project favors high-volume, inexpensive iterations: source
 art, animation keyframes, script tooling, tests, cleanup, integration, small

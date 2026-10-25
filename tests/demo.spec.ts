@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { PAPER_SEGMENTS } from '../src/components/paperGeometry';
 
 const screenshot={fullPage:false,animations:'disabled' as const,timeout:15000};
 const chapters=['hello','grow','together','dream','wish'] as const;
@@ -58,6 +59,7 @@ for(const [step,pose] of ['0','0.5','1'].entries()){
   test(`cover opens by turning a bound right leaf at ${Math.round(Number(pose)*100)}%`,async ({page})=>{
     await page.emulateMedia({reducedMotion:'reduce'});
     await page.goto('/?pose='+pose+'&from=cover');
+    await page.evaluate(async()=>{await Promise.all([...document.images].map(image=>image.decode()));await document.fonts.ready;});
     const leaf=page.locator('.book-turn-leaf');
     await expect(leaf).toHaveCount(1);
     await expect(leaf.locator('.book-front-cover')).toHaveCount(1);
@@ -75,9 +77,11 @@ for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
   test(`physical book leaf at ${Math.round(Number(pose)*100)}% of turn`,async ({page})=>{
     await page.emulateMedia({reducedMotion:'reduce'});
     await page.goto('/?pose='+pose+'&from=grow');
+    await page.evaluate(async()=>{await Promise.all([...document.images].map(image=>image.decode()));await document.fonts.ready;});
     await expect(page.locator('[data-page-role="turning-leaf"]')).toHaveCount(1);
     await expect(page.locator('.book-static')).toHaveCount(2);
-    await expect(page.locator('.book-leaf-face')).toHaveCount(2);
+    await expect(page.locator('.paper-segment')).toHaveCount(PAPER_SEGMENTS);
+    await expect(page.locator('.paper-segment-face')).toHaveCount(PAPER_SEGMENTS*2);
     const geometry=await page.locator('.book-shell').evaluate(shell=>{
       const leaf=shell.querySelector<HTMLElement>('.book-turn-leaf');
       if(!leaf)return null;
@@ -85,14 +89,14 @@ for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
         binding:Math.abs(leaf.offsetLeft-shell.clientWidth/2),
         leafWidth:Math.abs(leaf.offsetWidth-shell.clientWidth/2),
         origin:getComputedStyle(leaf).transformOrigin,
-        faceStyles:[...shell.querySelectorAll('.book-leaf-face')].map(el=>getComputedStyle(el).backfaceVisibility)
+        faceStyles:[...shell.querySelectorAll('.paper-segment-face')].map(el=>getComputedStyle(el).backfaceVisibility)
       };
     });
     expect(geometry).not.toBeNull();
     expect(geometry!.binding).toBeLessThan(3);
     expect(geometry!.leafWidth).toBeLessThan(3);
     expect(geometry!.origin.startsWith('0px')).toBeTruthy();
-    expect(geometry!.faceStyles).toEqual(['hidden','hidden']);
+    expect(geometry!.faceStyles.every(style=>style==='hidden')).toBe(true);
     await page.screenshot({path:`test-results/book-turn-${String(step).padStart(2,'0')}.png`,...screenshot});
   });
 }

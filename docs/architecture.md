@@ -49,8 +49,11 @@ animates toward the full landscape open spread, without card flipping.
 
 - Every interior chapter has 6 independently editable and replaceable SVGs:
   background, midground, lettering, characters, foreground, effects.
-- The turning sheet is a **flat physical paper face** (with separate
-  front/back) to prevent artwork protruding outside its cut edge.
+- The interior turning sheet is a **developable curved surface**, made from
+  20 joined CSS strips with separately clipped front/back prints. Reverse-side
+  strips sample the artwork in reverse order so lettering remains readable.
+  Only each print face clips; no ancestor flattens the 3D surface. The hard
+  cover uses the same binding/timeline with a rigid board.
 - Stationary open book retains per-plane pointer parallax and ambient
   decoration movement within each physical page.
 - No ancestor filter or isolation may flatten the turning-leaf backface
@@ -70,5 +73,18 @@ animates toward the full landscape open spread, without card flipping.
 ## Out of scope
 
 Back-end, payments, accounts, uploaded files, public sharing, AI-generated
-customer image pipeline, actual page-curl shaders. The current leaf is a
-rigid page hinge with paper depth/shadow, not a deformable paper mesh.
+customer image pipeline, actual page-curl shaders. The current leaf conserves length along a
+segmented cylindrical surface; corner folds, elastic creases and physically
+projected shadows remain outside this implementation.
+
+## Integrated flexible paper
+
+`Book.tsx` still owns the single physical leaf and cancellable GSAP timeline.
+`paperGeometry.ts` integrates constant-length strip tangents; the first point
+is the spine and the entire sheet stays above the underlays. A single 4000px
+perspective replaces the old compounded cameras. Paper faces reuse `PageHalf`;
+there is no parallel bitmap typography/texture renderer. At the beginning of
+a turn, surviving static pages supply computed actor transforms and animation
+times to the whole turning print. On landing both halves resume at the same
+animation phase. Incoming images decode before the timeline runs. Reduced
+motion settles before the next paint. See `docs/flexible-paper.md` for evidence.
