@@ -45,7 +45,7 @@ test('curved paper exposes only the surface facing the camera at flat endpoints'
 test('slow assets cannot leave a half-turned book stuck forever',async({page})=>{
   // Asset timeout is deliberately longer than the 2.5s navigation budget.
   // It reproduces the stalled-image symptom observed on WebKit CI.
-  await page.route(/\\/assets\\/grow\\/.*\\.svg$/,async route=>{
+  await page.route(/\/assets\/grow\/.*\.svg$/,async route=>{
     await new Promise(resolve=>setTimeout(resolve,5000));
     await route.continue().catch(()=>undefined);
   });
