@@ -10,6 +10,7 @@ type CurlStats={
   to?:string;
   progress?:number;
   curl?:number;
+  profile?:'arch'|'roll';
   lastError?:number;
   reason?:string;
 };
@@ -82,7 +83,16 @@ test('bending changes the GPU geometry and switching chapters reloads textures',
   await page.goto('/labs/paper-curl.html?from=hello&pose=0.5');
   const supported=await awaitAssets(page);
   if(!supported)test.skip(true,'GPU rendering unavailable; CSS fallback checked separately');
-  const before=await page.locator('#gpu').evaluate((node:HTMLCanvasElement)=>node.toDataURL());
+  await page.locator('#profile').selectOption('arch');
+  await expect.poll(async()=>(await readStatus(page))?.profile).toBe('arch');
+  await page.screenshot({path:'test-results/curved-profile-arch.png',fullPage:true});
+  const arch=await page.locator('#gpu').evaluate((node:HTMLCanvasElement)=>node.toDataURL());
+  await page.locator('#profile').selectOption('roll');
+  await expect.poll(async()=>(await readStatus(page))?.profile).toBe('roll');
+  await page.screenshot({path:'test-results/curved-profile-roll.png',fullPage:true});
+  const roll=await page.locator('#gpu').evaluate((node:HTMLCanvasElement)=>node.toDataURL());
+  expect(roll,'two different physical bend algorithms should not rasterize the same page').not.toBe(arch);
+  const before=roll;
   await page.locator('#curl').fill('95');
   await expect.poll(async()=>(await readStatus(page))?.curl).toBeCloseTo(.95,2);
   const after=await page.locator('#gpu').evaluate((node:HTMLCanvasElement)=>node.toDataURL());
