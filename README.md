@@ -28,10 +28,10 @@ foreground and effects, all in a common 1200×700 coordinate system.
 The renderer cuts the full-spread illustration into two physically
 independent page halves at the binding without flattening source art.
 
-For HELLO and GROW, the original combined `characters.svg` stays intact,
-while the stationary book can render **independent registered rabbit/fox**
-SVG sprites (and separate watering props for GROW) with restrained,
-scene-specific motions. Motion pauses during page turns and for reduced-motion
+Across **all five chapters**, the original combined `characters.svg`
+stays intact, while stationary book pages render **14 independently
+registered transparent character/prop SVG sprites** (rabbit, fox and
+scene-specific objects) with restrained, story-specific choreography. Motion pauses during page turns and for reduced-motion
 users. See `docs/character-acting.md`; this is early character acting, not
 finished limb animation.
 
