@@ -3,7 +3,7 @@
 const chapters=['hello','grow','together','dream','wish'];
 const planes=['background','midground','lettering','characters','foreground','effects'];
 const $=selector=>document.querySelector(selector);
-const controls={chapter:$('#chapter'),progress:$('#progress'),curl:$('#curl')};
+const controls={chapter:$('#chapter'),progress:$('#progress'),curl:$('#curl'),profile:$('#profile')};
 const canvas=$('#gpu'),status=$('#status'),stats=$('#gpu-stats');
 const media=window.matchMedia('(prefers-reduced-motion: reduce)');
 const params=new URLSearchParams(window.location.search);
@@ -13,6 +13,7 @@ const state={
   from:controls.chapter.value,
   progress:Math.max(0,Math.min(1,Number(params.get('pose'))||0)),
   curl:Number(controls.curl.value)/100,
+  profile:controls.profile.value==='roll'?1:0,
   generation:0,
   loading:false,
   animationToken:0
@@ -91,7 +92,7 @@ async function initializeGPU(){
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(indices),gl.STATIC_DRAW);
   gl.bindVertexArray(null);
   gpu.program=program;gpu.vao=vao;gpu.indexCount=indices.length;
-  for(const key of ['uFront','uBack','uProgress','uCurl'])
+  for(const key of ['uFront','uBack','uProgress','uCurl','uProfile'])
     gpu.uniforms[key]=gl.getUniformLocation(program,key);
   gpu.front=texture();gpu.back=texture();
   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);
@@ -226,11 +227,13 @@ function draw(){
   gl.uniform1i(gpu.uniforms.uBack,1);
   gl.uniform1f(gpu.uniforms.uProgress,state.progress);
   gl.uniform1f(gpu.uniforms.uCurl,state.curl);
+  gl.uniform1f(gpu.uniforms.uProfile,state.profile);
   gl.drawElements(gl.TRIANGLES,gpu.indexCount,gl.UNSIGNED_SHORT,0);
   window.__curlLab.drawCallsPerFrame=1;
   window.__curlLab.progress=state.progress;
   window.__curlLab.curl=state.curl;
-  stats.textContent='1 draw · '+gpu.indexCount/3+' triangles · '+
+  window.__curlLab.profile=state.profile===1?'roll':'arch';
+  stats.textContent=(state.profile===1?'卷曲':'弧形')+' · 1 draw · '+gpu.indexCount/3+' triangles · '+
     Math.round(degrees)+'°';
   const error=gl.getError();
   if(error!==gl.NO_ERROR){
@@ -271,6 +274,10 @@ controls.progress.addEventListener('input',()=>{
 controls.curl.addEventListener('input',()=>{
   state.curl=Number(controls.curl.value)/100;
   $('#curl-value').value=controls.curl.value;
+  schedule();
+});
+controls.profile.addEventListener('change',()=>{
+  state.profile=controls.profile.value==='roll'?1:0;
   schedule();
 });
 controls.chapter.addEventListener('change',()=>{
