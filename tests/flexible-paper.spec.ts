@@ -24,6 +24,22 @@ test('paper stays joined, above the book and constant-length throughout both dir
   expect(maxLengthError).toBeLessThan(1e-12);
 });
 
+
+test('slow assets cannot leave a half-turned book stuck forever',async({page})=>{
+  // Asset timeout is deliberately longer than the 2.5s navigation budget.
+  // It reproduces the stalled-image symptom observed on WebKit CI.
+  await page.route(/\\/assets\\/grow\\/.*\\.svg$/,async route=>{
+    await new Promise(resolve=>setTimeout(resolve,5000));
+    await route.continue().catch(()=>undefined);
+  });
+  await page.goto('/?scene=hello');
+  await page.getByRole('button',{name:'下一页'}).click();
+  await expect(page.locator('.book-turn-leaf')).toHaveCount(0,{timeout:4500});
+  await expect(page.locator('.book-static .page-surface[data-chapter="grow"]'))
+    .toHaveCount(2);
+  await expect(page.getByRole('button',{name:'下一页'})).toBeEnabled();
+});
+
 async function ready(page:import('@playwright/test').Page){
   await page.evaluate(async()=>{await Promise.all([...document.images].map(image=>image.decode()));await document.fonts.ready;});
   await page.waitForTimeout(150);
