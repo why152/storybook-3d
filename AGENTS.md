@@ -50,6 +50,73 @@ implementations just because earlier iterations took time.
    compatibility last. The original reference site is a **craft benchmark**,
    not a command to revert to a whole-card rotation.
 
+## Repeatable AI experiment selection protocol
+
+For every meaningful animation, shader, illustration or book-geometry idea:
+
+1. **Write a falsifiable hypothesis.** State the visual defect and expected
+   improvement; establish a static/continuous-motion **baseline** first.
+2. **Compare matched conditions.** Reuse the *same original chapter artwork*,
+   exact open-book viewport, chapter, camera, animation timestamps, 0/25/50/75/100
+   turn poses, mobile sizes and reduced-motion conditions. Do not compare a
+   flattering new demo against a deliberately unpolished old screenshot.
+3. **Collect human-visible evidence.** Real browser stills and continuous WebM
+   footage, pixel-registration/parity checks when extracting original art,
+   explicit screenshot QA and frame-time/device measurements where possible.
+   CI assertions alone cannot certify artistic improvement.
+4. **Decide and prune.** Record **keep / iterate / reject** with rationale and
+   source PR/CI in the dedicated Notion task. Merge a validated winner; reject
+   experiments that only increase code or animation intensity. Delete outdated
+   production implementations after migration. Draft lab PRs may remain
+   separate until the user agrees to a visual direction.
+5. **Preserve the bound book and accessibility.** No whole-spread card turns,
+   drifting artwork during physical paper turns, unlicensed imitation,
+   inaccessible reduced-motion behavior or unverifiable claims of GPU speed.
+
+This is how “AI development wins through many attempts” becomes a
+**disciplined visual selection process** rather than code accumulation.
+
+## Model-cost discipline and escalation policy — owner decision (2026-10-25)
+
+**Default: solve with the current available agent and ordinary tools first.**
+This AI-developed project favors high-volume, inexpensive iterations: source
+art, animation keyframes, script tooling, tests, cleanup, integration, small
+shader experiments and documentation should be completed without reserving a
+premium Codex reasoning model. A task being long or repetitive is *not*
+a reason to escalate.
+
+Escalate to a more capable, more expensive Codex model **only if all** are true:
+
+1. The obstacle is material to the finished product (e.g. persistent sheet
+   self-intersection, texture UV reversal, shader/scene synchronization,
+   unexplained cross-browser 3D bug), **not** ordinary asset creation,
+   copy editing, routine architecture or debugging.
+2. This agent has made and recorded **multiple substantive attempts**:
+   reproduce with a minimal failing case; inspect logs/visual frames;
+   test at least two plausible fixes or distinct algorithmic approaches;
+   validate failures against the real book geometry and requirements.
+3. The attempts reveal an **actual unresolved blocker**, not merely a
+   lack of polish or a problem better fixed by rewriting cheap source art.
+4. A tightly scoped handoff is ready. Include problem statement, user-visible
+   impact, exact failed approaches, links to branch/commit/CI/screenshots/video,
+   relevant file paths, reproducible test command, mandatory constraints,
+   and falsifiable acceptance criteria. Clearly separate observed evidence
+   from untested ideas; identify a narrow target for the high-tier model.
+5. The owner explicitly decides whether to spend higher-tier Codex quota.
+   Never silently launch a premium model. Continue independent low-cost
+   tasks while a hard blocker remains.
+
+**Cost-avoidance principle:** Do not spend premium model capacity to generate
+hundreds of SVGs, run routine tests, rename files, write ordinary React code,
+or brute-force variants that can be tested autonomously. Allocate it to the
+small number of bottlenecks that resist repeated evidence-based attempts.
+
+If repeated cheap attempts succeed, keep the resolution and report it.
+If an escalation is warranted, create/update a Notion task under the existing
+Storybook 3D database with status **待验证** or **进行中**, clearly marked
+"高阶 Codex 候选 — 未升级", and add a precise `docs/blockers/` handoff.
+Do not present an unattempted challenge as premium-required.
+
 ## Hard visual and behavioral requirements
 
 1. The closed book has a recognizable portrait **front cover**, spine and page edges.
