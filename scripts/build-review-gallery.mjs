@@ -6,11 +6,11 @@
  *
  *   node scripts/build-review-gallery.mjs [test-results]
  */
-import { readdirSync, statSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { relative, resolve, sep, basename } from 'node:path';
+import { readdirSync, statSync, existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { relative, resolve, sep } from 'node:path';
 
 const root=resolve(process.argv[2]||'test-results');
-if(!existsSync(root))throw new Error('No test output folder found: '+root);
+if(!existsSync(root))mkdirSync(root,{recursive:true});
 const allowedImages=/\.(png|jpe?g|webp)$/i;
 const allowedVideos=/\.(webm|mp4)$/i;
 const items=[];
