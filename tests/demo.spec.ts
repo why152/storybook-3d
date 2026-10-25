@@ -282,8 +282,8 @@ test('all five chapters animate independent characters with different story-spec
   for(const [scene,foxName,rabbitName,propsName] of cases){
     await page.goto('/?scene='+scene);
     await waitForChapterAssets(page,scene);
-    await expect(page.locator('.book-static.book-left .actor-fox').first()).toHaveCSS('animation-name',foxName);
-    await expect(page.locator('.book-static.book-right .actor-rabbit').first()).toHaveCSS('animation-name',rabbitName);
+    await expect(page.locator('.book-static .actor-fox').first()).toHaveCSS('animation-name',foxName);
+    await expect(page.locator('.book-static .actor-rabbit').first()).toHaveCSS('animation-name',rabbitName);
     await expect(page.locator('.book-static .actor-props').first()).toHaveCSS('animation-name',propsName);
     await page.screenshot({path:`test-results/acting-${scene}-rest.png`,fullPage:false,animations:'disabled'});
   }
