@@ -153,6 +153,48 @@ test('mobile final chapter remains readable after customization',async ({page})=
   await page.screenshot({path:'test-results/mobile-readable-wish.png',...screenshot});
 });
 
+test('independent actors reproduce the original composite illustration at rest',async ({page})=>{
+  await page.goto('/?scene=hello');
+  for(const scene of ['hello','grow'] as const){
+    const parts=scene==='hello'?['rabbit','fox']:['rabbit','fox','props'];
+    const comparison=await page.evaluate(async ({scene,parts})=>{
+      const W=1200,H=700;
+      const makeCanvas=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;return c;};
+      const read=async (src:string)=>{
+        const image=new Image();
+        image.src=src;
+        await image.decode();
+        if(image.naturalWidth!==W||image.naturalHeight!==H)
+          throw Error('Unregistered illustration: '+src);
+        return image;
+      };
+      const original=makeCanvas(),split=makeCanvas();
+      const origCtx=original.getContext('2d',{willReadFrequently:true})!;
+      const partsCtx=split.getContext('2d',{willReadFrequently:true})!;
+      origCtx.drawImage(await read('/assets/'+scene+'/characters.svg'),0,0);
+      for(const actor of parts){
+        partsCtx.drawImage(await read('/assets/'+scene+'/actors/'+actor+'.svg'),0,0);
+      }
+      const a=origCtx.getImageData(0,0,W,H).data;
+      const b=partsCtx.getImageData(0,0,W,H).data;
+      let changedPixels=0,absoluteDiff=0,maxDifference=0;
+      for(let i=0;i<a.length;i+=4){
+        let changed=false;
+        for(let channel=0;channel<4;channel++){
+          const diff=Math.abs(a[i+channel]-b[i+channel]);
+          absoluteDiff+=diff;maxDifference=Math.max(diff,maxDifference);
+          if(diff)changed=true;
+        }
+        if(changed)changedPixels++;
+      }
+      return {changedPixelRatio:changedPixels/(W*H),
+        meanChannelError:absoluteDiff/(W*H*4),maxDifference};
+    },{scene,parts});
+    expect(comparison.meanChannelError,scene+' artwork must retain exact color and alignment').toBeLessThan(.02);
+    expect(comparison.changedPixelRatio,scene+' artwork must not redraw or lose characters').toBeLessThan(.003);
+  }
+});
+
 test('HELLO and GROW actors are independently registered, animated and still on turning paper',async ({page})=>{
   await page.setViewportSize({width:1280,height:720});
   await page.goto('/?scene=hello');
