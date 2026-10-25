@@ -214,3 +214,73 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
   .chapter-reader p{font-size:12px;line-height:1.5;color:#dbcfc6;margin:0}
   .page-navigation{height:54px}
 }
+
+
+/* Original-illustration character acting system.
+ *
+ * Each sprite is its own *real transparent 1200x700 source asset*, rather
+ * than the same two-character image floating as one plane. Transform origins
+ * lie near each creature's body, not in the middle of the full artboard.
+ * Motions are deliberately restrained, story-specific and asynchronous:
+ * rabbit greets, fox answers; rabbit reaches, fox waters.
+ *
+ * The physical page does not bend/split the actors independently during a
+ * turn: turns suspend their idle animation. Shader labs still use the exact
+ * original six-plane composition for an honest stable reference.
+ */
+.scene-actor{pointer-events:none;user-select:none;backface-visibility:hidden}
+.acting-hello.actor-rabbit{transform-origin:28% 72%}
+.acting-hello.actor-fox{transform-origin:78% 75%}
+.acting-grow.actor-rabbit{transform-origin:30% 49%}
+.acting-grow.actor-fox{transform-origin:74% 75%}
+.acting-grow.actor-props{transform-origin:88% 82%}
+.book-shell:not(.is-turning) .book-static .acting-hello.actor-rabbit{
+ animation:hello-rabbit-greeting 4.8s ease-in-out infinite;
+}
+.book-shell:not(.is-turning) .book-static .acting-hello.actor-fox{
+ animation:hello-fox-reply 5.3s ease-in-out -.85s infinite;
+}
+.book-shell:not(.is-turning) .book-static .acting-grow.actor-rabbit{
+ animation:grow-rabbit-reaching 4.3s ease-in-out infinite;
+}
+.book-shell:not(.is-turning) .book-static .acting-grow.actor-fox{
+ animation:grow-fox-watering 5.0s ease-in-out -1.1s infinite;
+}
+.book-shell:not(.is-turning) .book-static .acting-grow.actor-props{
+ animation:grow-watering-props 5.0s ease-in-out -1.1s infinite;
+}
+
+@keyframes hello-rabbit-greeting{
+  0%,12%,100%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
+  22%{transform:translate3d(calc(var(--mx,0px) + 3px),calc(var(--my,0px) - 6px),0) rotate(-2.2deg)}
+  31%{transform:translate3d(calc(var(--mx,0px) + 1px),calc(var(--my,0px) - 2px),0) rotate(1deg)}
+  40%{transform:translate3d(calc(var(--mx,0px) + 2px),calc(var(--my,0px) - 5px),0) rotate(-1.5deg)}
+  59%,86%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
+}
+@keyframes hello-fox-reply{
+  0%,18%,100%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
+  35%{transform:translate3d(calc(var(--mx,0px) - 3px),calc(var(--my,0px) - 5px),0) rotate(2.2deg)}
+  46%{transform:translate3d(calc(var(--mx,0px) - 2px),calc(var(--my,0px) - 2px),0) rotate(-.8deg)}
+  66%,88%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
+}
+@keyframes grow-rabbit-reaching{
+  0%,14%,100%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
+  28%,48%{transform:translate3d(calc(var(--mx,0px) + 5px),calc(var(--my,0px) - 8px),0) rotate(-1.9deg)}
+  66%{transform:translate3d(calc(var(--mx,0px) + 2px),calc(var(--my,0px) - 3px),0) rotate(.5deg)}
+  83%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
+}
+@keyframes grow-fox-watering{
+  0%,16%,100%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
+  28%,50%{transform:translate3d(calc(var(--mx,0px) + 1px),calc(var(--my,0px) + 2px),0) rotate(2.4deg)}
+  64%{transform:translate3d(calc(var(--mx,0px) - 1px),calc(var(--my,0px) - 1px),0) rotate(-.8deg)}
+  83%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
+}
+@keyframes grow-watering-props{
+  0%,18%,100%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
+  32%,50%{transform:translate3d(calc(var(--mx,0px) + 1px),calc(var(--my,0px) + 2px),0) rotate(-2.5deg)}
+  70%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
+}
+.book-leaf-face .scene-actor{animation:none!important;transform:translate3d(0,0,0)!important}
+@media(prefers-reduced-motion:reduce){
+  .book-static .scene-actor{animation:none!important}
+}
