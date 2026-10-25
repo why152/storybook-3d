@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+      - preview/stable-storybook
 
 concurrency:
   group: storybook-validation-${{ github.event.pull_request.number || github.ref }}
@@ -28,7 +29,7 @@ jobs:
           node-version: "22"
 
       - name: Install packages
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Verify original actor sprite source parity
         run: npm run test:actors
@@ -49,6 +50,8 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run desktop/mobile UI smoke tests
+        env:
+          STORYBOOK_TEST_PRODUCTION: '1'
         run: npm run test:e2e
 
       - name: Build offline visual review gallery

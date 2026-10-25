@@ -1,0 +1,9 @@
+storybook.35-76-143-76.sslip.io {
+    encode zstd gzip
+    root * /config/sites/storybook-3d/current/public
+    file_server
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy no-referrer
+    }
+}

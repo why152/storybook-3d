@@ -19,6 +19,13 @@ accounts, payments, content uploads, full user-authored story pages, or the
 unfinished flexible-paper experiment. Edits live only in browser memory and
 reset when the page reloads; a shared link opens the generic sample book.
 
+## Selected deployment: existing AWS EC2 and Caddy
+
+The owner selected reuse of the existing AWS server on 2026-10-26. Follow
+[AWS deployment instructions](AWS_DEPLOYMENT.md). This uses the same static
+Caddy hosting as the birthday paper theater, with an independent directory
+and hostname. The alternatives below remain historical options.
+
 ## Deployment option A: GitHub Pages
 
 The branch has an Actions workflow:
