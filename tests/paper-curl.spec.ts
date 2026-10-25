@@ -132,3 +132,24 @@ test('records true WebGL book-leaf flip forward and backward',async ({browser})=
   }
   expect(errors).toEqual([]);
 });
+
+
+test('mobile shader lab preserves both spine-bound books without horizontal overflow',async ({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/labs/paper-curl.html?from=hello&pose=0.5');
+  await awaitAssets(page);
+  await expect(page.locator('#css-book')).toBeVisible();
+  await expect(page.locator('#gpu-book')).toBeVisible();
+  await expect(page.locator('#progress-value')).toHaveText('50%');
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(2);
+  await page.screenshot({path:'test-results/mobile-curved-paper-lab.png',fullPage:true});
+});
+
+test('rigid CSS comparison preserves readable reverse text without double mirroring',async ({page})=>{
+  await page.goto('/labs/paper-curl.html?from=grow&pose=1');
+  await awaitAssets(page);
+  await expect(page.locator('#css-book .face.back .print')).toHaveCSS('transform','none');
+  await expect(page.locator('#css-book .fixed-page')).toHaveCount(2);
+});
