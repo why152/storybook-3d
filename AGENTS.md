@@ -50,6 +50,32 @@ implementations just because earlier iterations took time.
    compatibility last. The original reference site is a **craft benchmark**,
    not a command to revert to a whole-card rotation.
 
+## Repeatable AI experiment selection protocol
+
+For every meaningful animation, shader, illustration or book-geometry idea:
+
+1. **Write a falsifiable hypothesis.** State the visual defect and expected
+   improvement; establish a static/continuous-motion **baseline** first.
+2. **Compare matched conditions.** Reuse the *same original chapter artwork*,
+   exact open-book viewport, chapter, camera, animation timestamps, 0/25/50/75/100
+   turn poses, mobile sizes and reduced-motion conditions. Do not compare a
+   flattering new demo against a deliberately unpolished old screenshot.
+3. **Collect human-visible evidence.** Real browser stills and continuous WebM
+   footage, pixel-registration/parity checks when extracting original art,
+   explicit screenshot QA and frame-time/device measurements where possible.
+   CI assertions alone cannot certify artistic improvement.
+4. **Decide and prune.** Record **keep / iterate / reject** with rationale and
+   source PR/CI in the dedicated Notion task. Merge a validated winner; reject
+   experiments that only increase code or animation intensity. Delete outdated
+   production implementations after migration. Draft lab PRs may remain
+   separate until the user agrees to a visual direction.
+5. **Preserve the bound book and accessibility.** No whole-spread card turns,
+   drifting artwork during physical paper turns, unlicensed imitation,
+   inaccessible reduced-motion behavior or unverifiable claims of GPU speed.
+
+This is how “AI development wins through many attempts” becomes a
+**disciplined visual selection process** rather than code accumulation.
+
 ## Hard visual and behavioral requirements
 
 1. The closed book has a recognizable portrait **front cover**, spine and page edges.
