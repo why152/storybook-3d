@@ -32,8 +32,10 @@ for(const id of ids){
     `${id}: plane order must remain ${expectedPlanes.join(', ')}`);
   // Optional *additional* articulated sprites. A chapter's original
   // six-plane characters.svg remains intact for Shader Lab parity.
-  if(['hello','grow'].includes(id)){
-    const expectedActors=id==='hello'?['rabbit','fox']:['rabbit','fox','props'];
+  {
+    const expectedActors=id==='hello'?['rabbit','fox'] :
+      ['together','wish'].includes(id)?['fox','rabbit','props']:
+      ['rabbit','fox','props'];
     check(JSON.stringify((manifest.actors||[]).map(actor=>actor.id))===JSON.stringify(expectedActors),
       `${id}: independent actor manifest entries missing/out of order`);
     for(const actor of expectedActors){
