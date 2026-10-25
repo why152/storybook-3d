@@ -68,5 +68,23 @@
       "Perspective scales depth relative to camera; always inspect a side angle.",
       "SVG is true separate vector art, NOT raster PNG generated from an infographic."
     ]
-  }
+  },
+  "actors": [
+    {
+      "id": "rabbit",
+      "file": "actors/rabbit.svg",
+      "artboard": "0 0 1200 700",
+      "pivot": "torso-left",
+      "motion": "hello-rabbit-independent"
+    },
+    {
+      "id": "fox",
+      "file": "actors/fox.svg",
+      "artboard": "0 0 1200 700",
+      "pivot": "torso-right",
+      "motion": "hello-fox-independent"
+    }
+  ],
+  "renderer": "src/components/SceneArt.tsx (registered separate actor sprites on stationary book pages)",
+  "motion": "Each actor has separate subtle story-specific CSS motion. Book-turn faces and reduced-motion users show still art. Original characters.svg remains unchanged as reference and WebGL atlas input."
 }
