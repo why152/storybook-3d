@@ -25,6 +25,23 @@ test('paper stays joined, above the book and constant-length throughout both dir
 });
 
 
+test('curved paper exposes only the surface facing the camera at flat endpoints',async({page})=>{
+  for (const [pose,expectedFront] of [[0,true],[1,false]] as const){
+    await page.goto(`/?from=grow&pose=${pose}`);
+    await expect(page.locator('.paper-segment')).toHaveCount(PAPER_SEGMENTS);
+    const faces=await page.locator('.paper-segment').evaluateAll(segments=>
+      segments.map(segment=>({
+        front:getComputedStyle(segment.querySelector('.paper-front')!).visibility,
+        back:getComputedStyle(segment.querySelector('.paper-back')!).visibility,
+      }))
+    );
+    for(const face of faces){
+      expect(face.front).toBe(expectedFront?'visible':'hidden');
+      expect(face.back).toBe(expectedFront?'hidden':'visible');
+    }
+  }
+});
+
 test('slow assets cannot leave a half-turned book stuck forever',async({page})=>{
   // Asset timeout is deliberately longer than the 2.5s navigation budget.
   // It reproduces the stalled-image symptom observed on WebKit CI.
@@ -45,7 +62,7 @@ async function ready(page:import('@playwright/test').Page){
   await page.waitForTimeout(150);
 }
 
-test('front and reverse endpoint print match the actual settled pages at desktop and mobile sizes',async({page})=>{
+test('front and reverse endpoint print match the actual settled pages at desktop and mobile sizes',async({page},testInfo)=>{
   await page.emulateMedia({reducedMotion:'reduce'});
   for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
     await page.setViewportSize(viewport);
@@ -70,6 +87,17 @@ test('front and reverse endpoint print match the actual settled pages at desktop
         }
         return {mean:error/(c.width*c.height*3),changed:changed/(c.width*c.height)};
       },[turned,settled].map(buffer=>'data:image/png;base64,'+buffer.toString('base64')));
+      if(diff.mean>=2||diff.changed>=.04){
+        // Keep the original strict gate. Attach BOTH actual source frames for
+        // pixel inspection; a final failed screenshot alone is misleading.
+        const key=`${viewport.width}-pose-${pose}`;
+        await testInfo.attach(`turning-${key}`,{body:turned,contentType:'image/png'});
+        await testInfo.attach(`settled-${key}`,{body:settled,contentType:'image/png'});
+        await testInfo.attach(`metrics-${key}`,{
+          body:Buffer.from(JSON.stringify({viewport,pose,...diff},null,2)),
+          contentType:'application/json',
+        });
+      }
       expect(diff.mean,`${viewport.width} / ${pose} print registration`).toBeLessThan(2);
       // Different 3D clipping/rasterization affects high-contrast text edges,
       // especially at DPR=1 mobile sizes. Inspected endpoint captures show
