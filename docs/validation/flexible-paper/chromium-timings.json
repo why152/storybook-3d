@@ -1,0 +1,49 @@
+{
+  "environment": "Local macOS automated browser; viewport simulation, NOT a real phone benchmark",
+  "metrics": [
+    {
+      "engine": "chromium",
+      "device": "desktop",
+      "variant": "rigid",
+      "frames": 227,
+      "p50": 16.700000000000045,
+      "p95": 33.40000000000009,
+      "max": 50,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+      "dpr": 1
+    },
+    {
+      "engine": "chromium",
+      "device": "desktop",
+      "variant": "flexible",
+      "frames": 300,
+      "p50": 16.699999999999818,
+      "p95": 16.800000000000182,
+      "max": 33.400000000000546,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+      "dpr": 1
+    },
+    {
+      "engine": "chromium",
+      "device": "mobile",
+      "variant": "rigid",
+      "frames": 305,
+      "p50": 16.699999999999818,
+      "p95": 16.700000000000728,
+      "max": 16.800000000000182,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+      "dpr": 1
+    },
+    {
+      "engine": "chromium",
+      "device": "mobile",
+      "variant": "flexible",
+      "frames": 311,
+      "p50": 16.699999999999818,
+      "p95": 16.700000000000728,
+      "max": 16.800000000000182,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+      "dpr": 1
+    }
+  ]
+}

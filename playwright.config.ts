@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+const webkit=process.env.STORYBOOK_BROWSER==='webkit';
 
 export default defineConfig({
   testDir: './tests',
@@ -7,7 +8,8 @@ export default defineConfig({
   workers: 1,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
-    ...devices['Desktop Chrome'],
+    ...devices[webkit?'Desktop Safari':'Desktop Chrome'],
+    browserName:webkit?'webkit':'chromium',
     viewport: { width: 1440, height: 900 },
     baseURL: 'http://127.0.0.1:5173',
     screenshot: 'only-on-failure',

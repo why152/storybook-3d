@@ -30,6 +30,13 @@ The previous whole-card 3D rotation prototype is retired. Read
 
 ### Future, not part of demo
 
-Character-specific pose animation, paper mesh bending, richer parallax
+Fine character limb animation, corner folds/elastic paper simulation, richer parallax
 shader, content templates/admin UI, safe upload pipeline, deployment,
 payments, customer accounts and shareable published books.
+
+### Current authorized candidate
+
+`codex/spine-bound-flexible-paper` integrates length-preserving curved interior
+paper, pose-preserving actor handoff, immediate reduced motion and dual-engine
+CI. See `docs/flexible-paper.md` for verified results and remaining visual
+approval. Main remains the accepted baseline until review.

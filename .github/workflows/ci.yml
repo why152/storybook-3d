@@ -18,6 +18,12 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    env:
+      STORYBOOK_BROWSER: ${{ matrix.browser }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -28,7 +34,7 @@ jobs:
           node-version: "22"
 
       - name: Install packages
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Verify original actor sprite source parity
         run: npm run test:actors
@@ -45,8 +51,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Install Chromium for UI smoke test
-        run: npx playwright install --with-deps chromium
+      - name: Install browser for UI regression
+        run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run desktop/mobile UI smoke tests
         run: npm run test:e2e
@@ -59,6 +65,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: storybook-demo-browser-check
+          name: storybook-${{ matrix.browser }}-browser-check
           path: test-results/
           if-no-files-found: ignore

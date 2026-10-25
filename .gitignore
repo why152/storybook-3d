@@ -21,6 +21,9 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 *.log
+test-results/
+evidence/
+playwright-report/
 
 # large original art exports and working files: keep these outside Git unless explicitly needed
 *.psd

@@ -12,7 +12,7 @@ Requires Node.js **22**, npm, Git and Chromium (Playwright downloads this).
 git clone git@github.com:why152/storybook-3d.git
 cd storybook-3d
 nvm use 22                # if using nvm; otherwise select Node 22 manually
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund
 npm run qa:browser:setup
 npm run qa:local
 npm run dev -- --host 127.0.0.1
@@ -27,10 +27,9 @@ Open http://127.0.0.1:5173. The output of `qa:local` contains:
 - A real cover/forward/backward book-turn WebM and pose screenshots.
 - Visual actor motion clips showing five story chapters.
 
-**Note:** this repo currently has no committed `package-lock.json`.
-`npm install` may resolve newer semver-compatible transitive versions.
-For rigorous local comparisons, generate/commit a lockfile in a future
-dedicated engineering PR and use `npm ci`. Do not invent reproducibility.
+**Dependencies:** the integrated flexible-paper branch commits `package-lock.json`;
+use `npm ci` for the recorded dependency tree. Historical lab branches may
+still require `npm install`.
 
 Local quick checks:
 
@@ -59,6 +58,10 @@ rejected that earlier interpretation. The goal remains a *paper book*.
 
 ## 3. Research branches — do NOT merge by default
 
+The current owner-authorized AI is integrating flexible paper on
+`codex/spine-bound-flexible-paper`; see `docs/flexible-paper.md`. The historical
+WebGL experiments remain independent candidates.
+
 The expensive-model task is **not** “rewrite everything with WebGL.”
 
 | Work | PR / branch | Status |
@@ -73,7 +76,7 @@ For lab evaluation, *without touching main*:
 ```bash
 git fetch origin experiment/custom-webgl-parallax experiment/curved-page-webgl
 git switch -c inspect-curved origin/experiment/curved-page-webgl
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund
 npm run dev -- --host 127.0.0.1
 # http://127.0.0.1:5173/labs/paper-curl.html
 ```

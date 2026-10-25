@@ -3,6 +3,18 @@ import type { PointerEvent } from 'react';
 import { gsap } from 'gsap';
 import { getChapter } from '../data/story';
 import { BlankPage, FrontCover, PageHalf } from './SceneArt';
+import { PAPER_SEGMENTS, layoutPaper, posePaper } from './paperGeometry';
+
+// An explicit URL knob for matched browser experiments; normal readers use
+// the untouched baseline until the screen-space budget is validated.
+// Never infer quality from a faster single headless run.
+function diagnosticStripCount(){
+  const raw=new URLSearchParams(window.location.search).get('segments');
+  if(raw===null)return PAPER_SEGMENTS;
+  const n=Number(raw);
+  return Number.isInteger(n)&&n>=4&&n<=PAPER_SEGMENTS?n:PAPER_SEGMENTS;
+}
+const STRIP_COUNT=diagnosticStripCount();
 
 export type PageTurn = Readonly<{from:number;to:number;direction:-1|1}>;
 type Props={
@@ -26,28 +38,84 @@ function Half({position,side,name,wish}:{
 export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debugPose,debugFrom}:Props){
   const leafRef=useRef<HTMLDivElement>(null);
   const shellRef=useRef<HTMLDivElement>(null);
+  const printState=useRef(new Map<string,{transform:string;time:number|null}>());
   const showingTurn=debugPose===null?turning:{from:debugFrom,to:debugFrom+1,direction:1 as const};
   const closed=active===0&&!showingTurn;
+  const flexible=!!showingTurn&&showingTurn.from>0&&showingTurn.to>0;
+
+  useLayoutEffect(()=>{
+    const shell=shellRef.current;
+    if(!shell||debugPose!==null)return;
+    if(turning){
+      // At least one stationary half of each chapter survives the turn.
+      // Capture its actual pose before paint, then print that same pose on
+      // all parts of the turning sheet. No reset-to-frame-zero character jump.
+      const snapshots=new Map<string,{transform:string;time:number|null}>();
+      shell.querySelectorAll<HTMLImageElement>('.book-static .scene-plane').forEach(plane=>{
+        if(snapshots.has(plane.src))return;
+        const animation=plane.getAnimations()[0];
+        snapshots.set(plane.src,{
+          transform:getComputedStyle(plane).transform,
+          time:typeof animation?.currentTime==='number'?animation.currentTime:null,
+        });
+      });
+      printState.current=snapshots;
+      shell.querySelectorAll<HTMLImageElement>('.scene-plane').forEach(plane=>{
+        const snapshot=snapshots.get(plane.src);
+        if(!snapshot)return;
+        plane.style.animation='none';
+        plane.style.transition='none';
+        plane.style.transform=snapshot.transform;
+      });
+    }else{
+      shell.querySelectorAll<HTMLImageElement>('.book-static .scene-plane').forEach(plane=>{
+        plane.style.removeProperty('animation');
+        plane.style.removeProperty('transform');
+        plane.style.removeProperty('transition');
+        const time=printState.current.get(plane.src)?.time;
+        if(time!=null)plane.getAnimations().forEach(animation=>{animation.currentTime=time;});
+      });
+      printState.current.clear();
+    }
+  },[turning,active,debugPose]);
+
+  useLayoutEffect(()=>{
+    if(!flexible||!leafRef.current)return;
+    const leaf=leafRef.current;
+    // Paper print width/offset is invariant while the page turns. Initialize
+    // once per layout change; only the curved vertex poses change per frame.
+    const relayout=()=>{
+      layoutPaper(leaf);
+      posePaper(leaf,debugPose??Math.abs(Number(gsap.getProperty(leaf,'rotationY')))/180);
+    };
+    relayout();
+    const observer=new ResizeObserver(relayout);
+    observer.observe(leaf);
+    return()=>observer.disconnect();
+  },[flexible,debugPose,turning]);
 
   useLayoutEffect(()=>{
     if(debugPose!==null||!turning||!leafRef.current||!shellRef.current)return;
     const leaf=leafRef.current;
     const shell=shellRef.current;
+    if(reducedMotion){onTurnFinished(turning.to);return;}
     const forward=turning.direction===1;
     const initialAngle=forward?0:-180;
     const finalAngle=forward?-180:0;
     const fromShift=turning.from===0?-25:0;
     const toShift=turning.to===0?-25:0;
     // All two-sided page transforms are owned by one cancellable timeline.
-    const timeline=gsap.timeline({onComplete:()=>onTurnFinished(turning.to)});
+    let cancelled=false;
+    const timeline=gsap.timeline({paused:true,onComplete:()=>onTurnFinished(turning.to)});
     timeline.fromTo(leaf,{rotateY:initialAngle},
-      {rotateY:finalAngle,duration:reducedMotion ? 0.025 : 1.28,ease:'power2.inOut',
+      {rotateY:finalAngle,duration:1.28,ease:'power2.inOut',
       onUpdate:()=>{
         const progress=Math.abs(Number(gsap.getProperty(leaf,'rotationY')))/180;
         leaf.style.setProperty('--leaf-shade',String(Math.sin(Math.PI*progress)*.34));
+        if(flexible)posePaper(leaf,progress);
       }},0);
     if(fromShift!==toShift){
-      const moveDuration=reducedMotion ? 0.025 : 1.28;
+      const moveDuration=1.28;
       timeline.fromTo(shell,{xPercent:fromShift},
         {xPercent:toShift,duration:moveDuration,ease:'power2.inOut'},0);
       // A closed cover must not reveal the full-width pale page block before
@@ -60,7 +128,36 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
         duration:moveDuration,ease:'power2.inOut'
       },0);
     }
+    // Each physical strip duplicates the SAME source assets. Decoding all
+    // duplicates independently may never finish on WebKit while the GPU
+    // defers off-screen 3D surfaces. Deduplicate by URL and bound this
+    // preflight: asset loading must NEVER deadlock the navigation state.
+    // A timeout settles directly rather than animating missing artwork.
+    const sources=new Map<string,HTMLImageElement>();
+    shell.querySelectorAll<HTMLImageElement>('img').forEach(image=>{
+      const src=image.currentSrc||image.src;
+      if(src&&!sources.has(src))sources.set(src,image);
+    });
+    const pending=[...sources.values()].filter(image=>
+      !image.complete||image.naturalWidth===0);
+    if(pending.length===0){
+      timeline.play();
+    }else{
+      const preflight=new Promise<boolean>(resolve=>{
+        const timeout=window.setTimeout(()=>resolve(false),2500);
+        void Promise.allSettled(pending.map(image=>image.decode())).then(()=>{
+          window.clearTimeout(timeout);
+          resolve(pending.every(image=>image.complete&&image.naturalWidth>0));
+        });
+      });
+      void preflight.then(ready=>{
+        if(cancelled)return;
+        if(ready)timeline.play();
+        else onTurnFinished(turning.to);
+      });
+    }
     return()=>{
+      cancelled=true;
       timeline.kill();
       leaf.style.removeProperty('--leaf-shade');
       gsap.set(leaf,{clearProps:'transform'});
@@ -68,7 +165,7 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
       const stack=shell.querySelector<HTMLElement>('.book-depth');
       if(stack)gsap.set(stack,{clearProps:'clipPath'});
     };
-  },[turning,debugPose,reducedMotion,onTurnFinished]);
+  },[turning,debugPose,reducedMotion,onTurnFinished,flexible]);
 
   const handlePointer=(event:PointerEvent<HTMLDivElement>)=>{
     if(turning||debugPose!==null||reducedMotion||event.pointerType!=='mouse')return;
@@ -126,9 +223,21 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
       <div className="book-binding" aria-hidden="true"/>
       {showingTurn&&<div
         key={`leaf-${showingTurn.from}-${showingTurn.to}`}
-        className="book-turn-leaf" data-page-role="turning-leaf" ref={leafRef}
+        className={`book-turn-leaf ${flexible?'is-flexible':''}`} data-page-role="turning-leaf" ref={leafRef}
+        aria-hidden="true"
         style={debugPose===null?undefined:{transform:`rotateY(${-180*debugPose}deg)`}}>
-        <div className="book-leaf-face book-leaf-front" data-face="front">
+        {flexible?Array.from({length:STRIP_COUNT},(_,index)=><div className="paper-segment" key={index}>
+          <div className="paper-segment-face paper-front" data-face="front">
+            <div className="paper-print">
+              <Half position={leafFront} side="right" name={name} wish={wish}/>
+            </div>
+          </div>
+          <div className="paper-segment-face paper-back" data-face="back">
+            <div className="paper-print">
+              <Half position={leafBack} side="left" name={name} wish={wish}/>
+            </div>
+          </div>
+        </div>):<><div className="book-leaf-face book-leaf-front" data-face="front">
           <Half position={leafFront} side="right" name={name} wish={wish}/>
           <span className="leaf-light" aria-hidden="true"/>
         </div>
@@ -136,6 +245,7 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
           <Half position={leafBack} side="left" name={name} wish={wish}/>
           <span className="leaf-light" aria-hidden="true"/>
         </div>
+        </>}
       </div>}
       <div className="book-edge-shadow" aria-hidden="true"/>
     </div>
