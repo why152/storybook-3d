@@ -20,10 +20,15 @@ test('our first-party GLSL parallax experiment loads the exact six illustrated p
     node=>(node as HTMLImageElement).complete&&(node as HTMLImageElement).naturalWidth===1200
   ))).toBe(true);
 
+  const hasWebGL2=await page.evaluate(()=>Boolean(document.createElement('canvas').getContext('webgl2')));
   const mode=await page.evaluate(()=>(window as Window & {
     __shaderLabStats?:LabStats
   }).__shaderLabStats?.renderer);
-  expect(['webgl2','error','context-lost']).toContain(mode);
+  if(hasWebGL2){
+    expect(mode,'GLSL shader must compile when the browser has WebGL2').toBe('webgl2');
+  }else{
+    expect(['error','context-lost']).toContain(mode);
+  }
   if(mode==='webgl2'){
     await expect.poll(async()=>page.evaluate(()=>(window as Window & {
       __shaderLabStats?:LabStats
