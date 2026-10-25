@@ -1,9 +1,9 @@
-# P1 illustration acting — original characters become independent planes
+# P1 illustration acting — five illustrated chapters with independently animated characters
 
 **Purpose:** move from global whole-scene float to story-specific performances
 while **preserving the physical bound book**.
 
-## First experiment (HELLO and GROW)
+## First experiment (all five story chapters)
 
 We split the existing source `characters.svg` into separate, standalone
 **registered transparent** SVGs at exactly 1200 × 700. Each chapter keeps
@@ -14,7 +14,12 @@ experiments, reproducible base art and clean fallback.
 |---|---|---|
 | HELLO | `actors/rabbit.svg`, `actors/fox.svg` | Rabbit bobs/leans while greeting, fox answers later in a different rhythm |
 | GROW | `actors/rabbit.svg`, `actors/fox.svg`, `actors/props.svg` | Rabbit reaches upward on the ladder; fox bows as watering can and particles tilt gently |
+| TOGETHER | `actors/fox.svg`, `actors/rabbit.svg`, `actors/props.svg` | Friends alternate small gestures while cups rise subtly |
+| DREAM | `actors/rabbit.svg`, `actors/fox.svg`, `actors/props.svg` | Different stargazing motions, star chart moves subtly |
+| WISH | `actors/fox.svg`, `actors/rabbit.svg`, `actors/props.svg` | Fox offers present, rabbit cheers, wrapped gift responds |
 
+
+Across five stories, 14 independently addressable actor/prop sprites are in scope.
 The `src/components/SceneArt.tsx` renderer places the real sprite assets
 at the **same composition Z-plane** where one `characters.svg` used to be.
 Source groups retain their original fills, shadows and brush effects;
@@ -44,6 +49,9 @@ Use the existing original-art inspector with exactly the same scene artboard:
 - `/art-inspector.html?scene=hello` — original combined `characters.svg`.
 - `/art-inspector.html?scene=hello&actors=1` — registered rabbit and fox.
 - `/art-inspector.html?scene=grow&actors=1` — rabbit, fox and watering props.
+- `/art-inspector.html?scene=together&actors=1` — friends sharing tea.
+- `/art-inspector.html?scene=dream&actors=1` — stargazing friends and star chart.
+- `/art-inspector.html?scene=wish&actors=1` — celebration characters and gift.
 
 The checkbox toggles between source and separated modes. You can
 individually hide each actor to inspect its actual transparency and
