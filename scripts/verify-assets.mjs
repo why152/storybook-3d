@@ -44,13 +44,13 @@ for(const id of ids){
       check(existsSync(file),`${id}: registered actor SVG missing: ${expectedFile}`);
       if(!existsSync(file))continue;
       const data=readFileSync(file,'utf8');
-      const bounds=data.match(/\\bviewBox\\s*=\\s*["']\\s*0\\s+0\\s+(\\d+)\\s+(\\d+)\\s*["']/i);
+      const bounds=data.match(/\bviewBox\s*=\s*["']\s*0\s+0\s+(\d+)\s+(\d+)\s*["']/i);
       check(Boolean(bounds)&&Number(bounds[1])===1200&&Number(bounds[2])===700,
         `${id}: ${actor} artboard must align exactly to 1200x700 spread`);
-      check(/<svg\\b/.test(data)&&/<\\/svg>\\s*$/.test(data),
+      check(/<svg\b/.test(data)&&/<\/svg>\s*$/.test(data),
         `${id}: ${actor} is not a standalone SVG`);
-      check(!/<\\s*(script|foreignObject)\\b/i.test(data)&&
-        !/\\b(?:href|xlink:href)\\s*=\\s*["']https?:/i.test(data),
+      check(!/<\s*(script|foreignObject)\b/i.test(data)&&
+        !/\b(?:href|xlink:href)\s*=\s*["']https?:/i.test(data),
         `${id}: ${actor} contains embedded scripts or remote references`);
     }
   }
