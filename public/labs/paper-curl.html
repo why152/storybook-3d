@@ -41,7 +41,7 @@ h1{font:900 clamp(25px,4.1vw,52px)/1.1 Impact,'Arial Narrow',sans-serif;margin:0
 .rigid-leaf{position:absolute;left:50%;top:0;width:50%;height:100%;z-index:5;transform-origin:0 50%;transform-style:preserve-3d}
 .face{position:absolute;inset:0;overflow:hidden;background:#ecd4bc;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .face.back{transform:rotateY(180deg)}
-.face.back .print{left:0;transform:scaleX(-1)}
+.face.back .print{left:0}
 .face.front .print{left:-100%}
 .face::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#241b29a6,transparent 42%,#ffeed476);opacity:var(--shade,0)}
 .canvas{position:absolute;inset:0;z-index:5;width:100%;height:100%;pointer-events:none}
@@ -72,6 +72,7 @@ h1{font:900 clamp(25px,4.1vw,52px)/1.1 Impact,'Arial Narrow',sans-serif;margin:0
  <label>章节 <select id="chapter"><option value="hello">HELLO → GROW</option><option value="grow">GROW → TOGETHER</option><option value="together">TOGETHER → DREAM</option><option value="dream">DREAM → WISH</option></select></label>
  <label>翻页 <input id="progress" type="range" min="0" max="100" step="1" value="0"><output id="progress-value">0%</output></label>
  <label>柔软度 <input id="curl" type="range" min="0" max="100" step="1" value="55"><output id="curl-value">55</output></label>
+ <label>形变算法 <select id="profile"><option value="arch">渐进弧形</option><option value="roll" selected>圆柱卷曲</option></select></label>
  <button type="button" id="forward" class="action">向前翻 ↶</button>
  <button type="button" id="reverse" class="action secondary">翻回来 ↷</button>
  <button type="button" id="reset" class="action secondary">重置</button>
