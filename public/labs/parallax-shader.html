@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Storybook Shader Lab · One-Pass Parallax</title>
+<style>
+:root{font:14px/1.6 system-ui,-apple-system,"Noto Sans SC",sans-serif;color:#ece5dc;background:#101114;font-synthesis:none}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 45% 20%,#303239,#0f1014 70%)}
+header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:22px clamp(16px,4vw,60px);border-bottom:1px solid #ffffff25}
+.brand{font-family:Impact,"Arial Narrow",sans-serif;font-size:24px;letter-spacing:.1em}
+.brand span{font:italic 18px Georgia,serif;color:#f2c7a8;letter-spacing:0}
+.back{color:#e4c0a2;text-decoration:underline;text-underline-offset:4px}
+main{width:min(1500px,96vw);margin:24px auto 80px}
+h1{font:800 clamp(24px,3.5vw,44px)/1.1 Impact,"Arial Narrow",sans-serif;letter-spacing:.03em;margin:0 0 13px}
+.lead{max-width:850px;font-size:13px;color:#c6c4c3;margin:0 0 20px}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px;border:1px solid #ffffff24;border-radius:12px;background:#202127;padding:14px 20px;margin-bottom:22px}
+label{display:flex;align-items:center;gap:10px;font-size:12px}
+select,input{accent-color:#edb891}
+select{background:#14151b;color:white;border:1px solid #5b5656;border-radius:6px;padding:8px 12px}
+input[type=range]{width:140px}
+.controls output{min-width:2.2em;font-variant-numeric:tabular-nums;color:#f4cca7}
+.comparison{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.panel{min-width:0;background:#191b20;border:1px solid #ffffff24;border-radius:14px;padding:13px;box-shadow:0 14px 40px #0005}
+.panel-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0 0 10px}
+.panel h2{font-size:13px;text-transform:uppercase;margin:0;letter-spacing:.09em}
+.stats{font-size:11px;color:#e0b594;text-align:right;font-variant-numeric:tabular-nums}
+.stage{position:relative;width:100%;aspect-ratio:12/7;border-radius:10px;overflow:hidden;background:#dec1ad;touch-action:pan-y;cursor:crosshair}
+.stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;user-select:none;pointer-events:none;will-change:transform}
+.stage canvas{display:block;width:100%;height:100%}
+.stage canvas[hidden]{display:none}
+.fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;background:#14141eee;color:#f6c5a7;padding:20px;z-index:10}
+.fallback[hidden]{display:none}
+.caption{font-size:12px;line-height:1.7;color:#b7b2b1;margin-top:12px;min-height:43px}
+.notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:26px 0}
+.note{border-top:1px solid #ffffff36;padding:16px 3px 0}
+.note strong{font-size:13px}.note p{font-size:12px;color:#bcb7b9;line-height:1.7;margin:6px 0}
+code{font-size:11px;background:#292b31;padding:3px 6px;border-radius:4px;color:#ffcfad}
+.status{font-size:12px;line-height:1.6;color:#cdbeb8;margin:14px 0}
+.status.error{color:#f8a6a6}
+@media(max-width:840px){.comparison{grid-template-columns:1fr}.notes{grid-template-columns:1fr}.note{padding-top:10px}
+header{padding:14px 18px}.brand{font-size:19px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="brand">A LITTLE <span>shader lab</span></div>
+<a class="back" href="/">↖ 返回主绘本</a></header>
+<main>
+  <h1>OUR OWN WEBGL SHADER</h1>
+  <p class="lead">独立研究实验，不改动实体书翻页引擎。把当前项目真实的六个 SVG 图层载入一张 GPU 纹理图集，
+    使用我们自己编写的 GLSL fragment shader 在 <strong>一次绘制调用</strong> 中完成六层采样、混合和视差。
+    左边保留目前 CSS 位移的对照。鼠标移到两侧画面上观察差异。</p>
+  <div class="controls">
+    <label>场景 <select id="scene">
+      <option value="hello">HELLO</option><option value="grow">GROW</option>
+      <option value="together">TOGETHER</option><option value="dream">DREAM</option>
+      <option value="wish">WISH</option></select></label>
+    <label>视差强度 <input id="depth" type="range" min="0" max="150" step="5" value="70"><output id="depth-value">70</output></label>
+    <label><input id="animate" type="checkbox" checked> 微动态（低动态设置下默认关闭）</label>
+    <button id="reset" type="button" style="background:#e9c6aa;color:#2c232a;border:0;border-radius:5px;padding:8px 13px">重置视角</button>
+  </div>
+  <section class="comparison" aria-label="CSS 与 WebGL 视觉实验对照">
+    <article class="panel">
+      <div class="panel-top"><h2>01 · 当前 CSS 图层方案</h2><span class="stats">6 independent DOM images</span></div>
+      <div class="stage" id="css-stage" aria-label="CSS 六图层画面"></div>
+      <p class="caption">现有主项目技术的简化对照：每层由 CSS 分别位移。不会改变下面任何真实书页。</p>
+    </article>
+    <article class="panel">
+      <div class="panel-top"><h2>02 · 自研 WebGL2 合成 Shader</h2><span class="stats" id="stats">waiting for GPU…</span></div>
+      <div class="stage" id="gpu-stage" aria-label="GPU 自研分层视差画面">
+        <canvas id="gpu" role="img" aria-label="六图层自研 Shader 合成的插画"/>
+        <div class="fallback" id="fallback" hidden>WebGL2 当前不可用。左侧 CSS 实现仍然工作；这台设备需要降级渲染。</div>
+      </div>
+      <p class="caption">独立 WebGL2 fragment shader；一张 atlas 纹理、两枚三角形；每帧单次 <code>drawArrays</code>。
+        这里只验证插画 GPU 合成，不代表整本书只需一次 GPU 绘制。</p>
+    </article>
+  </section>
+  <p class="status" id="status" role="status">正在初始化两个渲染版本…</p>
+  <div class="notes">
+    <div class="note"><strong>验证目标 A · 证明可写</strong>
+      <p>GLSL 用六次纹理采样做透明叠加，各层有不同响应和微弱扰动。原始 SVG 文件没有被篡改或复制到外部。</p></div>
+    <div class="note"><strong>验证目标 B · 不破坏书页</strong>
+      <p>这个实验页不触碰 Book.tsx。若效果优于 CSS，可把合成纹理接到左右两页；后续另做弯曲纸页的顶点 Shader。</p></div>
+    <div class="note"><strong>验证目标 C · 证据，而非宣传</strong>
+      <p>这里的数字只统计自家渲染循环 FPS 和单 pass drawCalls，不是 GPU 总耗时或最终绘本性能。必须做独立浏览器对比。</p></div>
+  </div>
+</main>
+<script type="module">
+const planeNames=['background','midground','lettering','characters','foreground','effects'];
+const chapterNames=['hello','grow','together','dream','wish'];
+const sceneSelect=document.querySelector('#scene');
+const depthSlider=document.querySelector('#depth');
+const depthValue=document.querySelector('#depth-value');
+const animateCheckbox=document.querySelector('#animate');
+const statusElement=document.querySelector('#status');
+const stats=document.querySelector('#stats');
+const cssStage=document.querySelector('#css-stage');
+const gpuStage=document.querySelector('#gpu-stage');
+const canvas=document.querySelector('#gpu');
+const fallback=document.querySelector('#fallback');
+const motion=matchMedia('(prefers-reduced-motion: reduce)');
+animateCheckbox.checked=!motion.matches;
+const state={pointer:[0,0],depth:Number(depthSlider.value),animate:animateCheckbox.checked,scene:'hello',start:performance.now()};
+const params=new URLSearchParams(location.search);
+const requested=params.get('scene');
+if(chapterNames.includes(requested))sceneSelect.value=requested;
+state.scene=sceneSelect.value;
+
+const gl=canvas.getContext('webgl2',{alpha:false,antialias:true,premultipliedAlpha:false,preserveDrawingBuffer:true});
+let program=null,vao=null,atlasTexture=null,uniforms={},dirty=true,raf=0,generation=0,frames=0,lastSample=performance.now(),lastFps=0;
+const shaderVs=`#version 300 es
+precision highp float;
+in vec2 aPosition;
+out vec2 vUv;
+void main(){
+  vUv=(aPosition+1.0)*0.5;
+  gl_Position=vec4(aPosition,0.0,1.0);
+}`;
+const shaderFs=`#version 300 es
+precision highp float;
+in vec2 vUv;
+out vec4 outColor;
+uniform sampler2D uAtlas;
+uniform vec2 uPointer;
+uniform float uDepth;
+uniform float uTime;
+uniform float uAnimate;
+
+void main(){
+  vec3 result=vec3(.91,.80,.70);
+  // Six original 1200x700 drawing planes packed top to bottom in one atlas.
+  // Loop index corresponds to layer order, not draw calls. WebGL draws only
+  // the output rectangle; all six transparent sources are composited here.
+  for(int i=0;i<6;i++){
+    float depth=float(i)/5.0;
+    float influence=exp(-dot(vUv-vec2(.5)-uPointer*.12,vUv-vec2(.5)-uPointer*.12)*4.0);
+    vec2 shift=uPointer*vec2(1.0,-.72)*depth*uDepth*.00042;
+    shift+=vec2(sin(uTime*.58+depth*5.8+vUv.y*8.0),
+                cos(uTime*.44+depth*4.0+vUv.x*5.0))
+          *uAnimate*uDepth*.000085*depth*(.4+.6*influence);
+    vec2 localUv=vUv-shift;
+    float inside=step(0.0,localUv.x)*step(localUv.x,1.0)*
+                 step(0.0,localUv.y)*step(localUv.y,1.0);
+    // UNPACK_FLIP_Y_WEBGL means first/top atlas image occupies t in 5/6..1.
+    float atlasV=(5.0-float(i)+clamp(localUv.y,.002,.998))/6.0;
+    vec4 layer=texture(uAtlas,vec2(clamp(localUv.x,.002,.998),atlasV));
+    result=mix(result,layer.rgb,layer.a*inside);
+  }
+  float vignette=1.0-.16*pow(length((vUv-.5)*vec2(1.3,1.0)),1.6);
+  float paper=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453);
+  outColor=vec4(result*vignette+(paper-.5)*.017,1.0);
+}`;
+function makeShader(type,code){
+  const shader=gl.createShader(type);
+  gl.shaderSource(shader,code);
+  gl.compileShader(shader);
+  if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))
+    throw Error(gl.getShaderInfoLog(shader)||'GLSL compilation failed');
+  return shader;
+}
+function initialize(){
+  if(!gl){fallback.hidden=false;canvas.hidden=true;stats.textContent='WebGL2 unavailable';return;}
+  try{
+    const vert=makeShader(gl.VERTEX_SHADER,shaderVs);
+    const frag=makeShader(gl.FRAGMENT_SHADER,shaderFs);
+    program=gl.createProgram();
+    gl.attachShader(program,vert);
+    gl.attachShader(program,frag);
+    gl.linkProgram(program);
+    if(!gl.getProgramParameter(program,gl.LINK_STATUS))
+      throw Error(gl.getProgramInfoLog(program)||'Shader linking failed');
+    gl.deleteShader(vert);gl.deleteShader(frag);
+    vao=gl.createVertexArray();gl.bindVertexArray(vao);
+    const vertices=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vertices);
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+    const position=gl.getAttribLocation(program,'aPosition');
+    gl.vertexAttribPointer(position,2,gl.FLOAT,false,0,0);
+    gl.enableVertexAttribArray(position);
+    gl.bindVertexArray(null);
+    for(const key of ['uAtlas','uPointer','uDepth','uTime','uAnimate'])
+      uniforms[key]=gl.getUniformLocation(program,key);
+    atlasTexture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,atlasTexture);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+    window.__shaderLabStats={renderer:'webgl2',drawCallsPerFrame:0,loadedLayers:0,scene:state.scene};
+  }catch(error){fallback.textContent='Shader 初始化失败：'+error.message;fallback.hidden=false;
+    canvas.hidden=true;statusElement.textContent=String(error);statusElement.classList.add('error');
+    window.__shaderLabStats={renderer:'error',reason:String(error)};
+  }
+}
+function cssImages(scene){
+  cssStage.replaceChildren();
+  planeNames.forEach((name,i)=>{
+    const image=document.createElement('img');
+    image.src=`/assets/${scene}/${name}.svg`;
+    image.alt='';
+    image.dataset.depth=String(i);
+    image.setAttribute('aria-hidden','true');
+    cssStage.append(image);
+  });
+  updateCss();
+}
+function updateCss(){
+  cssStage.querySelectorAll('img').forEach(image=>{
+    const d=Number(image.dataset.depth);
+    const x=-(state.pointer[0]*d*1.55);
+    const y=-(state.pointer[1]*d*1.20);
+    image.style.transform=`translate3d(${x}px,${y}px,0)`;
+  });
+}
+function loadImage(url){
+  return new Promise((resolve,reject)=>{
+    const image=new Image();image.onload=()=>resolve(image);
+    image.onerror=()=>reject(Error('Could not load '+url));image.src=url;
+  });
+}
+async function loadScene(scene){
+  const id=++generation;
+  state.scene=scene;cssImages(scene);
+  window.__shaderLabStats&&(window.__shaderLabStats.loadedLayers=0);
+  statusElement.textContent='正在加载 '+scene.toUpperCase()+' 的六层原始插画…';
+  if(!gl||!program)return;
+  try{
+    const images=await Promise.all(planeNames.map(name=>loadImage(`/assets/${scene}/${name}.svg`)));
+    if(generation!==id)return;
+    const maxTex=Number(gl.getParameter(gl.MAX_TEXTURE_SIZE));
+    const width=Math.max(300,Math.min(1000,Math.floor(maxTex*12/42)));
+    const height=Math.floor(width*7/12);
+    if(height*6>maxTex)throw Error('GPU maximum texture size is too small');
+    const surface=document.createElement('canvas');
+    surface.width=width;surface.height=height*6;
+    const ctx=surface.getContext('2d',{willReadFrequently:false});
+    if(!ctx)throw Error('Atlas 2D canvas is unavailable');
+    ctx.clearRect(0,0,surface.width,surface.height);
+    images.forEach((image,i)=>ctx.drawImage(image,0,i*height,width,height));
+    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,atlasTexture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,width,height*6,0,gl.RGBA,gl.UNSIGNED_BYTE,surface);
+    window.__shaderLabStats={renderer:'webgl2',drawCallsPerFrame:0,loadedLayers:images.length,scene,texture:[width,height*6]};
+    dirty=true;render();
+    statusElement.textContent=`${scene.toUpperCase()} · 六层 SVG 已装入一个 ${width}×${height*6} 纹理图集；GPU 合成就绪。`;
+    statusElement.classList.remove('error');
+  }catch(error){
+    statusElement.textContent='原始素材或 GPU 装载失败：'+error.message;
+    statusElement.classList.add('error');
+    stats.textContent='Asset load failed';
+    window.__shaderLabStats={renderer:'error',reason:String(error)};
+  }
+}
+function resizeCanvas(){
+  if(!gl||!program)return;
+  const rect=canvas.getBoundingClientRect();
+  const dpr=Math.min(devicePixelRatio||1,2);
+  const width=Math.max(1,Math.floor(rect.width*dpr));
+  const height=Math.max(1,Math.floor(rect.height*dpr));
+  if(canvas.width!==width||canvas.height!==height){
+    canvas.width=width;canvas.height=height;
+    gl.viewport(0,0,width,height);
+    dirty=true;
+  }
+}
+function render(){
+  if(!gl||!program||!atlasTexture||!window.__shaderLabStats||window.__shaderLabStats.loadedLayers!==6)return;
+  resizeCanvas();
+  gl.useProgram(program);gl.bindVertexArray(vao);
+  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,atlasTexture);
+  gl.uniform1i(uniforms.uAtlas,0);
+  gl.uniform2f(uniforms.uPointer,state.pointer[0],state.pointer[1]);
+  gl.uniform1f(uniforms.uDepth,state.depth);
+  gl.uniform1f(uniforms.uTime,(performance.now()-state.start)*.001);
+  gl.uniform1f(uniforms.uAnimate,state.animate?1:0);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  window.__shaderLabStats.drawCallsPerFrame=1;
+  dirty=false;
+  const now=performance.now();frames++;
+  if(now-lastSample>900){
+    lastFps=frames*1000/(now-lastSample);frames=0;lastSample=now;
+    stats.textContent=`1 draw call · ${state.animate?lastFps.toFixed(0)+' rAF/s':'static'} · 6 samples`;
+  }else if(!state.animate)stats.textContent='1 draw call · on demand · 6 samples';
+}
+function frame(){raf=0;if(state.animate||dirty)render();if(state.animate)raf=requestAnimationFrame(frame);}
+function schedule(){
+  dirty=true;
+  if(!raf)raf=requestAnimationFrame(frame);
+}
+function setPointer(event){
+  const rect=event.currentTarget.getBoundingClientRect();
+  state.pointer=[
+    Math.max(-1,Math.min(1,((event.clientX-rect.left)/rect.width-.5)*2)),
+    Math.max(-1,Math.min(1,((event.clientY-rect.top)/rect.height-.5)*2))
+  ];
+  updateCss();schedule();
+}
+function resetPointer(){state.pointer=[0,0];updateCss();schedule();}
+for(const element of [cssStage,gpuStage]){
+  element.addEventListener('pointermove',setPointer,{passive:true});
+  element.addEventListener('pointerleave',resetPointer,{passive:true});
+}
+depthSlider.addEventListener('input',()=>{
+  state.depth=Number(depthSlider.value);depthValue.value=String(state.depth);
+  schedule();
+});
+animateCheckbox.addEventListener('change',()=>{
+  state.animate=animateCheckbox.checked;state.start=performance.now();schedule();
+});
+sceneSelect.addEventListener('change',()=>{loadScene(sceneSelect.value);});
+document.querySelector('#reset').addEventListener('click',resetPointer);
+window.addEventListener('resize',schedule,{passive:true});
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){state.animate=false;animateCheckbox.checked=false;}
+  schedule();
+});
+canvas.addEventListener('webglcontextlost',event=>{
+  event.preventDefault();cancelAnimationFrame(raf);raf=0;
+  fallback.textContent='GPU 上下文丢失，可继续看左侧 CSS 基线。';fallback.hidden=false;canvas.hidden=true;
+  window.__shaderLabStats={renderer:'context-lost'};
+});
+initialize();loadScene(state.scene);schedule();
+</script>
+</body>
+</html>
