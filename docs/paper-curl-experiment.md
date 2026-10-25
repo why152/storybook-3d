@@ -35,6 +35,33 @@ Curvature from the original vertex shader:
 
 `bow(u,v,p) = c·0.92·sin(πp)·u^1.2·(1−0.32u)·(0.84+0.16cos((v−0.5)π))`
 
+## Competing paper models (directly selectable in the lab)
+
+**A — progressive arch:** original polynomial bow, 
+`z = c·0.92·sin(πp)·u^1.2·(1−0.32u)·vertical(v)`; 
+it moves the sheet out of plane but does not shorten the x-projection.
+
+**B — cylindrical roll:** 
+`k = max(ε,c·2.35·sin(πp))`,
+`x = sin(k u)/k`, `z = (1−cos(k u))/k·vertical(v)`.
+This conserves the main arc-length of a curled sheet and shortens its
+horizontal projection near peak bend. The two models share the same
+texture sources, control/lighting and page geometry. The renderer
+interpolates by uniform `uProfile` and captures both at the same pose.
+No model is automatically selected for production.
+
+**Visual QA 1 (real CI run):**
+[Actions #40172523543](https://github.com/why152/storybook-3d/actions/runs/40172523543)
+passed the handwritten shader and five captured 0/25/50/75/100 poses
+plus 8.8-second authentic browser WebM. Initial review exposed a
+**mirrored CSS comparison backface**, now corrected so the baseline
+is fair. It also showed that an actual bending mesh retains visible
+sheet width at 50% versus a nearly edge-on rigid sheet.
+
+**Visual QA 2:** `uProfile` cylinder trial and matching pixel-difference
+assertions added on the same branch; review the latest run's real
+screenshots and video before picking a winner.
+
 This displacement is zero at settled 0/100%, rises near midturn and has
 a smooth envelope from the bound edge toward the free edge. The paper
 then rotates around the fixed spine. The fragment shader uses
