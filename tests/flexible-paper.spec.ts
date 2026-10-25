@@ -1,5 +1,5 @@
 import {expect,test} from '@playwright/test';
-import {paperGeometry,PAPER_SEGMENTS} from '../src/components/paperGeometry';
+import {paperGeometry,PAPER_SEGMENTS,segmentCountForTolerance,curvatureErrorPx} from '../src/components/paperGeometry';
 
 test('paper stays joined, above the book and constant-length throughout both directions',()=>{
   let lowest=0,maxGap=0,maxLengthError=0;
@@ -24,6 +24,44 @@ test('paper stays joined, above the book and constant-length throughout both dir
   expect(maxLengthError).toBeLessThan(1e-12);
 });
 
+
+/** Accuracy-constrained minimization: pick smallest N with <=0.5 CSS pixel
+ * model sagitta, then compare the REAL midpoint-strip polyline to the
+ * continuously integrated circular bend (not just the same formula again).
+ */
+test('mathematical pixel budget minimizes segments without losing shape',()=>{
+  for(const width of [171,360,550]){
+    const n=segmentCountForTolerance(width,.5);
+    expect(curvatureErrorPx(width,n)).toBeLessThanOrEqual(.5);
+    expect(curvatureErrorPx(width,n-1)).toBeGreaterThan(.5);
+    let actualMax=0;
+    for(let p=0;p<=1.000001;p+=.01){
+      const bend=1.15*Math.sin(Math.PI*p);
+      const pieces=paperGeometry(p,n);
+      for(let k=0;k<=400;k++){
+        const u=k/400;
+        const segment=Math.min(n-1,Math.floor(u*n));
+        const fraction=u*n-segment;
+        const piece=pieces[segment];
+        const approxX=piece.x+Math.cos(piece.angle)*fraction/n;
+        const approxZ=piece.z-Math.sin(piece.angle)*fraction/n;
+        const exactX=Math.abs(bend)<1e-10?u:Math.sin(bend*u)/bend;
+        const exactZ=Math.abs(bend)<1e-10?0:(Math.cos(bend*u)-1)/bend;
+        actualMax=Math.max(actualMax,width*Math.hypot(approxX-exactX,approxZ-exactZ));
+      }
+    }
+    expect(actualMax).toBeLessThan(.51);
+  }
+});
+
+test('experimental eight-strip page completes a real turn',async({page})=>{
+  await page.goto('/?scene=hello&segments=8');
+  await expect(page.locator('.book-static .page-surface[data-chapter="hello"]')).toHaveCount(2);
+  await page.getByRole('button',{name:'下一页'}).click();
+  await expect(page.locator('.paper-segment')).toHaveCount(8);
+  await expect(page.locator('.book-turn-leaf')).toHaveCount(0,{timeout:8500});
+  await expect(page.locator('.book-static .page-surface[data-chapter="grow"]')).toHaveCount(2);
+});
 
 test('curved paper exposes only the surface facing the camera at flat endpoints',async({page})=>{
   for (const [pose,expectedFront] of [[0,true],[1,false]] as const){
