@@ -112,13 +112,34 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
         duration:moveDuration,ease:'power2.inOut'
       },0);
     }
-    // Decode the incoming print before exposing it; keep the current face
-    // at its exact endpoint while the next chapter's assets are preparing.
-    void Promise.all([...shell.querySelectorAll<HTMLImageElement>('img')].map(image=>
-      image.decode().catch(()=>undefined)
-    )).then(()=>{
-      if(!cancelled)timeline.play();
+    // Each physical strip duplicates the SAME source assets. Decoding all
+    // duplicates independently may never finish on WebKit while the GPU
+    // defers off-screen 3D surfaces. Deduplicate by URL and bound this
+    // preflight: asset loading must NEVER deadlock the navigation state.
+    // A timeout settles directly rather than animating missing artwork.
+    const sources=new Map<string,HTMLImageElement>();
+    shell.querySelectorAll<HTMLImageElement>('img').forEach(image=>{
+      const src=image.currentSrc||image.src;
+      if(src&&!sources.has(src))sources.set(src,image);
     });
+    const pending=[...sources.values()].filter(image=>
+      !image.complete||image.naturalWidth===0);
+    if(pending.length===0){
+      timeline.play();
+    }else{
+      const preflight=new Promise<boolean>(resolve=>{
+        const timeout=window.setTimeout(()=>resolve(false),2500);
+        void Promise.allSettled(pending.map(image=>image.decode())).then(()=>{
+          window.clearTimeout(timeout);
+          resolve(pending.every(image=>image.complete&&image.naturalWidth>0));
+        });
+      });
+      void preflight.then(ready=>{
+        if(cancelled)return;
+        if(ready)timeline.play();
+        else onTurnFinished(turning.to);
+      });
+    }
     return()=>{
       cancelled=true;
       timeline.kill();
