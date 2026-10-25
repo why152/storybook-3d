@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+<defs>
+<linearGradient id="orange" x2="1" y2="1"><stop stop-color="#FFCF9B"/><stop offset=".55" stop-color="#EAA276"/><stop offset="1" stop-color="#C37C6A"/></linearGradient>
+<linearGradient id="cream" x2="1" y2="1"><stop stop-color="#FFFADE"/><stop offset=".7" stop-color="#EDD7B7"/><stop offset="1" stop-color="#D8B69F"/></linearGradient>
+<linearGradient id="coat" x2="1" y2="1"><stop stop-color="#477D81"/><stop offset="1" stop-color="#2F5D69"/></linearGradient>
+<pattern id="grain" width="18" height="19" patternUnits="userSpaceOnUse"><path d="m2 7 5-1m10 7-3 2" stroke="#9E806F" stroke-width="1.4" opacity=".31"/></pattern>
+</defs>
+<!-- Original TOGETHER rabbit artwork from registered characters.svg; kept pixel-aligned. -->
+<g transform="translate(770 329) rotate(7 123 160)">
+<ellipse cx="134" cy="302" rx="114" ry="20" fill="#715B60" opacity=".22"/>
+<path d="M86 134Q49 23 72 9q31-9 54 99Q132 2 160 7q35 20 4 133" fill="url(#cream)" stroke="#BA9D8F" stroke-width="6"/>
+<path d="M84 46l22 76m42-85-7 80" stroke="#F0B7B0" stroke-width="17" stroke-linecap="round"/>
+<path d="M79 239Q58 271 66 297m111-57 29 52" stroke="#EFD4BD" stroke-width="33" stroke-linecap="round" fill="none"/>
+<ellipse cx="63" cy="302" rx="33" ry="17" fill="#F1D8C2"/><ellipse cx="207" cy="297" rx="37" ry="18" fill="#F2D7BF"/>
+<ellipse cx="135" cy="215" rx="81" ry="86" fill="#C78687" stroke="#A56B72" stroke-width="6"/>
+<path d="M60 202q64-15 146 3" stroke="#F6DBAF" stroke-width="18" fill="none"/>
+<path d="M195 229q40-28 64-17" stroke="#F0D2B8" stroke-width="29" stroke-linecap="round" fill="none"/>
+<ellipse cx="266" cy="215" rx="16" ry="18" fill="#F8DFC6"/>
+<path d="M70 229Q35 211 31 195" stroke="#F2D7BE" stroke-width="28" stroke-linecap="round" fill="none"/>
+<ellipse cx="28" cy="190" rx="16" ry="17" fill="#F8DCC5"/>
+<ellipse cx="133" cy="157" rx="85" ry="75" fill="url(#cream)" stroke="#BE9D8B" stroke-width="5"/>
+<path d="M62 149q18-37 55-46" stroke="#FFFAE8" stroke-width="10" fill="none" stroke-linecap="round"/>
+<ellipse cx="105" cy="157" rx="6" ry="8" fill="#413E42"/><ellipse cx="165" cy="155" rx="6" ry="8" fill="#413E42"/>
+<ellipse cx="135" cy="180" rx="10" ry="8" fill="#AF827C"/>
+<path d="M135 188q-13 15-26 3m26-3q11 16 24 3" stroke="#936C65" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+<ellipse cx="82" cy="181" rx="18" ry="10" fill="#EFB4A6" opacity=".77"/>
+<ellipse cx="191" cy="182" rx="17" ry="9" fill="#EFB4A6" opacity=".77"/>
+<path d="M81 211Q132 236 184 211" stroke="#F5E0BC" stroke-width="9" fill="none" stroke-linecap="round"/>
+<ellipse cx="135" cy="157" rx="87" ry="77" fill="url(#grain)" opacity=".24"/>
+</g>
+</svg>
