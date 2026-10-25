@@ -157,8 +157,8 @@ test('HELLO and GROW actors are independently registered, animated and still on 
   await page.setViewportSize({width:1280,height:720});
   await page.goto('/?scene=hello');
   await waitForChapterAssets(page,'hello');
-  const rabbit=page.locator('.book-static .book-left .actor-rabbit').first();
-  const fox=page.locator('.book-static .book-right .actor-fox').first();
+  const rabbit=page.locator('.book-static.book-left .actor-rabbit').first();
+  const fox=page.locator('.book-static.book-right .actor-fox').first();
   await expect(rabbit).toBeVisible();
   await expect(fox).toBeVisible();
   await expect(rabbit).toHaveCSS('animation-name','hello-rabbit-greeting');
@@ -173,8 +173,8 @@ test('HELLO and GROW actors are independently registered, animated and still on 
   await expect(page.locator('.book-turn-leaf .actor-rabbit').first()).toHaveCSS('animation-name','none');
   await expect(page.locator('.book-turn-leaf')).toHaveCount(0,{timeout:15000});
   await waitForChapterAssets(page,'grow');
-  await expect(page.locator('.book-static .book-left .acting-grow.actor-rabbit').first()).toHaveCSS('animation-name','grow-rabbit-reaching');
-  await expect(page.locator('.book-static .book-right .acting-grow.actor-fox').first()).toHaveCSS('animation-name','grow-fox-watering');
+  await expect(page.locator('.book-static.book-left .acting-grow.actor-rabbit').first()).toHaveCSS('animation-name','grow-rabbit-reaching');
+  await expect(page.locator('.book-static.book-right .acting-grow.actor-fox').first()).toHaveCSS('animation-name','grow-fox-watering');
   await expect(page.locator('.book-static .actor-props')).toHaveCount(2);
   await page.screenshot({path:'test-results/acting-grow-live.png',fullPage:false});
 });
