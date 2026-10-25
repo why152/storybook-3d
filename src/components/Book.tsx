@@ -5,6 +5,17 @@ import { getChapter } from '../data/story';
 import { BlankPage, FrontCover, PageHalf } from './SceneArt';
 import { PAPER_SEGMENTS, layoutPaper, posePaper } from './paperGeometry';
 
+// An explicit URL knob for matched browser experiments; normal readers use
+// the untouched baseline until the screen-space budget is validated.
+// Never infer quality from a faster single headless run.
+function diagnosticStripCount(){
+  const raw=new URLSearchParams(window.location.search).get('segments');
+  if(raw===null)return PAPER_SEGMENTS;
+  const n=Number(raw);
+  return Number.isInteger(n)&&n>=4&&n<=PAPER_SEGMENTS?n:PAPER_SEGMENTS;
+}
+const STRIP_COUNT=diagnosticStripCount();
+
 export type PageTurn = Readonly<{from:number;to:number;direction:-1|1}>;
 type Props={
   active:number;
@@ -215,7 +226,7 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
         className={`book-turn-leaf ${flexible?'is-flexible':''}`} data-page-role="turning-leaf" ref={leafRef}
         aria-hidden="true"
         style={debugPose===null?undefined:{transform:`rotateY(${-180*debugPose}deg)`}}>
-        {flexible?Array.from({length:PAPER_SEGMENTS},(_,index)=><div className="paper-segment" key={index}>
+        {flexible?Array.from({length:STRIP_COUNT},(_,index)=><div className="paper-segment" key={index}>
           <div className="paper-segment-face paper-front" data-face="front">
             <div className="paper-print">
               <Half position={leafFront} side="right" name={name} wish={wish}/>
