@@ -51,6 +51,10 @@ jobs:
       - name: Run desktop/mobile UI smoke tests
         run: npm run test:e2e
 
+      - name: Build offline visual review gallery
+        if: always()
+        run: node scripts/build-review-gallery.mjs test-results
+
       - name: Upload screenshots and traces
         if: always()
         uses: actions/upload-artifact@v4
