@@ -52,10 +52,50 @@ test('our first-party GLSL parallax experiment loads the exact six illustrated p
     }).__shaderLabStats?.texture);
     expect(atlas?.length).toBe(2);
     await page.screenshot({path:'test-results/custom-webgl-parallax-lab.png',fullPage:true});
+    // Capture a genuinely offset depth state, not merely a neutral composition.
+    await page.locator('#animate').uncheck();
+    const box=await page.locator('#gpu-stage').boundingBox();
+    expect(box).not.toBeNull();
+    await page.mouse.move(box!.x+box!.width*.88,box!.y+box!.height*.21);
+    await page.waitForTimeout(150);
+    await page.screenshot({path:'test-results/custom-webgl-parallax-offset.png',fullPage:true});
   }else{
     await expect(page.locator('#fallback')).toBeVisible();
     // Explicitly record unavailable GPU rather than reporting shader QA as passed.
     await page.screenshot({path:'test-results/custom-webgl-fallback.png',fullPage:true});
   }
   expect(errors).toEqual([]);
+});
+
+test('captures real GPU shader interaction while preserving the CSS baseline',async ({browser})=>{
+  const context=await browser.newContext({
+    viewport:{width:1300,height:860},reducedMotion:'no-preference',
+    recordVideo:{dir:'test-results/shader-lab-motion',size:{width:1300,height:860}}
+  });
+  const page=await context.newPage();
+  try{
+    await page.goto('/labs/parallax-shader.html?scene=hello');
+    const gpuAvailable=await page.evaluate(()=>Boolean(document.createElement('canvas').getContext('webgl2')));
+    if(!gpuAvailable)test.skip(true,'Software Chromium runner lacks WebGL2');
+    await expect.poll(async()=>page.evaluate(()=>(window as Window & {
+      __shaderLabStats?:LabStats
+    }).__shaderLabStats?.loadedLayers)).toBe(6);
+    await page.locator('#depth').fill('135');
+    await page.locator('#animate').check();
+    const box=await page.locator('#gpu-stage').boundingBox();
+    expect(box).not.toBeNull();
+    for(const point of [[.18,.24],[.40,.62],[.84,.38],[.23,.79],[.50,.50]]){
+      await page.mouse.move(box!.x+point[0]*box!.width,box!.y+point[1]*box!.height,{steps:12});
+      await page.waitForTimeout(180);
+    }
+    await page.locator('#scene').selectOption('together');
+    await expect.poll(async()=>page.evaluate(()=>(window as Window & {
+      __shaderLabStats?:LabStats
+    }).__shaderLabStats?.scene)).toBe('together');
+    await page.waitForTimeout(400);
+    await page.locator('#animate').uncheck();
+    await page.screenshot({path:'test-results/custom-webgl-motion-final.png',fullPage:true});
+  }finally{
+    await context.close();
+  }
 });
