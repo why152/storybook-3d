@@ -23,6 +23,14 @@ export default function App(){
   const [reducedMotion,setReducedMotion]=useState(()=>
     window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const startTouch=useRef<number|null>(null);
+  const customizeTrigger=useRef<HTMLButtonElement>(null);
+  const closeEditor=useCallback(()=>{
+    setEditorOpen(false);
+    customizeTrigger.current?.focus();
+  },[]);
+  useEffect(()=>{
+    if(editorOpen)document.getElementById('recipient')?.focus();
+  },[editorOpen]);
 
   const goTo=useCallback((position:number)=>{
     if(turn||debugPose!==null||position===active||position<0||position>=totalPositions)return;
@@ -50,7 +58,9 @@ export default function App(){
   },[]);
   useEffect(()=>{
     const onKey=(event:KeyboardEvent)=>{
-      if(event.key==='Escape')setEditorOpen(false);
+      if(event.key==='Escape'&&editorOpen){closeEditor();return;}
+      // Reading/editing a greeting in a modal must not also turn the book.
+      if(editorOpen)return;
       if(event.target instanceof HTMLInputElement||
          event.target instanceof HTMLTextAreaElement||event.altKey||event.metaKey)return;
       if(event.key==='ArrowRight'){event.preventDefault();goTo(active+1);}
@@ -58,7 +68,7 @@ export default function App(){
     };
     window.addEventListener('keydown',onKey);
     return()=>window.removeEventListener('keydown',onKey);
-  },[active,goTo]);
+  },[active,goTo,editorOpen,closeEditor]);
 
   const currentIndex=debugPose===null?active:debugFrom;
   const shownChapter=currentIndex>0?getChapter(currentIndex):null;
@@ -71,7 +81,7 @@ export default function App(){
     <header className="site-head">
       <div className="site-name">little<span>story</span>.studio</div>
       <div className="site-title">A LITTLE STORY<br/>FOR SOMEONE SPECIAL</div>
-      <button type="button" className="customize-trigger" onClick={()=>setEditorOpen(true)}>
+      <button ref={customizeTrigger} type="button" className="customize-trigger" onClick={()=>setEditorOpen(true)}>
         CUSTOMIZE <span aria-hidden="true">↗</span>
       </button>
     </header>
@@ -135,12 +145,19 @@ export default function App(){
     </footer>
 
     {editorOpen&&<div className="editor-backdrop" role="presentation"
-      onMouseDown={e=>{if(e.target===e.currentTarget)setEditorOpen(false)}}>
-      <aside className="editor-drawer" aria-label="定制故事内容">
+      onMouseDown={e=>{if(e.target===e.currentTarget)closeEditor()}}>
+      <aside className="editor-drawer" role="dialog" aria-modal="true" aria-labelledby="editor-heading"
+        onKeyDown={event=>{
+          if(event.key!=='Tab')return;
+          const focusable=[...event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), textarea:not(:disabled)')];
+          const first=focusable[0],last=focusable[focusable.length-1];
+          if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+          if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+        }}>
         <button type="button" aria-label="关闭定制面板" className="drawer-close"
-          onClick={()=>setEditorOpen(false)}>×</button>
+          onClick={closeEditor}>×</button>
         <div className="drawer-eyebrow">MAKE IT PERSONAL</div>
-        <h2>写下你的故事。</h2>
+        <h2 id="editor-heading">写下你的故事。</h2>
         <p>调整名字与祝福，最后一章会立即使用这些内容。五个插画跨页和实体书翻页动作保持不变。</p>
         <label htmlFor="recipient">收礼人的名字</label>
         <input id="recipient" value={name} maxLength={12}
@@ -149,7 +166,7 @@ export default function App(){
         <textarea id="greeting" value={wish} maxLength={60} rows={4}
           onChange={e=>setWish(e.target.value)}/>
         <button type="button" className="drawer-done" onClick={()=>{
-          setEditorOpen(false);goTo(totalPositions-1);
+          closeEditor();goTo(totalPositions-1);
         }}>看看最后一章 ↗</button>
         <small>仅在此页面预览，不上传任何个人内容</small>
       </aside>
