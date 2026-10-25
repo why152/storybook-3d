@@ -1,0 +1,270 @@
+{
+  "schema": 1,
+  "description": "Reproducible fixed-view image, page-geometry and browser-sampling audit, not verified mobile GPU throughput",
+  "createdAt": "2026-10-25T17:31:47.953Z",
+  "commit": "local-working-tree",
+  "chapters": [
+    "hello",
+    "grow",
+    "together",
+    "dream",
+    "wish"
+  ],
+  "viewports": [
+    {
+      "name": "desktop-1280x720",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "mobile-390x844",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "captures": [
+    {
+      "viewport": "desktop-1280x720",
+      "chapter": "hello",
+      "width": 1280,
+      "height": 720,
+      "sceneImageCount": 14,
+      "allImagesLoaded": true,
+      "totalDocumentWidth": 1280,
+      "horizontalOverflowPx": 0,
+      "bookWidth": 840,
+      "bookHeight": 490,
+      "bindingToBookMiddlePx": 0,
+      "sceneResourceCount": 9,
+      "sceneTransferBytes": 124478,
+      "sceneDecodedBytes": 349083,
+      "browserSample": {
+        "durationMs": 450,
+        "frames": 27,
+        "medianIntervalMs": 16.7,
+        "p95IntervalMs": 16.7,
+        "note": "Headless Chromium rAF cadence with reduced-motion stills; NOT a GPU benchmark, FPS guarantee, energy estimate, or final shader comparison."
+      },
+      "screenCapture": "qa-desktop-1280x720-hello.png"
+    },
+    {
+      "viewport": "desktop-1280x720",
+      "chapter": "grow",
+      "width": 1280,
+      "height": 720,
+      "sceneImageCount": 16,
+      "allImagesLoaded": true,
+      "totalDocumentWidth": 1280,
+      "horizontalOverflowPx": 0,
+      "bookWidth": 840,
+      "bookHeight": 490,
+      "bindingToBookMiddlePx": 0,
+      "sceneResourceCount": 10,
+      "sceneTransferBytes": 10842,
+      "sceneDecodedBytes": 354041,
+      "browserSample": {
+        "durationMs": 450,
+        "frames": 27,
+        "medianIntervalMs": 16.7,
+        "p95IntervalMs": 16.8,
+        "note": "Headless Chromium rAF cadence with reduced-motion stills; NOT a GPU benchmark, FPS guarantee, energy estimate, or final shader comparison."
+      },
+      "screenCapture": "qa-desktop-1280x720-grow.png"
+    },
+    {
+      "viewport": "desktop-1280x720",
+      "chapter": "together",
+      "width": 1280,
+      "height": 720,
+      "sceneImageCount": 16,
+      "allImagesLoaded": true,
+      "totalDocumentWidth": 1280,
+      "horizontalOverflowPx": 0,
+      "bookWidth": 840,
+      "bookHeight": 490,
+      "bindingToBookMiddlePx": 0,
+      "sceneResourceCount": 10,
+      "sceneTransferBytes": 9620,
+      "sceneDecodedBytes": 348042,
+      "browserSample": {
+        "durationMs": 450,
+        "frames": 27,
+        "medianIntervalMs": 16.7,
+        "p95IntervalMs": 16.7,
+        "note": "Headless Chromium rAF cadence with reduced-motion stills; NOT a GPU benchmark, FPS guarantee, energy estimate, or final shader comparison."
+      },
+      "screenCapture": "qa-desktop-1280x720-together.png"
+    },
+    {
+      "viewport": "desktop-1280x720",
+      "chapter": "dream",
+      "width": 1280,
+      "height": 720,
+      "sceneImageCount": 16,
+      "allImagesLoaded": true,
+      "totalDocumentWidth": 1280,
+      "horizontalOverflowPx": 0,
+      "bookWidth": 840,
+      "bookHeight": 490,
+      "bindingToBookMiddlePx": 0,
+      "sceneResourceCount": 10,
+      "sceneTransferBytes": 9003,
+      "sceneDecodedBytes": 344754,
+      "browserSample": {
+        "durationMs": 450,
+        "frames": 27,
+        "medianIntervalMs": 16.7,
+        "p95IntervalMs": 16.7,
+        "note": "Headless Chromium rAF cadence with reduced-motion stills; NOT a GPU benchmark, FPS guarantee, energy estimate, or final shader comparison."
+      },
+      "screenCapture": "qa-desktop-1280x720-dream.png"
+    },
+    {
+      "viewport": "desktop-1280x720",
+      "chapter": "wish",
+      "width": 1280,
+      "height": 720,
+      "sceneImageCount": 16,
+      "allImagesLoaded": true,
+      "totalDocumentWidth": 1280,
+      "horizontalOverflowPx": 0,
+      "bookWidth": 840,
+      "bookHeight": 490,
+      "bindingToBookMiddlePx": 0,
+      "sceneResourceCount": 10,
+      "sceneTransferBytes": 10130,
+      "sceneDecodedBytes": 350851,
+      "browserSample": {
+        "durationMs": 450,
+        "frames": 27,
+        "medianIntervalMs": 16.7,
+        "p95IntervalMs": 16.7,
+        "note": "Headless Chromium rAF cadence with reduced-motion stills; NOT a GPU benchmark, FPS guarantee, energy estimate, or final shader comparison."
+      },
+      "screenCapture": "qa-desktop-1280x720-wish.png"
+    },
+    {
+      "viewport": "mobile-390x844",
+      "chapter": "hello",
+      "width": 390,
+      "height": 844,
+      "sceneImageCount": 14,
+      "allImagesLoaded": true,
+      "totalDocumentWidth": 390,
+      "horizontalOverflowPx": 0,
+      "bookWidth": 342,
+      "bookHeight": 199.5,
+      "bindingToBookMiddlePx": 0,
+      "sceneResourceCount": 9,
+      "sceneTransferBytes": 0,
+      "sceneDecodedBytes": 349083,
+      "browserSample": {
+        "durationMs": 450,
+        "frames": 27,
+        "medianIntervalMs": 16.7,
+        "p95IntervalMs": 16.7,
+        "note": "Headless Chromium rAF cadence with reduced-motion stills; NOT a GPU benchmark, FPS guarantee, energy estimate, or final shader comparison."
+      },
+      "screenCapture": "qa-mobile-390x844-hello.png"
+    },
+    {
+      "viewport": "mobile-390x844",
+      "chapter": "grow",
+      "width": 390,
+      "height": 844,
+      "sceneImageCount": 16,
+      "allImagesLoaded": true,
+      "totalDocumentWidth": 390,
+      "horizontalOverflowPx": 0,
+      "bookWidth": 342,
+      "bookHeight": 199.5,
+      "bindingToBookMiddlePx": 0,
+      "sceneResourceCount": 10,
+      "sceneTransferBytes": 0,
+      "sceneDecodedBytes": 354041,
+      "browserSample": {
+        "durationMs": 450,
+        "frames": 27,
+        "medianIntervalMs": 16.7,
+        "p95IntervalMs": 16.7,
+        "note": "Headless Chromium rAF cadence with reduced-motion stills; NOT a GPU benchmark, FPS guarantee, energy estimate, or final shader comparison."
+      },
+      "screenCapture": "qa-mobile-390x844-grow.png"
+    },
+    {
+      "viewport": "mobile-390x844",
+      "chapter": "together",
+      "width": 390,
+      "height": 844,
+      "sceneImageCount": 16,
+      "allImagesLoaded": true,
+      "totalDocumentWidth": 390,
+      "horizontalOverflowPx": 0,
+      "bookWidth": 342,
+      "bookHeight": 199.5,
+      "bindingToBookMiddlePx": 0,
+      "sceneResourceCount": 10,
+      "sceneTransferBytes": 0,
+      "sceneDecodedBytes": 348042,
+      "browserSample": {
+        "durationMs": 450,
+        "frames": 27,
+        "medianIntervalMs": 16.7,
+        "p95IntervalMs": 16.8,
+        "note": "Headless Chromium rAF cadence with reduced-motion stills; NOT a GPU benchmark, FPS guarantee, energy estimate, or final shader comparison."
+      },
+      "screenCapture": "qa-mobile-390x844-together.png"
+    },
+    {
+      "viewport": "mobile-390x844",
+      "chapter": "dream",
+      "width": 390,
+      "height": 844,
+      "sceneImageCount": 16,
+      "allImagesLoaded": true,
+      "totalDocumentWidth": 390,
+      "horizontalOverflowPx": 0,
+      "bookWidth": 342,
+      "bookHeight": 199.5,
+      "bindingToBookMiddlePx": 0,
+      "sceneResourceCount": 10,
+      "sceneTransferBytes": 0,
+      "sceneDecodedBytes": 344754,
+      "browserSample": {
+        "durationMs": 450,
+        "frames": 27,
+        "medianIntervalMs": 16.7,
+        "p95IntervalMs": 16.8,
+        "note": "Headless Chromium rAF cadence with reduced-motion stills; NOT a GPU benchmark, FPS guarantee, energy estimate, or final shader comparison."
+      },
+      "screenCapture": "qa-mobile-390x844-dream.png"
+    },
+    {
+      "viewport": "mobile-390x844",
+      "chapter": "wish",
+      "width": 390,
+      "height": 844,
+      "sceneImageCount": 16,
+      "allImagesLoaded": true,
+      "totalDocumentWidth": 390,
+      "horizontalOverflowPx": 0,
+      "bookWidth": 342,
+      "bookHeight": 199.5,
+      "bindingToBookMiddlePx": 0,
+      "sceneResourceCount": 10,
+      "sceneTransferBytes": 0,
+      "sceneDecodedBytes": 350851,
+      "browserSample": {
+        "durationMs": 450,
+        "frames": 27,
+        "medianIntervalMs": 16.7,
+        "p95IntervalMs": 16.8,
+        "note": "Headless Chromium rAF cadence with reduced-motion stills; NOT a GPU benchmark, FPS guarantee, energy estimate, or final shader comparison."
+      },
+      "screenCapture": "qa-mobile-390x844-wish.png"
+    }
+  ],
+  "problems": [],
+  "baseURL": "https://storybook.35-76-143-76.sslip.io",
+  "deployedSourceCommit": "e964c93aa09d78d956db7e0ad6297e61796c5102"
+}

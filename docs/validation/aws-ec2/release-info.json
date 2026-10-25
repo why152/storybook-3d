@@ -1,0 +1,11 @@
+{
+  "source": "e964c93aa09d78d956db7e0ad6297e61796c5102",
+  "archive": "/Users/wanghaoyue/project/storybook-3d/build/storybook-release.tar.gz",
+  "sha256": "475c212285f021f85894741401f564c4c940512873f75dc32547dc714cb94c99",
+  "bytes": 146603,
+  "files": 55,
+  "bucket": "storybook-transfer-764788758545-1792949374",
+  "key": "storybook-release.tar.gz",
+  "commandId": "c11bdcc8-ba0e-4379-b20d-d2083aed05b1",
+  "temporaryTransferCleaned": true
+}

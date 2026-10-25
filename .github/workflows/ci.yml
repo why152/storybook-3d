@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+      - preview/stable-storybook
 
 concurrency:
   group: storybook-validation-${{ github.event.pull_request.number || github.ref }}

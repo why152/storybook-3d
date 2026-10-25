@@ -60,6 +60,12 @@ customization, keyboard/touch and reduced motion. Record source commit,
 archive SHA256, SSM command ID, tested URL, old-site status and unchanged
 container start times. Passing local tests alone does not prove publication.
 
+Run the same suite against the deployed host without starting a local server:
+
+```bash
+STORYBOOK_TEST_BASE_URL=https://storybook.35-76-143-76.sslip.io npm run test:e2e
+```
+
 ## Rollback
 
 For later releases, point `current` back to a verified release; no Caddy
