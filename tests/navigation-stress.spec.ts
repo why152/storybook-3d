@@ -59,3 +59,26 @@ test('next/previous boundary buttons, mid-turn input lock and no stale leaf DOM'
   await expect(page.getByRole('button',{name:'上一页'})).toBeDisabled();
   await expect(page.locator('.book-turn-leaf')).toHaveCount(0);
 });
+
+
+test('customization modal traps focus and never forwards arrow keys to the book',async ({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/?scene=grow');
+  const trigger=page.getByRole('button',{name:/CUSTOMIZE/});
+  await trigger.click();
+  const dialog=page.getByRole('dialog',{name:'写下你的故事。'});
+  await expect(dialog).toBeVisible();
+  await expect(page.getByLabel('收礼人的名字')).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('.book-static .page-surface[data-chapter="grow"]')).toHaveCount(2);
+  // Shift+Tab from first text field reaches the close button; once on first
+  // focusable element, Shift+Tab wraps to last inside the dialog.
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.getByRole('button',{name:'关闭定制面板'})).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.getByRole('button',{name:/看看最后一章/})).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  await expect(page.locator('.book-static .page-surface[data-chapter="grow"]')).toHaveCount(2);
+});
