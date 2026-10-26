@@ -34,7 +34,8 @@ for(const [engine,browserType] of Object.entries({chromium,webkit})){
    await page.getByRole('button',{name:'下一页'}).click();
    await page.locator('.book-turn-leaf').waitFor({state:'visible'});
    const frozen=await read();
-   const printed=await page.locator('.book-leaf-front .scene-plane').evaluateAll(els=>els.map(el=>getComputedStyle(el).transform));
+   const printSource=await page.locator('.paper-source[data-print=front]').count()?page.locator('.paper-source[data-print=front]'):page.locator('[data-face=front]').first();
+   const printed=await printSource.locator('.scene-plane').evaluateAll(els=>els.map(el=>getComputedStyle(el).transform));
    await page.screenshot({path:`${out}/${engine}-${size}-${variant}-start.png`});
    report.push({engine,variant,size,chapter:'hello',animationTimeMs:1250,rest,frozen,printed,unchanged:JSON.stringify(rest)===JSON.stringify(printed)});
    await page.locator('.book-turn-leaf').waitFor({state:'detached'});

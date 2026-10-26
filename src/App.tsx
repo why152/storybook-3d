@@ -81,7 +81,7 @@ export default function App(){
     <header className="site-head">
       <div className="site-name">little<span>story</span>.studio</div>
       <div className="site-title">A LITTLE STORY<br/>FOR SOMEONE SPECIAL</div>
-      <button ref={customizeTrigger} type="button" className="customize-trigger" onClick={()=>setEditorOpen(true)}>
+      <button ref={customizeTrigger} type="button" className="customize-trigger" disabled={!!turn} onClick={()=>setEditorOpen(true)}>
         CUSTOMIZE <span aria-hidden="true">↗</span>
       </button>
     </header>

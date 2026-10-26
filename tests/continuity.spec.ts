@@ -16,13 +16,31 @@ for(const chapter of chapters.slice(0,-1)){
         }
       }
     });
+    const nativeSurface=page.locator('.book-right .page-surface');
+    await nativeSurface.evaluate(surface=>surface.querySelectorAll<HTMLElement>('.page-print-grain,.paper-bevel,.page-chapter,.page-quote').forEach(el=>{el.style.visibility='hidden'}));
+    const nativePrint=await nativeSurface.screenshot();
+    await nativeSurface.evaluate(surface=>surface.querySelectorAll<HTMLElement>('.page-print-grain,.paper-bevel,.page-chapter,.page-quote').forEach(el=>{el.style.removeProperty('visibility')}));
     const source=await page.locator('.book-left .scene-plane').evaluateAll(planes=>
       planes.map(el=>getComputedStyle(el).transform));
     await page.getByRole('button',{name:'下一页'}).click();
     const leaf=page.locator('.book-turn-leaf');
     await expect(leaf).toBeVisible();
-    const moving=await leaf.locator('.book-leaf-front .scene-plane').evaluateAll(planes=>
-      planes.map(el=>getComputedStyle(el).transform));
+    const bitmapError=await page.evaluate(async native=>{
+      const url=document.querySelector<HTMLImageElement>('.paper-front .paper-art')!.src;
+      const read=async(src:string)=>{const image=new Image();image.src=src;await image.decode();return image;};
+      const [original,print]=await Promise.all([read('data:image/png;base64,'+native),read(url)]);
+      const canvas=document.createElement('canvas');canvas.width=original.width;canvas.height=original.height;
+      const ctx=canvas.getContext('2d')!;ctx.drawImage(original,0,0);
+      const a=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+      ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(print,print.width/2,0,print.width/2,print.height,0,0,canvas.width,canvas.height);
+      const b=ctx.getImageData(0,0,canvas.width,canvas.height).data;let sum=0,n=0;
+      for(let y=Math.ceil(canvas.height*.03);y<canvas.height*.97;y++)for(let x=Math.ceil(canvas.width*.03);x<canvas.width*.97;x++){
+        const i=(y*canvas.width+x)*4;for(let c=0;c<3;c++){sum+=Math.abs(a[i+c]-b[i+c]);n++;}
+      }return sum/n;
+    },nativePrint.toString('base64'));
+    expect(bitmapError,'shared print must preserve the actual frozen artwork, not just source metadata').toBeLessThan(2.5);
+    const moving=await page.locator('.paper-source[data-print=front] .scene-plane').evaluateAll(planes=>
+      planes.map(el=>(el as HTMLElement).style.transform));
     const stationary=await page.locator('.book-left .scene-plane').evaluateAll(planes=>
       planes.map(el=>getComputedStyle(el).transform));
     expect(moving).toEqual(source);
@@ -30,7 +48,7 @@ for(const chapter of chapters.slice(0,-1)){
     // Incoming page and its printed reverse must agree before landing.
     const arrival=await page.locator('.book-right .scene-plane').evaluateAll(planes=>
       planes.map(el=>getComputedStyle(el).transform));
-    expect(await leaf.locator('.book-leaf-back .scene-plane').evaluateAll(planes=>
+    expect(await page.locator('.paper-source[data-print=back] .scene-plane').evaluateAll(planes=>
       planes.map(el=>(el as HTMLElement).style.transform))).toEqual(arrival);
     await expect(leaf).toHaveCount(0);
     const playing=await page.locator('.book-static .scene-plane').evaluateAll(planes=>
@@ -49,8 +67,8 @@ for(const chapter of chapters.slice(0,-1)){
     expect(phaseError).toBeLessThan(2);
     await page.getByRole('button',{name:'上一页'}).click();
     await expect(leaf).toBeVisible();
-    const reverse=await leaf.locator('.book-leaf-back .scene-plane').evaluateAll(planes=>
-      planes.map(el=>getComputedStyle(el).transform));
+    const reverse=await page.locator('.paper-source[data-print=back] .scene-plane').evaluateAll(planes=>
+      planes.map(el=>(el as HTMLElement).style.transform));
     expect(reverse).toEqual(await page.locator('.book-right .scene-plane').evaluateAll(planes=>
       planes.map(el=>getComputedStyle(el).transform)));
     await expect(leaf).toHaveCount(0);
@@ -95,6 +113,7 @@ for(const width of [1280,390])for(const pose of [0,1]){
     const settled=await page.screenshot();
     await page.goto(`/?pose=${pose}&from=${chapters[1].id}`);
     await ready();
+    await expect(page.locator('.book-turn-leaf')).toBeVisible();
     const turning=await page.screenshot({path:`test-results/endpoint-${width}-${pose}.png`});
     const error=await page.evaluate(async({a,b,box})=>{
       const read=async(data:string)=>{

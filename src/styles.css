@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Caveat:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
-
 :root{font-family:'DM Sans','Noto Sans SC',sans-serif;color:#ece6df;background:#0e0e11;font-synthesis:none;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 *{box-sizing:border-box}
 html,body,#root{margin:0;width:100%;height:100%;min-height:560px}
@@ -30,7 +28,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
    This is fundamentally different from the removed whole-card rotation. */
 .book-viewport{width:min(100%,1100px,calc((100dvh - 230px)*12/7));aspect-ratio:12/7;position:relative;
  margin:auto;perspective:2300px;touch-action:pan-y}
-.book-shell{height:100%;width:100%;position:relative;transform-style:preserve-3d;perspective:2400px;
+.book-shell{height:100%;width:100%;position:relative;transform-style:preserve-3d;
  filter:none}
 .book-shell.is-closed{transform:translateX(-25%)}
 .book-depth{position:absolute;inset:1.1% .45% -1.8%;border-radius:14px;
@@ -111,10 +109,29 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .leaf-light{position:absolute;inset:0;z-index:12;opacity:var(--leaf-shade,0);pointer-events:none;
  background:linear-gradient(90deg,#201b2cdd 0,transparent 38%,#fff9df73 82%,#201b2cb6);
  mix-blend-mode:multiply}
-.book-turn-leaf::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;
+.book-turn-leaf:not(.is-flexible)::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;
  background:#e9d9ba;z-index:13;box-shadow:1px 0 2px #35273370}
 .book-leaf-face .plane-effects{animation:none}
 .book-leaf-face .page-chapter-left{text-shadow:0 1px 3px #3d303790}
+
+/* One connected, developable leaf; clip only its individual printed surfaces. */
+.book-turn-leaf.is-flexible{transform-style:flat}
+.paper-segment{position:absolute;left:0;top:0;height:100%;transform-origin:0 0;transform-style:flat}
+.paper-segment-face{position:absolute;top:0;left:var(--paper-overlap-start,-1px);width:calc(100% + var(--paper-overlap-span,2px));height:100%;overflow:hidden;isolation:isolate;backface-visibility:visible;-webkit-backface-visibility:visible}
+.paper-front{transform:none}
+.paper-back{transform:scaleX(-1)}
+.paper-art{position:absolute;top:0;max-width:none;pointer-events:none}
+.paper-print{position:absolute;top:0;height:100%}
+.paper-print .page-surface{background:transparent;box-shadow:none;backface-visibility:visible;-webkit-backface-visibility:visible}
+.paper-source-pair{position:absolute;inset:0;z-index:0;pointer-events:none}
+.paper-source-pair.is-ready{visibility:hidden}
+.paper-source{position:absolute;left:0;top:0;width:50%;height:100%}
+.paper-source:nth-child(2){left:50%}
+.paper-source .scene-plane{animation-play-state:paused!important;transition:none}
+.paper-segment-face::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgb(40 33 44 / var(--shade-start,0)),rgb(40 33 44 / var(--shade-end,0)));pointer-events:none}
+.paper-back::after{background:linear-gradient(90deg,rgb(40 33 44 / var(--shade-end,0)),rgb(40 33 44 / var(--shade-start,0)))}
+.paper-segment .page-surface{backface-visibility:visible;-webkit-backface-visibility:visible}
+.paper-segment .page-chapter-left{text-shadow:0 1px 3px #3d303790}
 
 /* Navy fabric cover: the closed state is a real portrait front leaf. */
 .book-front-cover{border-radius:3px 15px 15px 3px;color:#f6e4c8;
@@ -240,19 +257,19 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .acting-grow.actor-rabbit{transform-origin:30% 49%}
 .acting-grow.actor-fox{transform-origin:74% 75%}
 .acting-grow.actor-props{transform-origin:88% 82%}
-.book-static .acting-hello.actor-rabbit{
+.acting-hello.actor-rabbit{
  animation:hello-rabbit-greeting 4.8s ease-in-out infinite;
 }
-.book-static .acting-hello.actor-fox{
+.acting-hello.actor-fox{
  animation:hello-fox-reply 5.3s ease-in-out -.85s infinite;
 }
-.book-static .acting-grow.actor-rabbit{
+.acting-grow.actor-rabbit{
  animation:grow-rabbit-reaching 4.3s ease-in-out infinite;
 }
-.book-static .acting-grow.actor-fox{
+.acting-grow.actor-fox{
  animation:grow-fox-watering 5.0s ease-in-out -1.1s infinite;
 }
-.book-static .acting-grow.actor-props{
+.acting-grow.actor-props{
  animation:grow-watering-props 5.0s ease-in-out -1.1s infinite;
 }
 
@@ -291,7 +308,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
    Removing the animation would snap actors back to their registration point. */
 .book-shell.is-turning .book-static .scene-plane{animation-play-state:paused}
 @media(prefers-reduced-motion:reduce){
-  .book-static .scene-actor{animation:none!important}
+  .scene-actor{animation:none!important}
 }
 
 
@@ -307,31 +324,31 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .acting-wish.actor-fox{transform-origin:24% 75%}
 .acting-wish.actor-rabbit{transform-origin:80% 74%}
 .acting-wish.actor-props{transform-origin:34% 85%}
-.book-static .acting-together.actor-fox{
+.acting-together.actor-fox{
   animation:story-tea-fox 5.9s ease-in-out -.45s infinite;
 }
-.book-static .acting-together.actor-rabbit{
+.acting-together.actor-rabbit{
   animation:story-tea-rabbit 5.1s ease-in-out -1.6s infinite;
 }
-.book-static .acting-together.actor-props{
+.acting-together.actor-props{
   animation:story-tea-cups 4.3s ease-in-out -.8s infinite;
 }
-.book-static .acting-dream.actor-rabbit{
+.acting-dream.actor-rabbit{
   animation:story-stargaze-rabbit 6.4s ease-in-out infinite;
 }
-.book-static .acting-dream.actor-fox{
+.acting-dream.actor-fox{
   animation:story-stargaze-fox 5.7s ease-in-out -2s infinite;
 }
-.book-static .acting-dream.actor-props{
+.acting-dream.actor-props{
   animation:story-star-map 6.2s ease-in-out -.8s infinite;
 }
-.book-static .acting-wish.actor-fox{
+.acting-wish.actor-fox{
   animation:story-wish-present 5.2s ease-in-out -.65s infinite;
 }
-.book-static .acting-wish.actor-rabbit{
+.acting-wish.actor-rabbit{
   animation:story-wish-cheer 4.8s ease-in-out -1.3s infinite;
 }
-.book-static .acting-wish.actor-props{
+.acting-wish.actor-props{
   animation:story-wish-gift 5.4s ease-in-out -1.4s infinite;
 }
 @keyframes story-tea-fox{

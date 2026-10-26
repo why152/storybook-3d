@@ -9,6 +9,7 @@ on:
       - main
       - preview/stable-storybook
       - codex/aws-ec2-preview
+      - codex/page-turn-continuity
 
 concurrency:
   group: storybook-validation-${{ github.event.pull_request.number || github.ref }}

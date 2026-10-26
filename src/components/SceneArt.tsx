@@ -16,14 +16,14 @@ const actingScenes: Readonly<Record<ChapterId,readonly string[]>>={
 
 
 export type PageSide='left'|'right';
-type PageHalfProps={chapter:Chapter;side:PageSide;name:string;wish:string};
+type PageHalfProps={chapter:Chapter;side:PageSide;name:string;wish:string;inkOnly?:boolean};
 
-export function PageHalf({chapter,side,name,wish}:PageHalfProps){
+export function PageHalf({chapter,side,name,wish,inkOnly=false}:PageHalfProps){
   const title=chapter.title.replace('{name}',name.trim()||'你');
   const description=chapter.description.replace('{wish}',wish.trim()||'愿所有美好都在下一页等你。');
   return <div className={`page-surface theme-${chapter.id} page-${side}`} data-chapter={chapter.id} data-side={side}>
     <div className="page-window">
-      <div className="spread-composition" aria-hidden="true">
+      {!inkOnly&&<div className="spread-composition" aria-hidden="true">
         {planes.map((plane,index)=>
           plane==='characters'&&actingScenes[chapter.id]
             ? actingScenes[chapter.id].map(actor=><img
@@ -39,7 +39,7 @@ export function PageHalf({chapter,side,name,wish}:PageHalfProps){
                 data-depth={index} alt="" draggable={false}
               />
         )}
-      </div>
+      </div>}
       <div className="page-print-grain" aria-hidden="true"/>
       {side==='right'&&<>
         <div className="page-chapter">{chapter.label} <span aria-hidden="true">✳</span></div>
