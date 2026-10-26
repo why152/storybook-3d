@@ -54,7 +54,7 @@ for(const chapter of chapters){
   });
 }
 
-for(const [step,pose] of ['0','0.5','1'].entries()){
+for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
   test(`cover opens by turning a bound right leaf at ${Math.round(Number(pose)*100)}%`,async ({page})=>{
     await page.emulateMedia({reducedMotion:'reduce'});
     await page.goto('/?pose='+pose+'&from=cover');

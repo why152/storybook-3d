@@ -48,8 +48,9 @@ npm run test:actors
 npm run lint
 npm run typecheck
 npm run build
-npx playwright install chromium
+npx playwright install chromium webkit
 npm run test:e2e
+STORYBOOK_TEST_BROWSER=webkit npm run test:e2e
 ```
 
 Vite normally serves at http://localhost:5173.
