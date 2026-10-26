@@ -31,9 +31,11 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
   const lastTurn=useRef<PageTurn|null>(null);
   const [preparedTurn,setPreparedTurn]=useState<PageTurn|null>(null);
   const [print,setPrint]=useState<(PaperPrint&{turn:PageTurn|null;pose:number|null;from:number;name:string;wish:string})|null>(null);
+  const [decodedPrint,setDecodedPrint]=useState<PaperPrint|null>(null);
   const showingTurn=debugPose===null?turning:{from:debugFrom,to:debugFrom+1,direction:1 as const};
   const flexible=!!showingTurn&&showingTurn.from>0&&showingTurn.to>0&&(!reducedMotion||debugPose!==null);
-  const printReady=!!print&&print.turn===turning&&print.pose===debugPose&&print.from===debugFrom&&print.name===name&&print.wish===wish;
+  const printAvailable=!!print&&print.turn===turning&&print.pose===debugPose&&print.from===debugFrom&&print.name===name&&print.wish===wish;
+  const printReady=printAvailable&&decodedPrint===print;
   const waiting=flexible?!printReady:debugPose===null&&turning!==null&&preparedTurn!==turning;
   const closed=active===0&&(!showingTurn||waiting);
 
@@ -46,6 +48,19 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     });
     return()=>{cancelled=true;};
   },[flexible,turning,debugPose,debugFrom,name,wish]);
+
+  useLayoutEffect(()=>{
+    if(!flexible||!printAvailable||!print)return;
+    let cancelled=false;
+    const images=[...leafRef.current!.querySelectorAll<HTMLImageElement>('.paper-art')];
+    void Promise.all(images.map(image=>image.decode())).then(async()=>{
+      // Allow decoded SVG surfaces to enter WebKit's next display transaction
+      // before replacing the outgoing spread with the incoming underlay.
+      await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
+      if(!cancelled)setDecodedPrint(print);
+    });
+    return()=>{cancelled=true;};
+  },[flexible,printAvailable,print]);
 
   // Keep the entire outgoing spread painted while the new leaf's own image
   // elements decode. Cached URLs do not imply a newly mounted image is ready.
@@ -114,7 +129,7 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
   },[active,turning,debugPose,debugFrom,preparedTurn,printReady,flexible]);
 
   useLayoutEffect(()=>{
-    if(!flexible||!printReady||!leafRef.current)return;
+    if(!flexible||!printAvailable||!leafRef.current)return;
     const leaf=leafRef.current;
     const layout=()=>{
       layoutPaper(leaf,print??undefined);
@@ -124,7 +139,7 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     const observer=new ResizeObserver(layout);
     observer.observe(leaf);
     return()=>observer.disconnect();
-  },[flexible,turning,debugPose,preparedTurn,printReady]);
+  },[flexible,turning,debugPose,preparedTurn,printAvailable,print]);
 
   useLayoutEffect(()=>{
     if(debugPose!==null||!turning||waiting||!leafRef.current||!shellRef.current)return;

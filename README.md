@@ -87,8 +87,11 @@ Passing CI is not proof of artistic equivalence.
 
 ## Known limitations
 
-Leaf is rigid paper with cover/pages and shadows, not a smoothly
-deformable page curl. Illustration is original and still needs
+The deployed baseline uses rigid leaves. This local branch is developing
+flexible interior paper in [Draft PR #20](https://github.com/why152/storybook-3d/pull/20);
+it has not passed full browser and visual acceptance. See
+[experiment results and remaining gates](docs/flexible-paper.md).
+Illustration is original and still needs
 professional art refinement, scene-specific character acting and
 performance profiling. No back end, payments, accounts or customer
 file uploads. **PR #9 was owner-approved and merged on 2026-10-25; artistic polish and future deployments still require separate validation.**

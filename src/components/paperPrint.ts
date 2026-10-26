@@ -8,7 +8,7 @@ function embeddedSource(url:string){
     source=fetch(url).then(response=>{
       if(!response.ok)throw new Error(`Page artwork ${response.status}`);
       return response.text();
-    }).then(svg=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg));
+    });
     sources.set(url,source);
   }
   return source;
@@ -41,14 +41,29 @@ export async function capturePaperPrint(pair:HTMLElement):Promise<PaperPrint>{
     const composition=surface.querySelector('.spread-composition')!.getBoundingClientRect();
     const artWidth=composition.width;
     const layers:string[]=[];
-    for(const image of images){
+    let intrinsicWidth=0,intrinsicHeight=0;
+    for(const [index,image] of images.entries()){
       const ink=getComputedStyle(image);
       const [originX,originY]=ink.transformOrigin.split(' ').map(parseFloat);
       const matrix=new DOMMatrix(ink.transform==='none'?undefined:ink.transform);
-      const url=await embeddedSource(image.currentSrc||image.src);
-      layers.push(`<g transform="translate(${originX} ${originY}) matrix(${matrix.a} ${matrix.b} ${matrix.c} ${matrix.d} ${matrix.e} ${matrix.f}) translate(${-originX} ${-originY})"><image href="${url}" width="${artWidth}" height="${height}" preserveAspectRatio="none"/></g>`);
+      const original=await embeddedSource(image.currentSrc||image.src);
+      const svg=new DOMParser().parseFromString(original,'image/svg+xml').documentElement;
+      if(index===0){
+        const viewBox=svg.getAttribute('viewBox')!.split(/\s+/).map(Number);
+        intrinsicWidth=viewBox[2];intrinsicHeight=viewBox[3];
+      }
+      // Keep each source's gradients, masks and patterns independent after
+      // embedding paths. No asynchronous nested image resources remain.
+      const ids=new Map([...svg.querySelectorAll('[id]')].map(el=>[el.id,`plane-${index}-${el.id}`]));
+      for(const element of [svg,...svg.querySelectorAll('*')])for(const attribute of [...element.attributes]){
+        if(attribute.name==='id')element.setAttribute('id',ids.get(attribute.value)!);
+        else element.setAttribute(attribute.name,attribute.value.replace(/url\(#([^)]+)\)/g,(_,id)=>`url(#${ids.get(id)??id})`).replace(/^#(.+)$/,(_,id)=>ids.has(id)?`#${ids.get(id)}`:`#${id}`));
+      }
+      svg.setAttribute('width',String(artWidth));svg.setAttribute('height',String(height));
+      svg.setAttribute('preserveAspectRatio','none');
+      layers.push(`<g transform="translate(${originX} ${originY}) matrix(${matrix.a} ${matrix.b} ${matrix.c} ${matrix.d} ${matrix.e} ${matrix.f}) translate(${-originX} ${-originY})">${new XMLSerializer().serializeToString(svg)}</g>`);
     }
-    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${artWidth}" height="${height}" viewBox="0 0 ${artWidth} ${height}"><rect width="100%" height="100%" fill="${style.backgroundColor}"/>${layers.join('')}</svg>`;
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${intrinsicWidth}" height="${intrinsicHeight}" viewBox="0 0 ${artWidth} ${height}" preserveAspectRatio="none"><rect width="100%" height="100%" fill="${style.backgroundColor}"/>${layers.join('')}</svg>`;
     const url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
     const ready=new Image();ready.src=url;
     await ready.decode();

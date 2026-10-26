@@ -16,7 +16,8 @@ for(const [device,viewport] of [['desktop',{width:1280,height:720}],['mobile',{w
    await page.goto(`http://127.0.0.1:${port}/?from=${chapter}&pose=${pose}`);
    await page.addStyleTag({content:camera});
    await page.evaluate(async()=>{await Promise.all([...document.images].map(i=>i.decode()));await document.fonts.ready;});
-   await page.locator('.book-turn-leaf').waitFor({state:'visible'});
+   // A rigid leaf has zero projected width at 50%; that is an expected pose.
+   if(variant==='flexible'&&chapter!=='cover')await page.locator('[data-texture-ready="true"]').waitFor({state:'attached'});
    await page.waitForTimeout(200);
    await page.screenshot({path:`${root}/${engine}-${device}-${variant}-${chapter}-${pose}.png`});
   }

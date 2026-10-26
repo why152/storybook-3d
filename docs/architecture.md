@@ -17,6 +17,8 @@ HELLO, GROW, TOGETHER, DREAM and WISH.
 | `src/data/story.ts` | Single typed data source for five chapters, palette, text, initial routes |
 | `src/components/SceneArt.tsx` | Six original SVG illustration planes per scene; 1200×700 compositions sliced into page halves |
 | `src/components/Book.tsx` | Binding geometry, stationary pages, dual-sided turning leaf, GSAP animation and pointer parallax |
+| `src/components/paperGeometry.ts` | Joined constant-length interior curve, strip layout and camera projection |
+| `src/components/paperPrint.ts` | Two shared SVG prints from original art and frozen poses; HTML text remains in SceneArt |
 | `src/App.tsx` | Navigation and sequential bookmarks, keyboard / touch, lightweight editable name and wish |
 | `src/styles.css` | Actual book cover, spine, page thickness, paper faces, gallery lighting, responsive styles |
 | `tests/demo.spec.ts` | Real-browser evidence: closed cover, opening, 5 chapters, 5 poses, physical reverse turn, mobile and video |
@@ -32,7 +34,9 @@ and is cropped into left and right **physical paper surfaces** at the spine.
 - Turning leaf starts on the right, front = current right page.
 - Turning leaf back = **next left page**, correctly readable when rotated to left.
 - The physical leaf is anchored at x = 50% of book with
-  `transform-origin: 0 50%` and rotates from 0 to -180 degrees.
+  `transform-origin: 0 50%`. The rigid baseline rotates from 0 to -180 degrees;
+  this branch's flexible candidate projects a joined curve around the same
+  binding. The cover retains its rigid hinge.
 - On completion stationary book becomes next left + next right.
 
 **Previous chapter, left-to-right turn**:
@@ -49,8 +53,10 @@ animates toward the full landscape open spread, without card flipping.
 
 - Every interior chapter has 6 independently editable and replaceable SVGs:
   background, midground, lettering, characters, foreground, effects.
-- The turning sheet is a **flat physical paper face** (with separate
-  front/back) to prevent artwork protruding outside its cut edge.
+- The flexible candidate clips separate front/back print surfaces to 13 joined
+  strips. Shared SVG resources embed the original source paths, namespace their
+  gradients/masks, and retain actual frozen actor transforms. Native HTML text
+  and paper finish use the same page layout as stationary leaves.
 - Stationary open book retains per-plane pointer parallax and ambient
   decoration movement within each physical page.
 - No ancestor filter or isolation may flatten the turning-leaf backface
@@ -58,9 +64,11 @@ animates toward the full landscape open spread, without card flipping.
 - Animated printed poses are frozen at their actual animation hold times and
   copied to the turning face before paint. Newly settled halves share animation
   clocks; images decode before the hinge starts.
-- The hinge angle explicitly culls the away-facing surface. Native backface
-  visibility remains enabled, with explicit culling to prevent WebKit from
-  painting composited descendants of the reverse face through the front.
+- Cover faces use hinge-angle culling. Flexible strips use camera-facing normals
+  and explicit face visibility; projection avoids the edge-on ancestor that
+  caused WebKit clipping. Native SVG surfaces are sized and decoded before the
+  page stack changes. Current regression failures and acceptance status are
+  recorded in `docs/flexible-paper.md`; this is not an accepted renderer yet.
 
 ## Validation/acceptance
 
@@ -76,5 +84,5 @@ animates toward the full landscape open spread, without card flipping.
 ## Out of scope
 
 Back-end, payments, accounts, uploaded files, public sharing, AI-generated
-customer image pipeline, actual page-curl shaders. The current leaf is a
-rigid page hinge with paper depth/shadow, not a deformable paper mesh.
+customer image pipeline, actual page-curl shaders. The local flexible candidate
+uses CSS projection of a developable curve; no WebGL mesh rewrite is included.

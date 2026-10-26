@@ -17,27 +17,39 @@ for(const chapter of chapters.slice(0,-1)){
       }
     });
     const nativeSurface=page.locator('.book-right .page-surface');
+    const printBox=(await nativeSurface.boundingBox())!;
     await nativeSurface.evaluate(surface=>surface.querySelectorAll<HTMLElement>('.page-print-grain,.paper-bevel,.page-chapter,.page-quote').forEach(el=>{el.style.visibility='hidden'}));
-    const nativePrint=await nativeSurface.screenshot();
+    const nativePrint=await page.screenshot();
     await nativeSurface.evaluate(surface=>surface.querySelectorAll<HTMLElement>('.page-print-grain,.paper-bevel,.page-chapter,.page-quote').forEach(el=>{el.style.removeProperty('visibility')}));
     const source=await page.locator('.book-left .scene-plane').evaluateAll(planes=>
       planes.map(el=>getComputedStyle(el).transform));
     await page.getByRole('button',{name:'下一页'}).click();
     const leaf=page.locator('.book-turn-leaf');
     await expect(leaf).toBeVisible();
-    const bitmapError=await page.evaluate(async native=>{
-      const url=document.querySelector<HTMLImageElement>('.paper-front .paper-art')!.src;
+    // Paint the actual shared SVG at the same viewport coordinates. Resizing
+    // an element screenshot into a canvas changes its fractional pixel phase.
+    await page.evaluate(async box=>{
+      const source=document.querySelector<HTMLImageElement>('.paper-front .paper-art')!;
+      const proof=document.createElement('div');proof.dataset.paperPrintProof='';
+      Object.assign(proof.style,{position:'fixed',left:box.x+'px',top:box.y+'px',width:box.width+'px',height:box.height+'px',overflow:'hidden',zIndex:'2147483647',background:'#f4e0c4'});
+      const image=new Image();image.src=source.src;
+      Object.assign(image.style,{position:'absolute',left:-box.width+'px',top:'0',width:2*box.width+'px',height:box.height+'px'});
+      proof.append(image);document.body.append(proof);await image.decode();
+    },printBox);
+    const printedProof=await page.screenshot();
+    await page.locator('[data-paper-print-proof]').evaluate(el=>el.remove());
+    const bitmapError=await page.evaluate(async({native,proof,box})=>{
       const read=async(src:string)=>{const image=new Image();image.src=src;await image.decode();return image;};
-      const [original,print]=await Promise.all([read('data:image/png;base64,'+native),read(url)]);
+      const [original,print]=await Promise.all([read('data:image/png;base64,'+native),read('data:image/png;base64,'+proof)]);
       const canvas=document.createElement('canvas');canvas.width=original.width;canvas.height=original.height;
       const ctx=canvas.getContext('2d')!;ctx.drawImage(original,0,0);
       const a=ctx.getImageData(0,0,canvas.width,canvas.height).data;
-      ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(print,print.width/2,0,print.width/2,print.height,0,0,canvas.width,canvas.height);
+      ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(print,0,0);
       const b=ctx.getImageData(0,0,canvas.width,canvas.height).data;let sum=0,n=0;
-      for(let y=Math.ceil(canvas.height*.03);y<canvas.height*.97;y++)for(let x=Math.ceil(canvas.width*.03);x<canvas.width*.97;x++){
+      for(let y=Math.ceil(box.y+box.height*.03);y<box.y+box.height*.97;y++)for(let x=Math.ceil(box.x+box.width*.03);x<box.x+box.width*.97;x++){
         const i=(y*canvas.width+x)*4;for(let c=0;c<3;c++){sum+=Math.abs(a[i+c]-b[i+c]);n++;}
       }return sum/n;
-    },nativePrint.toString('base64'));
+    },{native:nativePrint.toString('base64'),proof:printedProof.toString('base64'),box:printBox});
     expect(bitmapError,'shared print must preserve the actual frozen artwork, not just source metadata').toBeLessThan(2.5);
     const moving=await page.locator('.paper-source[data-print=front] .scene-plane').evaluateAll(planes=>
       planes.map(el=>(el as HTMLElement).style.transform));

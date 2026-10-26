@@ -45,21 +45,69 @@ Observed experiment decisions:
   local styles; print capture waits for styles and a layout frame, and hidden
   turning leaves are not measured before preparation.
 
-Last executed browser check:
-`STORYBOOK_TEST_BROWSER=webkit playwright test tests/flexible-paper.spec.ts`
-against the local production preview: **3 passed**, including joined length,
-geometry budget, and all four strict painted endpoint cases. Local report:
-`/tmp/storybook-flexible/vector-img/`. Later cleanup removed unused background
-properties and adjusted the continuity test to read the native SVG image;
-the production build, lint, typecheck and original asset/actor checks passed.
+## Verified checkpoint and remaining failures
 
-The following browser continuity command was **not executed**: automatic
-approval review could not complete because the account reached its usage
-limit. No approval was bypassed. This is not evidence of a browser failure
-or an unsafe command.
+Recovery checkpoint: `5462233`, [Draft PR #20](https://github.com/why152/storybook-3d/pull/20),
+based on PR #19. Its [first CI](https://github.com/why152/storybook-3d/actions/runs/40337544617)
+failed: Chromium 42 passed / 1 failed; WebKit 38 passed / 3 failed / 1 skipped.
+The checkpoint's nested SVG resources produced large endpoint differences in
+Linux CI. This is not a passing product baseline.
 
-Still required before adoption: actual frozen print and forward/backward
-handoff checks; Chromium and WebKit complete suites; midpoint paint/clip and
-seam inspection; matched five-pose captures and continuous opening/forward/
-reverse video; customization, reduced motion and resize verification; frame
-timings; user visual review. No new commit, PR, merge or deployment is claimed.
+Subsequent local work embeds original SVG paths with namespaced gradients and
+masks, keeps the original intrinsic art dimensions, and sizes/decodes mounted
+print images before handoff. The actual shared print is compared to the original
+frozen art at the same viewport coordinates, without resizing screenshots.
+All four chapter pose / forward / reverse checks pass in Chromium and WebKit.
+
+Latest focused production-preview checks:
+
+| Engine | Result | Remaining failures |
+| --- | --- | --- |
+| Chromium | 10 passed / 2 failed | Mobile viewport endpoint 0 mean 4.89 (gate <3); full-book mobile 0 mean 4.74 (gate <2) |
+| WebKit | 9 passed / 3 failed | Intermittent first-paint endpoint failure; mobile 0 mean 4.73 and mobile 1 mean 3.30 (gate <3) |
+
+A previous WebKit-only strict endpoint run passed all four cases. The newer
+failures above supersede any broad passing claim. Original gates remain intact.
+One attempt was not executed while automatic approval review was temporarily
+unavailable because of account quota; review recovered and actual tests resumed.
+That interruption is historical, not the current blocker.
+
+## Human-visible comparison and decision
+
+[Evidence directory](validation/flexible-paper/svg-candidate/) contains original
+full-resolution GROW screenshots for both variants and both viewports at
+0/25/50/75/100%, five candidate cover poses, four real opening/forward/reverse/
+closing WebMs, sampled video contacts, timings and exact source SHA256s.
+
+- [Desktop matched poses](validation/flexible-paper/svg-candidate/desktop-matched-poses.png)
+- [Mobile matched poses](validation/flexible-paper/svg-candidate/mobile-matched-poses.png)
+- [Desktop flexible video](validation/flexible-paper/svg-candidate/webkit-desktop-flexible-opening-forward-back.webm)
+- [Mobile flexible video](validation/flexible-paper/svg-candidate/webkit-mobile-flexible-opening-forward-back.webm)
+
+Inspected 50% poses and video samples at 0.4-second intervals show a bound,
+curved, readable half-leaf rather than a centered rotating spread. They also
+show visible strip seams/lighting bands and square protruding outer print
+corners. Initial document-loading blank frames remain in the untrimmed footage.
+The inspected samples do not certify every intermediate frame or real Safari.
+
+Local automated WebKit rAF intervals, covering the complete four-turn sequence
+including preparation (not a GPU or real-phone benchmark):
+
+| Viewport | Rigid p95 | SVG-strip candidate p95 |
+| --- | --- | --- |
+| 1280×720 | 26 ms | 109 ms |
+| 390×844 | 21 ms | 42 ms |
+
+Decision: **iterate the flexible book; reject this SVG-per-strip printing
+configuration as a finished solution.** Keep the joined curve and actual pose
+handoff. The next bounded experiment should test a single pre-rasterized print
+per face through native image surfaces, using the same artwork, timestamps,
+pixel gates and video. The earlier rejected PNG experiment used CSS backgrounds;
+its result does not establish whether native image surfaces solve sampling.
+Do not preserve two production engines or relax pixel thresholds. Require
+better continuous appearance and measured frame intervals before keeping it.
+
+Still required: resolve endpoint/first-paint mismatch and outer clipping;
+remove seams and preparation stalls; complete both browser suites; verify
+customization, reduced motion and resizing; obtain user and real-device visual
+feedback. PR remains Draft. Main and AWS are unchanged; no deployment is claimed.

@@ -98,7 +98,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 /* WebKit can paint the back face's composited children through its parent.
    Cull only the away-facing surface, using the same angle as the hinge.
    Both faces retain their own artwork/identity; the leaf still rotates in 3D. */
-.book-turn-leaf[data-loading="true"]{display:none}
+.book-turn-leaf[data-loading="true"]{visibility:hidden}
 .book-turn-leaf[data-visible-face="front"] .book-leaf-back,
 .book-turn-leaf[data-visible-face="back"] .book-leaf-front{display:none}
 .book-leaf-front{transform:rotateY(0deg) translateZ(.6px)}
@@ -115,7 +115,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .book-leaf-face .page-chapter-left{text-shadow:0 1px 3px #3d303790}
 
 /* One connected, developable leaf; clip only its individual printed surfaces. */
-.book-turn-leaf.is-flexible{transform-style:flat}
+.book-turn-leaf.is-flexible{transform-style:preserve-3d;will-change:auto}
 .paper-segment{position:absolute;left:0;top:0;height:100%;transform-origin:0 0;transform-style:flat}
 .paper-segment-face{position:absolute;top:0;left:var(--paper-overlap-start,-1px);width:calc(100% + var(--paper-overlap-span,2px));height:100%;overflow:hidden;isolation:isolate;backface-visibility:visible;-webkit-backface-visibility:visible}
 .paper-front{transform:none}
