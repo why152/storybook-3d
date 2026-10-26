@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const production = process.env.STORYBOOK_TEST_PRODUCTION === '1';
 const deployedURL = process.env.STORYBOOK_TEST_BASE_URL;
+const browserName = process.env.STORYBOOK_TEST_BROWSER === 'webkit' ? 'webkit' : 'chromium';
 
 export default defineConfig({
   testDir: './tests',
@@ -11,6 +12,7 @@ export default defineConfig({
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     ...devices['Desktop Chrome'],
+    browserName,
     viewport: { width: 1440, height: 900 },
     baseURL: deployedURL || 'http://127.0.0.1:5173',
     screenshot: 'only-on-failure',

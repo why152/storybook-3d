@@ -55,6 +55,12 @@ animates toward the full landscape open spread, without card flipping.
   decoration movement within each physical page.
 - No ancestor filter or isolation may flatten the turning-leaf backface
   structure. No doubled incoming page overlay.
+- Animated printed poses are frozen at their actual animation hold times and
+  copied to the turning face before paint. Newly settled halves share animation
+  clocks; images decode before the hinge starts.
+- The hinge angle explicitly culls the away-facing surface. Native backface
+  visibility remains enabled, with explicit culling to prevent WebKit from
+  painting composited descendants of the reverse face through the front.
 
 ## Validation/acceptance
 
