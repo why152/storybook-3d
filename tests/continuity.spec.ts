@@ -26,15 +26,20 @@ for(const chapter of chapters.slice(0,-1)){
     await page.getByRole('button',{name:'下一页'}).click();
     const leaf=page.locator('.book-turn-leaf');
     await expect(leaf).toBeVisible();
-    // Paint the actual shared SVG at the same viewport coordinates. Resizing
+    await expect(leaf).toHaveAttribute('data-texture-ready','true');
+    // Paint the actual shared composition at the same viewport coordinates. Resizing
     // an element screenshot into a canvas changes its fractional pixel phase.
     await page.evaluate(async box=>{
-      const source=document.querySelector<HTMLImageElement>('.paper-front .paper-art')!;
+      const source=document.querySelector<HTMLElement>('.paper-front .spread-composition')!;
       const proof=document.createElement('div');proof.dataset.paperPrintProof='';
       Object.assign(proof.style,{position:'fixed',left:box.x+'px',top:box.y+'px',width:box.width+'px',height:box.height+'px',overflow:'hidden',zIndex:'2147483647',background:'#f4e0c4'});
-      const image=new Image();image.src=source.src;
-      Object.assign(image.style,{position:'absolute',left:-box.width+'px',top:'0',width:2*box.width+'px',height:box.height+'px'});
-      proof.append(image);document.body.append(proof);await image.decode();
+      const ink=getComputedStyle(source);
+      let left=0;
+      for(let el:HTMLElement|null=source;el&&!el.classList.contains('paper-segment');el=el.parentElement)left+=parseFloat(getComputedStyle(el).left)||0;
+      const composition=source.cloneNode(true) as HTMLElement;
+      Object.assign(composition.style,{position:'absolute',left:left+'px',top:ink.top,width:ink.width,height:ink.height});
+      proof.append(composition);document.body.append(proof);
+      await Promise.all([...composition.querySelectorAll('img')].map(image=>image.decode()));
     },printBox);
     const printedProof=await page.screenshot();
     await page.locator('[data-paper-print-proof]').evaluate(el=>el.remove());
@@ -79,6 +84,7 @@ for(const chapter of chapters.slice(0,-1)){
     expect(phaseError).toBeLessThan(2);
     await page.getByRole('button',{name:'上一页'}).click();
     await expect(leaf).toBeVisible();
+    await expect(leaf).toHaveAttribute('data-texture-ready','true');
     const reverse=await page.locator('.paper-source[data-print=back] .scene-plane').evaluateAll(planes=>
       planes.map(el=>(el as HTMLElement).style.transform));
     expect(reverse).toEqual(await page.locator('.book-right .scene-plane').evaluateAll(planes=>
@@ -111,7 +117,7 @@ test('cold incoming artwork is decoded before the paper starts moving',async ({p
 // Compare actual painted pixels against each settled spread. DOM face counts
 // cannot detect a compositor painting mirrored back-face children in WebKit.
 for(const width of [1280,390])for(const pose of [0,1]){
-  test(`painted ${width}px turn endpoint ${pose} matches its settled artwork`,async ({page})=>{
+  test(`painted ${width}px turn endpoint ${pose} matches its settled artwork`,async ({page},testInfo)=>{
     await page.setViewportSize({width,height:width===390?844:720});
     await page.emulateMedia({reducedMotion:'reduce'});
     const chapter=chapters[1+pose];
@@ -126,6 +132,7 @@ for(const width of [1280,390])for(const pose of [0,1]){
     await page.goto(`/?pose=${pose}&from=${chapters[1].id}`);
     await ready();
     await expect(page.locator('.book-turn-leaf')).toBeVisible();
+    await expect(page.locator('.book-turn-leaf')).toHaveAttribute('data-texture-ready','true');
     const turning=await page.screenshot({path:`test-results/endpoint-${width}-${pose}.png`});
     const error=await page.evaluate(async({a,b,box})=>{
       const read=async(data:string)=>{
@@ -145,6 +152,11 @@ for(const width of [1280,390])for(const pose of [0,1]){
       }
       return sum/count;
     },{a:settled.toString('base64'),b:turning.toString('base64'),box});
+    if(error>=3){
+      await testInfo.attach('settled-reference',{body:settled,contentType:'image/png'});
+      await testInfo.attach('turning-endpoint',{body:turning,contentType:'image/png'});
+      await testInfo.attach('registration',{body:Buffer.from(JSON.stringify({error,referenceBox:box,turningBox:await page.locator('.book-viewport').boundingBox()})),contentType:'application/json'});
+    }
     expect(error,'painted artwork must match, including readable face orientation').toBeLessThan(3);
   });
 }

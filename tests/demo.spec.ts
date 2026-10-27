@@ -77,6 +77,7 @@ for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
     await page.emulateMedia({reducedMotion:'reduce'});
     await page.goto('/?pose='+pose+'&from=grow');
     await expect(page.locator('[data-page-role="turning-leaf"]')).toBeVisible();
+    await expect(page.locator('[data-page-role="turning-leaf"]')).toHaveAttribute('data-texture-ready','true');
     await expect(page.locator('.book-static')).toHaveCount(2);
     await expect(page.locator('.paper-segment-face')).toHaveCount(PAPER_SEGMENTS*2);
     const geometry=await page.locator('.book-shell').evaluate(shell=>{
@@ -246,6 +247,10 @@ test('actor performances respect reduced motion and remain aligned with the 2-pa
     await waitForChapterAssets(page,chapter);
     await expect(page.locator('.book-static .actor-rabbit').first()).toHaveCSS('animation-name','none');
     await expect(page.locator('.book-static .actor-fox').first()).toHaveCSS('animation-name','none');
+    expect(await page.locator('.book-static .scene-plane').evaluateAll(planes=>
+      planes.every(plane=>plane.getAnimations().length===0)
+    ),'reduced motion must stop effects as well as actors').toBe(true);
+    await expect(page.locator('.book-viewport')).toHaveCSS('transition-duration','0s');
     const halves=page.locator('.book-static .scene-actor');
     await expect.poll(async()=>halves.evaluateAll(items=>items.every(node=>
       (node as HTMLImageElement).naturalWidth===1200 &&

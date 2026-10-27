@@ -56,15 +56,30 @@ test('mathematical pixel budget minimizes segments without losing shape',()=>{
 
 async function ready(page:import('@playwright/test').Page){
   await page.evaluate(async()=>{await Promise.all([...document.images].map(image=>image.decode()));await document.fonts.ready;});
-  if(await page.locator('.book-turn-leaf').count())await expect(page.locator('.book-turn-leaf')).toBeVisible();
+  if(await page.locator('.book-turn-leaf').count()){
+    await expect(page.locator('.book-turn-leaf')).toBeVisible();
+    await expect(page.locator('.book-turn-leaf')).toHaveAttribute('data-texture-ready','true');
+  }
 }
 
-test('front and reverse endpoint print match the actual settled pages at desktop and mobile sizes',async({page},testInfo)=>{
-  await page.emulateMedia({reducedMotion:'reduce'});
-  for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
+test('front and reverse endpoint print match the actual settled pages at desktop and mobile sizes',async({page:desktop,browser},testInfo)=>{
+  const retina=await browser.newContext({viewport:{width:393,height:852},deviceScaleFactor:3,reducedMotion:'reduce'});
+  try{
+  for(const {page,viewports,dpr} of [
+    {page:desktop,viewports:[{width:1440,height:900},{width:390,height:844},{width:393,height:852}],dpr:1},
+    {page:await retina.newPage(),viewports:[{width:393,height:852}],dpr:3},
+  ]){
+   await page.emulateMedia({reducedMotion:'reduce'});
+   for(const viewport of viewports){
     await page.setViewportSize(viewport);
     for(const [pose,chapter] of [[0,'grow'],[1,'together']] as const){
       await page.goto(`/?from=grow&pose=${pose}`);await ready(page);
+      if(viewport.width===393){
+        await page.setViewportSize({width:844,height:393});
+        await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+        await page.setViewportSize(viewport);
+        await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+      }
       const turned=await page.locator('.book-shell').screenshot();
       await page.goto('/?scene='+chapter);await ready(page);
       const settled=await page.locator('.book-shell').screenshot();
@@ -87,11 +102,11 @@ test('front and reverse endpoint print match the actual settled pages at desktop
       if(diff.mean>=2||diff.changed>=.04){
         // Keep the original strict gate. Attach BOTH actual source frames for
         // pixel inspection; a final failed screenshot alone is misleading.
-        const key=`${viewport.width}-pose-${pose}`;
+        const key=`${viewport.width}-dpr-${dpr}-pose-${pose}`;
         await testInfo.attach(`turning-${key}`,{body:turned,contentType:'image/png'});
         await testInfo.attach(`settled-${key}`,{body:settled,contentType:'image/png'});
         await testInfo.attach(`metrics-${key}`,{
-          body:Buffer.from(JSON.stringify({viewport,pose,...diff},null,2)),
+          body:Buffer.from(JSON.stringify({viewport,dpr,pose,...diff},null,2)),
           contentType:'application/json',
         });
       }
@@ -102,5 +117,7 @@ test('front and reverse endpoint print match the actual settled pages at desktop
       expect(diff.changed,`${viewport.width} / ${pose} missing or mirrored print`).toBeLessThan(.04);
     }
   }
+  }
+  }finally{await retina.close();}
 });
 

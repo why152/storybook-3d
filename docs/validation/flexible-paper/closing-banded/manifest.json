@@ -1,0 +1,41 @@
+{
+  "recordedAtUTC": "2026-10-27T15:26:46.042036+00:00",
+  "baselineCommit": "38fcd9dc70f144392df459aedc3c13833c81a7f4",
+  "candidateParent": "bc6c9bced22ebca6f59a0f8b7d84daf9a14d0733",
+  "sourceSha256": {
+    "index.html": "4ae4974fc8fee8c3255ef06a6807088a80eb7daea892d79803a05d3bfe6f67fc",
+    "src/App.tsx": "910a05da4620467b7b3e0483837162c60e225cf5ffbe3d34d8107cb74106d8af",
+    "src/data/story.ts": "3557fad17f606f4baa1d4d3e21af9072739273dc0a36cd02e7d29e1e8ac66c54",
+    "src/components/Book.tsx": "16fed432da15b6f5d561a08a98f3854a9712172b5b90022b9929f6a08176ea28",
+    "src/components/SceneArt.tsx": "01d0c7839915d5d9ceb2da7b2c35a6fd695558a0977f71cdcb70bc6f095da6a0",
+    "src/components/paperGeometry.ts": "4649563b455d8ad79c44135b922a915b3ce2bb23192f607eb89680aafb076879",
+    "src/components/paperPrint.ts": "1777c7bb93f29d7990891e7062fc63551b459fea4512055d640188a7230e877d",
+    "src/styles.css": "a370949f8b4f503bf8bf4d592553d3ea2feef524f1e613d8d6423cf326280f0a",
+    "scripts/capture-paper-evidence.mjs": "c3a4b5a0951b7332a7be5c8271bf65a379ef7412ceb6370759756f2fedc9c9b6",
+    "tests/continuity.spec.ts": "9148027f1798e5a70cfc308bc3f515ff34aa55bf474b8491c36293102750c0ae",
+    "tests/demo.spec.ts": "5e4970d3c3f80f3d9ebffe47e831dd4e7f4d6d657a7e312cac4d017691d6fd87",
+    "tests/flexible-paper.spec.ts": "19cee73959b2bbb90cd6344dfb6e1d5476cf3939f85a78617557d00a06ea88bd",
+    "package-lock.json": "121e9310eb0a1b2e65d3e81c18bd761168067eced4fbd53a8474d2431a659fbe"
+  },
+  "viewports": [
+    {
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "poses": [
+    0,
+    0.25,
+    0.5,
+    0.75,
+    1
+  ],
+  "stills": "same original art, camera; both reduced-motion variants neutralized including any frozen inline image transforms",
+  "video": "untrimmed real browser opening/forward/backward/closing; normal actor motion",
+  "benchmark": "local automated macOS, whole four-turn sequence including preparation; not real device/GPU FPS",
+  "verdict": "iterate; Chromium 393px resize failure and WebKit frame stalls remain. No merge/deploy."
+}

@@ -1,4 +1,4 @@
-:root{font-family:'DM Sans','Noto Sans SC',sans-serif;color:#ece6df;background:#0e0e11;font-synthesis:none;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+:root{--paper-corner:13px;font-family:'DM Sans','Noto Sans SC',sans-serif;color:#ece6df;background:#0e0e11;font-synthesis:none;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 *{box-sizing:border-box}
 html,body,#root{margin:0;width:100%;height:100%;min-height:560px}
 button,input,textarea{font:inherit}
@@ -52,8 +52,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 /* Both stationary halves show the respective half of one continuous 1200x700 artboard. */
 .page-surface,.book-front-cover{position:absolute;inset:0;width:100%;height:100%;background:#f4e0c4;
  overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden}
-.page-left{border-radius:13px 1px 1px 13px;box-shadow:inset 15px 0 11px #fcf2db33,inset -20px 0 26px #493c3349}
-.page-right{border-radius:1px 13px 13px 1px;box-shadow:inset 18px 0 24px #332b303d,inset -9px 0 12px #fff7e047}
+.page-left{border-radius:var(--paper-corner) 1px 1px var(--paper-corner);box-shadow:inset 15px 0 11px #fcf2db33,inset -20px 0 26px #493c3349}
+.page-right{border-radius:1px var(--paper-corner) var(--paper-corner) 1px;box-shadow:inset 18px 0 24px #332b303d,inset -9px 0 12px #fff7e047}
 .page-window{position:absolute;inset:0;overflow:hidden}
 .spread-composition{position:absolute;top:0;left:0;width:200%;height:100%;pointer-events:none}
 .page-right .spread-composition{left:-100%}
@@ -98,7 +98,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 /* WebKit can paint the back face's composited children through its parent.
    Cull only the away-facing surface, using the same angle as the hinge.
    Both faces retain their own artwork/identity; the leaf still rotates in 3D. */
-.book-turn-leaf[data-loading="true"]{visibility:hidden}
+.book-turn-leaf[data-loading="true"]:not([data-print-available="true"]){visibility:hidden}
 .book-turn-leaf[data-visible-face="front"] .book-leaf-back,
 .book-turn-leaf[data-visible-face="back"] .book-leaf-front{display:none}
 .book-leaf-front{transform:rotateY(0deg) translateZ(.6px)}
@@ -120,15 +120,17 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .paper-segment-face{position:absolute;top:0;left:var(--paper-overlap-start,-1px);width:calc(100% + var(--paper-overlap-span,2px));height:100%;overflow:hidden;isolation:isolate;backface-visibility:visible;-webkit-backface-visibility:visible}
 .paper-front{transform:none}
 .paper-back{transform:scaleX(-1)}
-.paper-art{position:absolute;top:0;max-width:none;pointer-events:none}
-.paper-print{position:absolute;top:0;height:100%}
+.paper-segment:last-child .paper-front{border-radius:0 var(--paper-corner) var(--paper-corner) 0}
+.paper-segment:last-child .paper-back{border-radius:var(--paper-corner) 0 0 var(--paper-corner)}
+.paper-art{position:absolute;inset:0;width:100%;height:100%;z-index:0;max-width:none;object-fit:fill;transform:translate3d(0,0,0);pointer-events:none}
+.paper-print{position:absolute;top:0;z-index:1;height:100%}
 .paper-print .page-surface{background:transparent;box-shadow:none;backface-visibility:visible;-webkit-backface-visibility:visible}
 .paper-source-pair{position:absolute;inset:0;z-index:0;pointer-events:none}
 .paper-source-pair.is-ready{visibility:hidden}
 .paper-source{position:absolute;left:0;top:0;width:50%;height:100%}
 .paper-source:nth-child(2){left:50%}
 .paper-source .scene-plane{animation-play-state:paused!important;transition:none}
-.paper-segment-face::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgb(40 33 44 / var(--shade-start,0)),rgb(40 33 44 / var(--shade-end,0)));pointer-events:none}
+.paper-segment-face::after{content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(90deg,rgb(40 33 44 / var(--shade-start,0)),rgb(40 33 44 / var(--shade-end,0)));pointer-events:none}
 .paper-back::after{background:linear-gradient(90deg,rgb(40 33 44 / var(--shade-end,0)),rgb(40 33 44 / var(--shade-start,0)))}
 .paper-segment .page-surface{backface-visibility:visible;-webkit-backface-visibility:visible}
 .paper-segment .page-chapter-left{text-shadow:0 1px 3px #3d303790}
@@ -216,7 +218,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
  .editor-drawer{padding:64px 27px 28px}
 }
 @media(prefers-reduced-motion:reduce){
- *,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+ *,*:before,*:after{animation:none!important;transition:none!important}
 }
 
 
@@ -307,9 +309,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 /* Keep each static animation at its actual pose while paper is moving.
    Removing the animation would snap actors back to their registration point. */
 .book-shell.is-turning .book-static .scene-plane{animation-play-state:paused}
-@media(prefers-reduced-motion:reduce){
-  .scene-actor{animation:none!important}
-}
 
 
 /* Five-scene independent actor motion: the same original art can now perform

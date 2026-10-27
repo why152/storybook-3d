@@ -3,7 +3,7 @@ import type { PointerEvent } from 'react';
 import { gsap } from 'gsap';
 import { getChapter } from '../data/story';
 import { BlankPage, FrontCover, PageHalf } from './SceneArt';
-import { capturePaperPrint, type PaperPrint } from './paperPrint';
+import { capturePaperPrint, releasePaperPrint, type PaperPrint, type PrintedSurface } from './paperPrint';
 import { PAPER_SEGMENTS, layoutPaper, posePaper } from './paperGeometry';
 
 export type PageTurn = Readonly<{from:number;to:number;direction:-1|1}>;
@@ -18,11 +18,11 @@ type Props={
   debugFrom:number;
 };
 
-function Half({position,side,name,wish,inkOnly=false}:{
-  position:number;side:'left'|'right';name:string;wish:string;inkOnly?:boolean;
+function Half({position,side,name,wish,inkOnly=false,printed}:{
+  position:number;side:'left'|'right';name:string;wish:string;inkOnly?:boolean;printed?:PrintedSurface;
 }){
   if(position===0)return side==='right'?<FrontCover/>:<BlankPage/>;
-  return <PageHalf chapter={getChapter(position)} side={side} name={name} wish={wish} inkOnly={inkOnly}/>;
+  return <PageHalf chapter={getChapter(position)} side={side} name={name} wish={wish} inkOnly={inkOnly} printed={printed}/>;
 }
 
 export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debugPose,debugFrom}:Props){
@@ -45,16 +45,19 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     const pair=shellRef.current!.querySelector<HTMLElement>('.paper-source-pair')!;
     void capturePaperPrint(pair).then(texture=>{
       if(!cancelled)setPrint({turn:turning,pose:debugPose,from:debugFrom,name,wish,...texture});
+      else releasePaperPrint(texture);
     });
     return()=>{cancelled=true;};
   },[flexible,turning,debugPose,debugFrom,name,wish]);
 
+  useLayoutEffect(()=>()=>{if(print)releasePaperPrint(print);},[print]);
+
   useLayoutEffect(()=>{
     if(!flexible||!printAvailable||!print)return;
     let cancelled=false;
-    const images=[...leafRef.current!.querySelectorAll<HTMLImageElement>('.paper-art')];
+    const images=[...leafRef.current!.querySelectorAll<HTMLImageElement>('img')];
     void Promise.all(images.map(image=>image.decode())).then(async()=>{
-      // Allow decoded SVG surfaces to enter WebKit's next display transaction
+      // Allow decoded print surfaces to enter WebKit's next display transaction
       // before replacing the outgoing spread with the incoming underlay.
       await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
       if(!cancelled)setDecodedPrint(print);
@@ -132,7 +135,7 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     if(!flexible||!printAvailable||!leafRef.current)return;
     const leaf=leafRef.current;
     const layout=()=>{
-      layoutPaper(leaf,print??undefined);
+      layoutPaper(leaf);
       posePaper(leaf,debugPose??Number(leaf.dataset.progress??(turning?.direction===-1?1:0)));
     };
     layout();
@@ -271,18 +274,17 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
         className={`book-turn-leaf ${flexible?'is-flexible':''}`} data-page-role="turning-leaf" ref={leafRef}
         aria-hidden="true"
         data-texture-ready={flexible?String(printReady):undefined}
+        data-print-available={flexible?String(printAvailable):undefined}
         data-loading={waiting?'true':undefined}
         data-visible-face={debugPose!==null?(debugPose<.5?'front':'back'):
           showingTurn.direction===1?'front':'back'}
         style={flexible||debugPose===null?undefined:{transform:`rotateY(${-180*debugPose}deg)`}}>
         {flexible?Array.from({length:PAPER_SEGMENTS},(_,index)=><div className="paper-segment" key={index}>
           <div className="paper-segment-face paper-front" data-face="front">
-            {print&&<img className="paper-art" src={print.front.url} alt="" draggable={false}/>}
-            <div className="paper-print"><Half position={leafFront} side="right" name={name} wish={wish} inkOnly/></div>
+            <div className="paper-print"><Half position={leafFront} side="right" name={name} wish={wish} inkOnly printed={print?.front}/></div>
           </div>
           <div className="paper-segment-face paper-back" data-face="back">
-            {print&&<img className="paper-art" src={print.back.url} alt="" draggable={false}/>}
-            <div className="paper-print"><Half position={leafBack} side="left" name={name} wish={wish} inkOnly/></div>
+            <div className="paper-print"><Half position={leafBack} side="left" name={name} wish={wish} inkOnly printed={print?.back}/></div>
           </div>
         </div>):<><div className="book-leaf-face book-leaf-front" data-face="front">
           <Half position={leafFront} side="right" name={name} wish={wish}/>

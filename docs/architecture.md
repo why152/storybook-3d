@@ -18,7 +18,7 @@ HELLO, GROW, TOGETHER, DREAM and WISH.
 | `src/components/SceneArt.tsx` | Six original SVG illustration planes per scene; 1200×700 compositions sliced into page halves |
 | `src/components/Book.tsx` | Binding geometry, stationary pages, dual-sided turning leaf, GSAP animation and pointer parallax |
 | `src/components/paperGeometry.ts` | Joined constant-length interior curve, strip layout and camera projection |
-| `src/components/paperPrint.ts` | Two shared SVG prints from original art and frozen poses; HTML text remains in SceneArt |
+| `src/components/paperPrint.ts` | Cached lower/upper art bands with frozen poses; original vector lettering and HTML text remain native |
 | `src/App.tsx` | Navigation and sequential bookmarks, keyboard / touch, lightweight editable name and wish |
 | `src/styles.css` | Actual book cover, spine, page thickness, paper faces, gallery lighting, responsive styles |
 | `tests/demo.spec.ts` | Real-browser evidence: closed cover, opening, 5 chapters, 5 poses, physical reverse turn, mobile and video |
@@ -54,9 +54,10 @@ animates toward the full landscape open spread, without card flipping.
 - Every interior chapter has 6 independently editable and replaceable SVGs:
   background, midground, lettering, characters, foreground, effects.
 - The flexible candidate clips separate front/back print surfaces to 13 joined
-  strips. Shared SVG resources embed the original source paths, namespace their
-  gradients/masks, and retain actual frozen actor transforms. Native HTML text
-  and paper finish use the same page layout as stationary leaves.
+  strips. Two cached image bands per face retain actual frozen actor transforms;
+  the original SVG lettering stays between them so browser font/mask rendering
+  remains unchanged. SceneArt uses its existing composition slot, native HTML
+  text and paper finish for both printed and stationary leaves.
 - Stationary open book retains per-plane pointer parallax and ambient
   decoration movement within each physical page.
 - No ancestor filter or isolation may flatten the turning-leaf backface
@@ -66,8 +67,10 @@ animates toward the full landscape open spread, without card flipping.
   clocks; images decode before the hinge starts.
 - Cover faces use hinge-angle culling. Flexible strips use camera-facing normals
   and explicit face visibility; projection avoids the edge-on ancestor that
-  caused WebKit clipping. Native SVG surfaces are sized and decoded before the
-  page stack changes. Current regression failures and acceptance status are
+  caused WebKit clipping. Printed surfaces decode and paint over the retained
+  outgoing spread before the page stack changes. Reduced motion disables CSS
+  animations and transitions, rather than making infinite animations faster.
+  Current regression failures and acceptance status are
   recorded in `docs/flexible-paper.md`; this is not an accepted renderer yet.
 
 ## Validation/acceptance

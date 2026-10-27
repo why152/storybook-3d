@@ -1,73 +1,68 @@
-export type PrintedSurface={url:string;width:number;height:number;offsetX:number;offsetY:number};
-export type PaperPrint={front:PrintedSurface;back:PrintedSurface;sourceWidth:number;sourceHeight:number};
+export type PrintedSurface={below:string;above:string;letteringTransform:string;letteringOrigin:string};
+export type PaperPrint={front:PrintedSurface;back:PrintedSurface};
 
-const sources=new Map<string,Promise<string>>();
-function embeddedSource(url:string){
-  let source=sources.get(url);
-  if(!source){
-    source=fetch(url).then(response=>{
-      if(!response.ok)throw new Error(`Page artwork ${response.status}`);
-      return response.text();
-    });
-    sources.set(url,source);
+export function releasePaperPrint(print:PaperPrint){
+  for(const face of [print.front,print.back]){
+    URL.revokeObjectURL(face.below);URL.revokeObjectURL(face.above);
   }
-  return source;
 }
 
-/** Share registered original SVG art, while typography and paper finish
- * continue to use the same native HTML/CSS as settled pages. No scene metadata
- * or text layout is recreated in the renderer. */
+/** Cache the original art around its native vector lettering. Keeping the
+ * lettering plane native preserves browser font/mask rasterization. */
 export async function capturePaperPrint(pair:HTMLElement):Promise<PaperPrint>{
-  // Module execution can precede stylesheet completion in WebKit. A frame
-  // alone does not guarantee styled layout while the first CSS request loads.
-  await Promise.all([...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')].map(link=>link.sheet?Promise.resolve():new Promise<void>(resolve=>{
-    link.addEventListener('load',()=>resolve(),{once:true});
-    link.addEventListener('error',()=>resolve(),{once:true});
-  })));
-  await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));
-  const sources=[...pair.querySelectorAll<HTMLElement>('.page-surface')];
-  const pages=await Promise.all(sources.map(async surface=>{
-    const images=[...surface.querySelectorAll<HTMLImageElement>('.scene-plane')];
-    // WebKit may reject overlapping decode() calls on the same SVG element.
-    // Source load is enough here; decode the shared SVG resource separately.
-    await Promise.all(images.map(image=>image.complete?(image.naturalWidth>0?Promise.resolve():Promise.reject(new Error('Original page artwork failed to load'))):new Promise<void>((resolve,reject)=>{
-      image.addEventListener('load',()=>resolve(),{once:true});
-      image.addEventListener('error',()=>reject(new Error('Original page artwork failed to load')),{once:true});
+  await Promise.all([...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')]
+    .filter(link=>new URL(link.href).origin===location.origin)
+    .map(link=>link.sheet?Promise.resolve():new Promise<void>(resolve=>{
+      link.addEventListener('load',()=>resolve(),{once:true});
+      link.addEventListener('error',()=>resolve(),{once:true});
     })));
-    const bounds=surface.getBoundingClientRect();
-    const {width,height}=bounds;
-    if(!(width>0&&height>0))throw new Error(`Paper source has no layout: ${width}x${height}`);
-    const style=getComputedStyle(surface);
-    const composition=surface.querySelector('.spread-composition')!.getBoundingClientRect();
-    const artWidth=composition.width;
-    const layers:string[]=[];
-    let intrinsicWidth=0,intrinsicHeight=0;
-    for(const [index,image] of images.entries()){
-      const ink=getComputedStyle(image);
-      const [originX,originY]=ink.transformOrigin.split(' ').map(parseFloat);
-      const matrix=new DOMMatrix(ink.transform==='none'?undefined:ink.transform);
-      const original=await embeddedSource(image.currentSrc||image.src);
-      const svg=new DOMParser().parseFromString(original,'image/svg+xml').documentElement;
-      if(index===0){
-        const viewBox=svg.getAttribute('viewBox')!.split(/\s+/).map(Number);
-        intrinsicWidth=viewBox[2];intrinsicHeight=viewBox[3];
+  await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));
+  const created:string[]=[];
+  const encode=async(canvas:HTMLCanvasElement)=>{
+    const blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(value=>value?resolve(value):reject(new Error('Paper print encoding failed')),'image/png'));
+    const url=URL.createObjectURL(blob);created.push(url);
+    const ready=new Image();ready.src=url;await ready.decode();return url;
+  };
+  try{
+    const results=await Promise.allSettled([...pair.querySelectorAll<HTMLElement>('.page-surface')].map(async surface=>{
+      const images=[...surface.querySelectorAll<HTMLImageElement>('.scene-plane')];
+      await Promise.all(images.map(image=>image.complete
+        ?(image.naturalWidth>0?Promise.resolve():Promise.reject(new Error('Original page artwork failed to load')))
+        :new Promise<void>((resolve,reject)=>{
+          image.addEventListener('load',()=>resolve(),{once:true});
+          image.addEventListener('error',()=>reject(new Error('Original page artwork failed to load')),{once:true});
+        })));
+      const {height}=surface.getBoundingClientRect();
+      const artWidth=surface.querySelector('.spread-composition')!.getBoundingClientRect().width;
+      if(!(artWidth>0&&height>0))throw new Error('Paper source has no styled layout');
+      const pixelWidth=Math.max(images[0].naturalWidth,Math.ceil(artWidth*window.devicePixelRatio));
+      const pixelHeight=Math.round(pixelWidth*images[0].naturalHeight/images[0].naturalWidth);
+      const make=()=>{
+        const canvas=document.createElement('canvas');canvas.width=pixelWidth;canvas.height=pixelHeight;
+        const ctx=canvas.getContext('2d')!;ctx.scale(pixelWidth/artWidth,pixelHeight/height);
+        return {canvas,ctx};
+      };
+      const below=make(),above=make();
+      below.ctx.fillStyle=getComputedStyle(surface).backgroundColor;below.ctx.fillRect(0,0,artWidth,height);
+      let ctx=below.ctx,letteringTransform='none',letteringOrigin='50% 50%';
+      for(const image of images){
+        const ink=getComputedStyle(image);
+        const [originX,originY]=ink.transformOrigin.split(' ').map(parseFloat);
+        if(image.classList.contains('plane-lettering')){
+          letteringTransform=ink.transform;letteringOrigin=`${originX/artWidth*100}% ${originY/height*100}%`;
+          ctx=above.ctx;continue;
+        }
+        const matrix=new DOMMatrix(ink.transform==='none'?undefined:ink.transform);
+        ctx.save();ctx.translate(originX,originY);
+        ctx.transform(matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f);
+        ctx.translate(-originX,-originY);ctx.drawImage(image,0,0,artWidth,height);ctx.restore();
       }
-      // Keep each source's gradients, masks and patterns independent after
-      // embedding paths. No asynchronous nested image resources remain.
-      const ids=new Map([...svg.querySelectorAll('[id]')].map(el=>[el.id,`plane-${index}-${el.id}`]));
-      for(const element of [svg,...svg.querySelectorAll('*')])for(const attribute of [...element.attributes]){
-        if(attribute.name==='id')element.setAttribute('id',ids.get(attribute.value)!);
-        else element.setAttribute(attribute.name,attribute.value.replace(/url\(#([^)]+)\)/g,(_,id)=>`url(#${ids.get(id)??id})`).replace(/^#(.+)$/,(_,id)=>ids.has(id)?`#${ids.get(id)}`:`#${id}`));
-      }
-      svg.setAttribute('width',String(artWidth));svg.setAttribute('height',String(height));
-      svg.setAttribute('preserveAspectRatio','none');
-      layers.push(`<g transform="translate(${originX} ${originY}) matrix(${matrix.a} ${matrix.b} ${matrix.c} ${matrix.d} ${matrix.e} ${matrix.f}) translate(${-originX} ${-originY})">${new XMLSerializer().serializeToString(svg)}</g>`);
-    }
-    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${intrinsicWidth}" height="${intrinsicHeight}" viewBox="0 0 ${artWidth} ${height}" preserveAspectRatio="none"><rect width="100%" height="100%" fill="${style.backgroundColor}"/>${layers.join('')}</svg>`;
-    const url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
-    const ready=new Image();ready.src=url;
-    await ready.decode();
-    return {url,width:artWidth,height,offsetX:surface.dataset.side==='right'?width:0,offsetY:0,sourceWidth:width,sourceHeight:height};
-  }));
-  return {front:pages[0],back:pages[1],sourceWidth:pages[0].sourceWidth,sourceHeight:pages[0].sourceHeight};
+      // Wait for both encoders before cleanup even if one of them fails.
+      const encoded=await Promise.allSettled([encode(below.canvas),encode(above.canvas)]);
+      const urls=encoded.map(result=>{if(result.status==='rejected')throw result.reason;return result.value;});
+      return {below:urls[0],above:urls[1],letteringTransform,letteringOrigin};
+    }));
+    const pages=results.map(result=>{if(result.status==='rejected')throw result.reason;return result.value;});
+    return {front:pages[0],back:pages[1]};
+  }catch(error){created.forEach(url=>URL.revokeObjectURL(url));throw error;}
 }

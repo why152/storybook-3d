@@ -1,5 +1,3 @@
-import type { PaperPrint } from './paperPrint';
-
 /** Piecewise-developable paper anchored at the spine. Each straight strip
  * retains its arc length; the circular target curve is sampled at strip
  * midpoints. All layout geometry is independent of animation progress.
@@ -59,7 +57,7 @@ const layouts=new WeakMap<HTMLElement,Layout>();
 /** Run on mount/resize ONLY. Setting hundreds of constant CSS widths and
  * text offsets at 60Hz forces needless style/layout/raster work on WebKit.
  */
-export function layoutPaper(leaf:HTMLElement,printSize?:PaperPrint){
+export function layoutPaper(leaf:HTMLElement){
   const width=parseFloat(getComputedStyle(leaf).width);
   if(!(width>0))return;
   const stripNodes=[...leaf.querySelectorAll<HTMLElement>('.paper-segment')];
@@ -75,15 +73,6 @@ export function layoutPaper(leaf:HTMLElement,printSize?:PaperPrint){
     strip.querySelectorAll<HTMLElement>('.paper-print').forEach((print,side)=>{
       print.style.width=`${width}px`;
       print.style.left=`${overlap-(side?1-cuts[index+1]:cuts[index])*width}px`;
-    });
-    strip.querySelectorAll<HTMLElement>('.paper-segment-face').forEach((face,side)=>{
-      const image=side?printSize?.back:printSize?.front;
-      const sx=printSize?width/printSize.sourceWidth:1,sy=printSize?height/printSize.sourceHeight:1;
-      const art=face.querySelector<HTMLElement>('.paper-art');
-      if(art&&image){
-        art.style.width=`${image.width*sx}px`;art.style.height=`${image.height*sy}px`;
-        art.style.left=`${overlap-(side?1-cuts[index+1]:cuts[index])*width-image.offsetX*sx}px`;
-      }
     });
     return {
       strip,

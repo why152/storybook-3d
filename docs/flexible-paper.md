@@ -18,96 +18,110 @@ the earlier flexible candidate's strict full-book endpoint image comparison
 (mean RGB <2/255 and changed pixels <4%). Inspect Chromium and WebKit screenshots
 and motion before choosing keep / iterate / reject. No AWS deployment this round.
 
-## Current result — iterate, not accepted
+## Closing checkpoint — 2026-10-28
 
-The rigid baseline's continuity fixes are PR #19 / `38fcd9d`; its Chromium and
-WebKit CI run `40300323083` succeeded. Those checks do not certify this branch.
+This is a recoverable local-development checkpoint in [Draft PR #20](https://github.com/why152/storybook-3d/pull/20).
+It is **not a release**, not merged into main, and not deployed to AWS.
 
-The current interior leaf uses 13 joined strips and explicit projected
-transforms to avoid WebKit's nested 3D clipping failure. Two shared SVG print
-resources embed the original image planes with their frozen CSS matrices.
-Each face crops a native SVG image; HTML text and paper finish remain native.
-The cover continues to use its rigid, spine-bound hinge.
+### Kept implementation
 
-Observed experiment decisions:
+- Thirteen connected half-leaf strips, shared binding and explicit front/back
+  visibility. The cover keeps its rigid physical hinge.
+- Per face, cache two transparent/opaque PNG bands around the **original native
+  SVG lettering**. SceneArt uses its existing illustration slot, native HTML
+  captions, paper grain and corner clipping. No source artwork was changed.
+- Preserve actual actor/effect transforms and lettering origin. Decode printed
+  resources and give them a display transaction over the retained outgoing
+  spread before advancing the underpages. Revoke blob URLs on replacement,
+  cancellation and unmount; settle both encoders before error cleanup.
+- Reduced motion now disables CSS animations and transitions. The previous
+  global 0.01 ms duration enabled unwanted transitions and kept effects looping.
+- Pose previews start on their actual outgoing chapter instead of the cover.
+  One paper-corner CSS variable governs settled and printed outer corners.
 
-- Reject full page DOM per strip: WebKit's midpoint can be invisible despite
-  geometry assertions passing. Direct projection restored visible paper.
-- Reject HTML snapshot reconstruction: it changed paper finish and text.
-  The snapshot dependency was removed.
-- Reject Canvas PNG as the print surface: mobile endpoint error was 4.67/255;
-  2× sampling still measured 4.46/255 against the unchanged mean <2 gate.
-- Reject SVG CSS backgrounds: mobile error was 2.55/255. Native SVG image
-  elements instead passed the original strict full-book endpoint comparison
-  at 1440×900 and 390×844, both front and back, in WebKit.
-- Fix first-load measurement: WebKit could capture unstyled 1424×5759 source
-  layout instead of the actual 550×642 page. Font loading is separated from
-  local styles; print capture waits for styles and a layout frame, and hidden
-  turning leaves are not measured before preparation.
+### Verification at closure
 
-## Verified checkpoint and remaining failures
+ESLint, TypeScript and the Vite production build passed. Full local production
+preview suites were executed against the same immutable build:
 
-Recovery checkpoint: `5462233`, [Draft PR #20](https://github.com/why152/storybook-3d/pull/20),
-based on PR #19. Its [first CI](https://github.com/why152/storybook-3d/actions/runs/40337544617)
-failed: Chromium 42 passed / 1 failed; WebKit 38 passed / 3 failed / 1 skipped.
-The checkpoint's nested SVG resources produced large endpoint differences in
-Linux CI. This is not a passing product baseline.
-
-Subsequent local work embeds original SVG paths with namespaced gradients and
-masks, keeps the original intrinsic art dimensions, and sizes/decodes mounted
-print images before handoff. The actual shared print is compared to the original
-frozen art at the same viewport coordinates, without resizing screenshots.
-All four chapter pose / forward / reverse checks pass in Chromium and WebKit.
-
-Latest focused production-preview checks:
-
-| Engine | Result | Remaining failures |
+| Browser | Result | Scope/remaining failure |
 | --- | --- | --- |
-| Chromium | 10 passed / 2 failed | Mobile viewport endpoint 0 mean 4.89 (gate <3); full-book mobile 0 mean 4.74 (gate <2) |
-| WebKit | 9 passed / 3 failed | Intermittent first-paint endpoint failure; mobile 0 mean 4.73 and mobile 1 mean 3.30 (gate <3) |
+| Chromium | 42 passed / 1 failed | Existing cover, five chapters, acting, keyboard/touch, customization, locking and standard endpoint checks pass. New 393×852 reverse endpoint after resizing fails: mean RGB 3.8553, required <2. |
+| WebKit | 42 passed / 1 skipped | All executed checks pass, including expanded 393px, DPR 3 and resize pixel cases. Only Chromium-native CDP touch input is skipped. |
 
-A previous WebKit-only strict endpoint run passed all four cases. The newer
-failures above supersede any broad passing claim. Original gates remain intact.
-One attempt was not executed while automatic approval review was temporarily
-unavailable because of account quota; review recovered and actual tests resumed.
-That interruption is historical, not the current blocker.
+The expanded Chromium test stops at its first failing 393px/DPR 1 reverse case;
+its later DPR 3 branch is therefore **not certified by that run**. All original
+pixel limits remain unchanged: full-book mean RGB <2/255 and changed pixels <4%;
+interior painted viewport mean <3/255. Before adding the expanded cases, the
+standard Chromium suite passed 43/43. Do not substitute that older result for
+the current 42/1 result.
 
-## Human-visible comparison and decision
+Reproduce the remaining issue:
 
-[Evidence directory](validation/flexible-paper/svg-candidate/) contains original
-full-resolution GROW screenshots for both variants and both viewports at
-0/25/50/75/100%, five candidate cover poses, four real opening/forward/reverse/
-closing WebMs, sampled video contacts, timings and exact source SHA256s.
+```bash
+npm run build
+npm run preview -- --host 127.0.0.1 --port 5175 --strictPort
+# In another terminal:
+STORYBOOK_TEST_BASE_URL=http://127.0.0.1:5175 npm run test:e2e -- tests/flexible-paper.spec.ts -g 'endpoint print'
+```
 
-- [Desktop matched poses](validation/flexible-paper/svg-candidate/desktop-matched-poses.png)
-- [Mobile matched poses](validation/flexible-paper/svg-candidate/mobile-matched-poses.png)
-- [Desktop flexible video](validation/flexible-paper/svg-candidate/webkit-desktop-flexible-opening-forward-back.webm)
-- [Mobile flexible video](validation/flexible-paper/svg-candidate/webkit-mobile-flexible-opening-forward-back.webm)
+The test retains both reference/turning frames and metrics on failure. The
+closing evidence directory includes that exact pair, so the next session can
+start from a concrete failure instead of repeating exploratory checks.
 
-Inspected 50% poses and video samples at 0.4-second intervals show a bound,
-curved, readable half-leaf rather than a centered rotating spread. They also
-show visible strip seams/lighting bands and square protruding outer print
-corners. Initial document-loading blank frames remain in the untrimmed footage.
-The inspected samples do not certify every intermediate frame or real Safari.
+### Visual evidence and limits
 
-Local automated WebKit rAF intervals, covering the complete four-turn sequence
-including preparation (not a GPU or real-phone benchmark):
+[Closing evidence](validation/flexible-paper/closing-banded/) contains matched
+five-pose contacts, authentic opening/forward/reverse/closing videos, original
+source hashes, benchmark data and the Chromium regression frames. Capture uses
+the same original art, camera and viewport. Both variants' reduced-motion stills
+are neutralized consistently; normal-motion recordings keep real acting.
 
-| Viewport | Rigid p95 | SVG-strip candidate p95 |
-| --- | --- | --- |
-| 1280×720 | 26 ms | 109 ms |
-| 390×844 | 21 ms | 42 ms |
+The recorded rAF intervals include preparation and the complete four-turn
+sequence. They describe local automated browser viewports, **not real-phone GPU
+performance**. Whole-sequence rAF interval p95 (milliseconds):
 
-Decision: **iterate the flexible book; reject this SVG-per-strip printing
-configuration as a finished solution.** Keep the joined curve and actual pose
-handoff. The next bounded experiment should test a single pre-rasterized print
-per face through native image surfaces, using the same artwork, timestamps,
-pixel gates and video. The earlier rejected PNG experiment used CSS backgrounds;
-its result does not establish whether native image surfaces solve sampling.
-Do not preserve two production engines or relax pixel thresholds. Require
-better continuous appearance and measured frame intervals before keeping it.
+| Browser / viewport | Rigid baseline | Flexible candidate |
+| --- | ---: | ---: |
+| Chromium desktop | 16.8 | 33.4 |
+| Chromium mobile | 16.7 | 16.7 |
+| WebKit desktop | 26 | 95 |
+| WebKit mobile | 25 | 59 |
 
-Still required: resolve endpoint/first-paint mismatch and outer clipping;
-remove seams and preparation stalls; complete both browser suites; verify
-customization, reduced motion and resizing; obtain user and real-device visual
-feedback. PR remains Draft. Main and AWS are unchanged; no deployment is claimed.
+Sampled continuous-video frames show a bound book, a single turning leaf and
+readable front/back artwork in both engines. The native-lettering/banded candidate improves correctness but
+still has visible segmentation and insufficiently smooth WebKit motion. Keep
+this as **iterate**, with user/real-device artistic acceptance outstanding.
+
+### Pruned experiments and prior evidence
+
+- Whole repeated page DOM and nested 3D variants could lose the WebKit midpoint.
+- HTML snapshot reconstruction changed native paper/text and its dependency
+  was removed. Full flattened PNG lettering sampled differently across engines.
+- A complete SVG print per strip was too expensive; its historical comparison
+  remains in [svg-candidate/](validation/flexible-paper/svg-candidate/).
+- Full native paper containers with repeated shadows, viewport pixel-fitting,
+  CSS-grid/used-width changes and composed reverse-projection attempts did not
+  satisfy the expanded regression. They are not production alternatives here.
+- The single flattened-PNG trial's WebKit p95 values (59 ms desktop / 30 ms
+  mobile) are historical and do not describe the final banded/native-lettering
+  configuration. Use the closing benchmark JSON for this checkpoint.
+
+Previous checkpoints: `5462233` and `bc6c9bc`. Their CI and passing subsets do not
+certify newer code. The prior `bc6c9bc` CI run is
+[40341197492](https://github.com/why152/storybook-3d/actions/runs/40341197492).
+
+### Next bounded work and synchronization policy
+
+1. Fix the 393px Chromium reverse/resize print registration, preserving the
+   original art and strict pixel gate. Then finish Chromium high-DPR validation.
+2. Reduce visible strip seams and WebKit frame stalls; compare matched real
+   footage before selecting a renderer. No backend or peripheral features.
+3. Obtain local user/real-device visual review before final deployment.
+
+The owner requested less frequent synchronization for a free account. Batch
+GitHub and Notion updates at a verified milestone or the end of a work session.
+This closing WIP commit skips cloud CI intentionally; local full-suite results
+and known failures are recorded above. Run fresh dual-browser CI when a later
+candidate is actually ready for integration. Never merge or deploy by treating
+skipped CI as a passing check.

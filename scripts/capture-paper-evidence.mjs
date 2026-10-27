@@ -6,15 +6,17 @@ const browser=await ({chromium,webkit}[engine]).launch();
 const root=process.argv[2]??'test-results/flexible-paper-comparison';
 await mkdir(root,{recursive:true});
 // One camera for both variants, matching the candidate's actual production CSS.
-const camera='.book-shell{perspective:none}';
+const camera='.book-shell{perspective:none}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}';
 const metrics=[];
+const variants=[['rigid',5176],['flexible',5175]].filter(([name])=>!process.env.STORYBOOK_CAPTURE_VARIANT||process.env.STORYBOOK_CAPTURE_VARIANT===name);
 for(const [device,viewport] of [['desktop',{width:1280,height:720}],['mobile',{width:390,height:844}]]){
- for(const [variant,port] of [['rigid',5176],['flexible',5175]]){
+ for(const [variant,port] of variants){
   const context=await browser.newContext({viewport,reducedMotion:'reduce'});
   const page=await context.newPage();
   for(const chapter of ['cover','grow'])for(const pose of [0,.25,.5,.75,1]){
    await page.goto(`http://127.0.0.1:${port}/?from=${chapter}&pose=${pose}`);
    await page.addStyleTag({content:camera});
+   await page.locator('.scene-plane').evaluateAll(planes=>planes.forEach(plane=>plane.style.removeProperty('transform')));
    await page.evaluate(async()=>{await Promise.all([...document.images].map(i=>i.decode()));await document.fonts.ready;});
    // A rigid leaf has zero projected width at 50%; that is an expected pose.
    if(variant==='flexible'&&chapter!=='cover')await page.locator('[data-texture-ready="true"]').waitFor({state:'attached'});
