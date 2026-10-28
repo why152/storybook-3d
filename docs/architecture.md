@@ -53,8 +53,12 @@ animates toward the full landscape open spread, without card flipping.
 
 - Every interior chapter has 6 independently editable and replaceable SVGs:
   background, midground, lettering, characters, foreground, effects.
-- The flexible candidate clips separate front/back print surfaces to 13 joined
-  strips. Two cached image bands per face retain actual frozen actor transforms;
+- The flexible candidate clips separate front/back print surfaces to 8–13 joined
+  strips, selected from the current page width and pixel-rounded cuts to keep
+  the curve's local model error within 0.5 CSS px at the start of a turn. The
+  count stays fixed during a turn and is recalculated afterwards if the viewport
+  changed; a large mid-turn enlargement can temporarily exceed that model bound.
+  Two cached image bands per face retain actual frozen actor transforms;
   the original SVG lettering stays between them so browser font/mask rendering
   remains unchanged. SceneArt uses its existing composition slot, native HTML
   text and paper finish for both printed and stationary leaves.

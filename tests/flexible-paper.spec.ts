@@ -1,5 +1,5 @@
 import {expect,test} from '@playwright/test';
-import {paperGeometry,segmentCountForTolerance,curvatureErrorPx} from '../src/components/paperGeometry';
+import {paperGeometry,paperCuts,segmentCountForTolerance,curvatureErrorPx} from '../src/components/paperGeometry';
 
 test('paper stays joined, above the book and constant-length throughout both directions',()=>{
   let lowest=0,maxGap=0,maxLengthError=0;
@@ -54,6 +54,25 @@ test('mathematical pixel budget minimizes segments without losing shape',()=>{
   }
 });
 
+test('rounded segments retain the curve pixel budget across screen densities',()=>{
+  for(const width of [171,172.5,420,550])for(const dpr of [1,2,3]){
+    const count=segmentCountForTolerance(width,.5,8,13,dpr);
+    const cuts=paperCuts(width,count,dpr);
+    for(const progress of [.25,.5,.75]){
+      const bend=1.15*Math.sin(Math.PI*progress);
+      const pieces=paperGeometry(progress,count,cuts);
+      for(const [i,piece] of pieces.entries())for(const t of [0,.25,.5,.75,1]){
+        const u=cuts[i]+(cuts[i+1]-cuts[i])*t;
+        const approxX=piece.x+Math.cos(piece.angle)*(u-cuts[i]);
+        const approxZ=piece.z-Math.sin(piece.angle)*(u-cuts[i]);
+        const exactX=Math.sin(bend*u)/bend;
+        const exactZ=(Math.cos(bend*u)-1)/bend;
+        expect(width*Math.hypot(approxX-exactX,approxZ-exactZ)).toBeLessThan(.51);
+      }
+    }
+  }
+});
+
 async function ready(page:import('@playwright/test').Page){
   await page.evaluate(async()=>{await Promise.all([...document.images].map(image=>image.decode()));await document.fonts.ready;});
   if(await page.locator('.book-turn-leaf').count()){
@@ -61,6 +80,28 @@ async function ready(page:import('@playwright/test').Page){
     await expect(page.locator('.book-turn-leaf')).toHaveAttribute('data-texture-ready','true');
   }
 }
+
+test('a mobile leaf keeps its segments while turning and adapts after resizing',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/?scene=grow');
+  await page.evaluate(()=>Promise.all([...document.images].map(image=>image.decode())));
+  await page.getByRole('button',{name:'下一页'}).click();
+  const leaf=page.locator('.book-turn-leaf.is-flexible');
+  await expect(leaf).toHaveAttribute('data-texture-ready','true');
+  await expect(leaf.locator('.paper-segment')).toHaveCount(8);
+  const progress=Number(await leaf.getAttribute('data-progress'));
+  await page.setViewportSize({width:1440,height:900});
+  await expect(leaf.locator('.paper-segment')).toHaveCount(8);
+  await expect(leaf).toHaveAttribute('data-texture-ready','true');
+  expect(Number(await leaf.getAttribute('data-progress'))).toBeGreaterThanOrEqual(progress);
+  await expect(leaf).toHaveCount(0);
+
+  await page.getByRole('button',{name:'上一页'}).click();
+  await expect(leaf).toHaveAttribute('data-texture-ready','true');
+  await expect(leaf.locator('.paper-segment')).toHaveCount(13);
+  await expect(leaf).toHaveCount(0);
+  await expect(page.locator('.book-static .page-surface[data-chapter="grow"]')).toHaveCount(2);
+});
 
 test('front and reverse endpoint print match the actual settled pages at desktop and mobile sizes',async({page:desktop,browser},testInfo)=>{
   const retina=await browser.newContext({viewport:{width:393,height:852},deviceScaleFactor:3,reducedMotion:'reduce'});

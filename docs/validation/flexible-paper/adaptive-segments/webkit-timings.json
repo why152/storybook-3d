@@ -1,0 +1,27 @@
+{
+  "environment": "Local macOS automated browser; viewport simulation, NOT a real phone benchmark",
+  "metrics": [
+    {
+      "engine": "webkit",
+      "device": "desktop",
+      "variant": "flexible",
+      "frames": 186,
+      "p50": 17,
+      "p95": 107,
+      "max": 144,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+      "dpr": 1
+    },
+    {
+      "engine": "webkit",
+      "device": "mobile",
+      "variant": "flexible",
+      "frames": 241,
+      "p50": 17,
+      "p95": 56,
+      "max": 92,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+      "dpr": 1
+    }
+  ]
+}

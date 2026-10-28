@@ -4,7 +4,7 @@ import { gsap } from 'gsap';
 import { getChapter } from '../data/story';
 import { BlankPage, FrontCover, PageHalf } from './SceneArt';
 import { capturePaperPrint, releasePaperPrint, type PaperPrint, type PrintedSurface } from './paperPrint';
-import { PAPER_SEGMENTS, layoutPaper, posePaper } from './paperGeometry';
+import { PAPER_SEGMENTS, layoutPaper, posePaper, segmentCountForTolerance } from './paperGeometry';
 
 export type PageTurn = Readonly<{from:number;to:number;direction:-1|1}>;
 type Props={
@@ -30,14 +30,31 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
   const shellRef=useRef<HTMLDivElement>(null);
   const lastTurn=useRef<PageTurn|null>(null);
   const [preparedTurn,setPreparedTurn]=useState<PageTurn|null>(null);
+  const [paperSegments,setPaperSegments]=useState(PAPER_SEGMENTS);
   const [print,setPrint]=useState<(PaperPrint&{turn:PageTurn|null;pose:number|null;from:number;name:string;wish:string})|null>(null);
-  const [decodedPrint,setDecodedPrint]=useState<PaperPrint|null>(null);
+  const [decodedPrint,setDecodedPrint]=useState<{print:PaperPrint;segments:number}|null>(null);
   const showingTurn=debugPose===null?turning:{from:debugFrom,to:debugFrom+1,direction:1 as const};
   const flexible=!!showingTurn&&showingTurn.from>0&&showingTurn.to>0&&(!reducedMotion||debugPose!==null);
   const printAvailable=!!print&&print.turn===turning&&print.pose===debugPose&&print.from===debugFrom&&print.name===name&&print.wish===wish;
-  const printReady=printAvailable&&decodedPrint===print;
+  const printReady=printAvailable&&decodedPrint?.print===print&&decodedPrint.segments===paperSegments;
   const waiting=flexible?!printReady:debugPose===null&&turning!==null&&preparedTurn!==turning;
   const closed=active===0&&(!showingTurn||waiting);
+
+  useLayoutEffect(()=>{
+    // Keep a leaf's topology fixed while it is turning. After a resize, choose
+    // the smallest mesh with <= 0.5px model error before the next turn.
+    if(turning)return;
+    const shell=shellRef.current!;
+    const choose=()=>{
+      const width=shell.getBoundingClientRect().width/2;
+      if(width>0)setPaperSegments(segmentCountForTolerance(width,.5,8,PAPER_SEGMENTS,window.devicePixelRatio));
+    };
+    choose();
+    const observer=new ResizeObserver(choose);
+    observer.observe(shell);
+    window.addEventListener('resize',choose);
+    return()=>{observer.disconnect();window.removeEventListener('resize',choose);};
+  },[turning]);
 
   useLayoutEffect(()=>{
     if(!flexible)return;
@@ -60,10 +77,10 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
       // Allow decoded print surfaces to enter WebKit's next display transaction
       // before replacing the outgoing spread with the incoming underlay.
       await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
-      if(!cancelled)setDecodedPrint(print);
+      if(!cancelled)setDecodedPrint({print,segments:paperSegments});
     });
     return()=>{cancelled=true;};
-  },[flexible,printAvailable,print]);
+  },[flexible,printAvailable,print,paperSegments]);
 
   // Keep the entire outgoing spread painted while the new leaf's own image
   // elements decode. Cached URLs do not imply a newly mounted image is ready.
@@ -142,7 +159,7 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     const observer=new ResizeObserver(layout);
     observer.observe(leaf);
     return()=>observer.disconnect();
-  },[flexible,turning,debugPose,preparedTurn,printAvailable,print]);
+  },[flexible,turning,debugPose,preparedTurn,printAvailable,print,paperSegments]);
 
   useLayoutEffect(()=>{
     if(debugPose!==null||!turning||waiting||!leafRef.current||!shellRef.current)return;
@@ -279,7 +296,7 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
         data-visible-face={debugPose!==null?(debugPose<.5?'front':'back'):
           showingTurn.direction===1?'front':'back'}
         style={flexible||debugPose===null?undefined:{transform:`rotateY(${-180*debugPose}deg)`}}>
-        {flexible?Array.from({length:PAPER_SEGMENTS},(_,index)=><div className="paper-segment" key={index}>
+        {flexible?Array.from({length:paperSegments},(_,index)=><div className="paper-segment" key={index}>
           <div className="paper-segment-face paper-front" data-face="front">
             <div className="paper-print"><Half position={leafFront} side="right" name={name} wish={wish} inkOnly printed={print?.front}/></div>
           </div>

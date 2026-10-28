@@ -3,7 +3,7 @@
 Hypothesis: the existing developable CSS curve can make the interior leaf look
 like bending paper while preserving the original HTML typography and illustration.
 Apply the verified pose/decode handoff and explicit camera-facing culling from
-PR #19, and use 13 connected strips instead of PR #16's 20. At the maximum
+PR #19, and initially use 13 connected strips instead of PR #16's 20. At the maximum
 550 CSS-pixel leaf width, the circular-curve model deviation is under 0.5 px;
 this predicts geometry accuracy only, not compositor speed or image fidelity.
 
@@ -17,6 +17,52 @@ or missing print, stalled navigation, endpoint mismatch or pose reset. Preserve
 the earlier flexible candidate's strict full-book endpoint image comparison
 (mean RGB <2/255 and changed pixels <4%). Inspect Chromium and WebKit screenshots
 and motion before choosing keep / iterate / reject. No AWS deployment this round.
+
+## Adaptive segment checkpoint — 2026-10-29
+
+Hypothesis: fewer strips on a smaller leaf reduce WebKit work without changing
+the original art or visibly weakening the bend. Select 8–13 segments using the
+actual leaf width and device-pixel-rounded cuts, with a 0.5 CSS-pixel local
+curve-model budget. Freeze the count during a turn; resize the geometry in
+place, and select a new count after the turn finishes. A large mid-turn
+enlargement may temporarily exceed the model bound until that recalculation.
+At 390×844 the selected count is 8; a full 550px-wide desktop leaf keeps 13.
+New test coverage checks the rounded curve against the analytic shape at DPR
+1/2/3 and verifies a real
+turn during a mobile-to-desktop resize, then a reverse turn with the new count.
+
+In three interleaved local WebKit samples at 390×844, four interior turns
+including print preparation had p95 rAF intervals of **57/59/59 ms** with the
+previous fixed 13 strips and **33/35/34 ms** with this candidate's 8 strips.
+The median p95 fell from 59 to 34 ms. This is a simulated viewport on one
+computer, not a real-phone or GPU result; 34 ms and occasional ~77 ms spikes
+remain visibly below the desired smoothness. The same original GROW art and
+matched 0/25/50/75/100 poses were inspected; no new artwork was substituted.
+The candidate is an improvement to **iterate**, not a finished renderer.
+
+For the final production build, targeted Chromium checks were **13 passed /
+1 failed**: the known 393px/DPR 1 reverse endpoint still has mean RGB 3.821
+against the unchanged &lt;2 gate. That test stops before its Chromium DPR 3
+branch. Targeted WebKit checks were **14 passed**, including the new resize and
+high-DPR endpoint cases. On the immediately preceding build, the full Chromium
+suite was 43 passed / 1 failed; the full WebKit suite was 42 passed / 1 skipped
+/ 1 failed with an `AbortError` during the first test's startup evaluation.
+That test passed three later repetitions, but the original full run was not
+green and the transient cause has not been proven. Do not attribute either
+older full-suite result to the final build as a fresh full pass.
+
+The initial single-homography endpoint experiment passed a static image check
+but produced an adjacent-frame sampling jump; it was removed. A 2D affine
+approximation introduced visible duplicated/offset print at the middle of the
+turn and was also rejected. Pixel thresholds and the bound-book requirements
+remain unchanged. [Matched browser evidence](validation/flexible-paper/adaptive-segments/)
+records the comparison, real opening/forward/backward videos and frame data.
+
+The local candidate remains a draft: resolve the Chromium endpoint/near-end
+sampling, improve WebKit smoothness, repeat the final full browser checks, and
+obtain user/real-device visual feedback before any deployment. This WIP
+checkpoint uses `[skip ci]` to honor the owner's request to batch free-account
+usage; skipped cloud CI is not a passing check.
 
 ## Closing checkpoint — 2026-10-28
 

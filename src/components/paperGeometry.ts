@@ -9,16 +9,19 @@ export const MAX_BEND_RADIANS = 1.15;
  * W: actual flat leaf width in CSS pixels; N: number of equal-length strips.
  * This is a bound for LOCAL curvature error, not a rasterization guarantee.
  */
-export function curvatureErrorPx(width: number, segments: number) {
+export function curvatureErrorPx(width: number, segments: number,dpr?:number) {
   if(!Number.isFinite(width)||width<=0||segments<1)return Infinity;
+  if(dpr!==undefined&&(!Number.isFinite(dpr)||dpr<=0))return Infinity;
   const k=MAX_BEND_RADIANS;
-  return width*(1-Math.cos(k/(2*segments)))/k;
+  const cuts=dpr===undefined?undefined:paperCuts(width,segments,dpr);
+  const longest=cuts?Math.max(...cuts.slice(1).map((end,i)=>end-cuts[i])):1/segments;
+  return width*(1-Math.cos(k*longest/2))/k;
 }
 export function segmentCountForTolerance(width: number, tolerancePx: number,
-  minSegments=4,maxSegments=24) {
+  minSegments=4,maxSegments=24,dpr?:number) {
   if(!Number.isFinite(tolerancePx)||tolerancePx<=0)throw new RangeError('Invalid pixel budget');
   for(let n=minSegments;n<=maxSegments;n++){
-    if(curvatureErrorPx(width,n)<=tolerancePx)return n;
+    if(curvatureErrorPx(width,n,dpr)<=tolerancePx)return n;
   }
   return maxSegments;
 }
