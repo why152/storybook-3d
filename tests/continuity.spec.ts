@@ -16,13 +16,48 @@ for(const chapter of chapters.slice(0,-1)){
         }
       }
     });
+    const nativeSurface=page.locator('.book-right .page-surface');
+    const printBox=(await nativeSurface.boundingBox())!;
+    await nativeSurface.evaluate(surface=>surface.querySelectorAll<HTMLElement>('.page-print-grain,.paper-bevel,.page-chapter,.page-quote').forEach(el=>{el.style.visibility='hidden'}));
+    const nativePrint=await page.screenshot();
+    await nativeSurface.evaluate(surface=>surface.querySelectorAll<HTMLElement>('.page-print-grain,.paper-bevel,.page-chapter,.page-quote').forEach(el=>{el.style.removeProperty('visibility')}));
     const source=await page.locator('.book-left .scene-plane').evaluateAll(planes=>
       planes.map(el=>getComputedStyle(el).transform));
     await page.getByRole('button',{name:'下一页'}).click();
     const leaf=page.locator('.book-turn-leaf');
     await expect(leaf).toBeVisible();
-    const moving=await leaf.locator('.book-leaf-front .scene-plane').evaluateAll(planes=>
-      planes.map(el=>getComputedStyle(el).transform));
+    await expect(leaf).toHaveAttribute('data-texture-ready','true');
+    // Paint the actual shared composition at the same viewport coordinates. Resizing
+    // an element screenshot into a canvas changes its fractional pixel phase.
+    await page.evaluate(async box=>{
+      const source=document.querySelector<HTMLElement>('.paper-front .spread-composition')!;
+      const proof=document.createElement('div');proof.dataset.paperPrintProof='';
+      Object.assign(proof.style,{position:'fixed',left:box.x+'px',top:box.y+'px',width:box.width+'px',height:box.height+'px',overflow:'hidden',zIndex:'2147483647',background:'#f4e0c4'});
+      const ink=getComputedStyle(source);
+      let left=0;
+      for(let el:HTMLElement|null=source;el&&!el.classList.contains('paper-segment');el=el.parentElement)left+=parseFloat(getComputedStyle(el).left)||0;
+      const composition=source.cloneNode(true) as HTMLElement;
+      Object.assign(composition.style,{position:'absolute',left:left+'px',top:ink.top,width:ink.width,height:ink.height});
+      proof.append(composition);document.body.append(proof);
+      await Promise.all([...composition.querySelectorAll('img')].map(image=>image.decode()));
+    },printBox);
+    const printedProof=await page.screenshot();
+    await page.locator('[data-paper-print-proof]').evaluate(el=>el.remove());
+    const bitmapError=await page.evaluate(async({native,proof,box})=>{
+      const read=async(src:string)=>{const image=new Image();image.src=src;await image.decode();return image;};
+      const [original,print]=await Promise.all([read('data:image/png;base64,'+native),read('data:image/png;base64,'+proof)]);
+      const canvas=document.createElement('canvas');canvas.width=original.width;canvas.height=original.height;
+      const ctx=canvas.getContext('2d')!;ctx.drawImage(original,0,0);
+      const a=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+      ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(print,0,0);
+      const b=ctx.getImageData(0,0,canvas.width,canvas.height).data;let sum=0,n=0;
+      for(let y=Math.ceil(box.y+box.height*.03);y<box.y+box.height*.97;y++)for(let x=Math.ceil(box.x+box.width*.03);x<box.x+box.width*.97;x++){
+        const i=(y*canvas.width+x)*4;for(let c=0;c<3;c++){sum+=Math.abs(a[i+c]-b[i+c]);n++;}
+      }return sum/n;
+    },{native:nativePrint.toString('base64'),proof:printedProof.toString('base64'),box:printBox});
+    expect(bitmapError,'shared print must preserve the actual frozen artwork, not just source metadata').toBeLessThan(2.5);
+    const moving=await page.locator('.paper-source[data-print=front] .scene-plane').evaluateAll(planes=>
+      planes.map(el=>(el as HTMLElement).style.transform));
     const stationary=await page.locator('.book-left .scene-plane').evaluateAll(planes=>
       planes.map(el=>getComputedStyle(el).transform));
     expect(moving).toEqual(source);
@@ -30,7 +65,7 @@ for(const chapter of chapters.slice(0,-1)){
     // Incoming page and its printed reverse must agree before landing.
     const arrival=await page.locator('.book-right .scene-plane').evaluateAll(planes=>
       planes.map(el=>getComputedStyle(el).transform));
-    expect(await leaf.locator('.book-leaf-back .scene-plane').evaluateAll(planes=>
+    expect(await page.locator('.paper-source[data-print=back] .scene-plane').evaluateAll(planes=>
       planes.map(el=>(el as HTMLElement).style.transform))).toEqual(arrival);
     await expect(leaf).toHaveCount(0);
     const playing=await page.locator('.book-static .scene-plane').evaluateAll(planes=>
@@ -49,8 +84,9 @@ for(const chapter of chapters.slice(0,-1)){
     expect(phaseError).toBeLessThan(2);
     await page.getByRole('button',{name:'上一页'}).click();
     await expect(leaf).toBeVisible();
-    const reverse=await leaf.locator('.book-leaf-back .scene-plane').evaluateAll(planes=>
-      planes.map(el=>getComputedStyle(el).transform));
+    await expect(leaf).toHaveAttribute('data-texture-ready','true');
+    const reverse=await page.locator('.paper-source[data-print=back] .scene-plane').evaluateAll(planes=>
+      planes.map(el=>(el as HTMLElement).style.transform));
     expect(reverse).toEqual(await page.locator('.book-right .scene-plane').evaluateAll(planes=>
       planes.map(el=>getComputedStyle(el).transform)));
     await expect(leaf).toHaveCount(0);
@@ -81,7 +117,7 @@ test('cold incoming artwork is decoded before the paper starts moving',async ({p
 // Compare actual painted pixels against each settled spread. DOM face counts
 // cannot detect a compositor painting mirrored back-face children in WebKit.
 for(const width of [1280,390])for(const pose of [0,1]){
-  test(`painted ${width}px turn endpoint ${pose} matches its settled artwork`,async ({page})=>{
+  test(`painted ${width}px turn endpoint ${pose} matches its settled artwork`,async ({page},testInfo)=>{
     await page.setViewportSize({width,height:width===390?844:720});
     await page.emulateMedia({reducedMotion:'reduce'});
     const chapter=chapters[1+pose];
@@ -95,6 +131,8 @@ for(const width of [1280,390])for(const pose of [0,1]){
     const settled=await page.screenshot();
     await page.goto(`/?pose=${pose}&from=${chapters[1].id}`);
     await ready();
+    await expect(page.locator('.book-turn-leaf')).toBeVisible();
+    await expect(page.locator('.book-turn-leaf')).toHaveAttribute('data-texture-ready','true');
     const turning=await page.screenshot({path:`test-results/endpoint-${width}-${pose}.png`});
     const error=await page.evaluate(async({a,b,box})=>{
       const read=async(data:string)=>{
@@ -114,6 +152,11 @@ for(const width of [1280,390])for(const pose of [0,1]){
       }
       return sum/count;
     },{a:settled.toString('base64'),b:turning.toString('base64'),box});
+    if(error>=3){
+      await testInfo.attach('settled-reference',{body:settled,contentType:'image/png'});
+      await testInfo.attach('turning-endpoint',{body:turning,contentType:'image/png'});
+      await testInfo.attach('registration',{body:Buffer.from(JSON.stringify({error,referenceBox:box,turningBox:await page.locator('.book-viewport').boundingBox()})),contentType:'application/json'});
+    }
     expect(error,'painted artwork must match, including readable face orientation').toBeLessThan(3);
   });
 }

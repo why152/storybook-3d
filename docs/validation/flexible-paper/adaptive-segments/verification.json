@@ -1,0 +1,67 @@
+{
+  "finalBuild": "index-DpDmVtVp.js",
+  "finalTargeted": {
+    "chromium": {
+      "passed": 13,
+      "failed": 1,
+      "failure": "393px DPR 1 reverse endpoint mean 3.8206055388; DPR 3 branch not reached"
+    },
+    "webkit": {
+      "passed": 14,
+      "failed": 0
+    }
+  },
+  "previousBuildFull": {
+    "chromium": {
+      "passed": 43,
+      "failed": 1
+    },
+    "webkit": {
+      "passed": 42,
+      "failed": 1,
+      "skipped": 1,
+      "failure": "AbortError in initial image/animation setup; cause not isolated",
+      "laterRepetitionsPassed": 3
+    }
+  },
+  "matchedWebkitMeanRGB": {
+    "mobile": [
+      0.0104,
+      0.2314,
+      0.1914,
+      0.1429,
+      0.0049
+    ],
+    "desktop": [
+      0.0206,
+      0.2647,
+      0.2342,
+      0.1581,
+      0.0098
+    ]
+  },
+  "matchedWebkitChangedPercent": {
+    "mobile": [
+      0,
+      0.37,
+      0.26,
+      0.21,
+      0
+    ],
+    "desktop": [
+      0,
+      0.34,
+      0.29,
+      0.14,
+      0
+    ]
+  },
+  "poses": [
+    0,
+    0.25,
+    0.5,
+    0.75,
+    1
+  ],
+  "scope": "Whole screenshot; same original chapter and camera. Full-suite results refer only to prior build, not final."
+}

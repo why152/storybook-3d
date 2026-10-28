@@ -1,0 +1,30 @@
+{
+  "recordedAtUTC": "2026-10-28T22:40:45.257889+00:00",
+  "baselineCommit": "3c13983558e0091ace0c741fae3dac89ac05bc68",
+  "productionBundle": "index-DpDmVtVp.js",
+  "sourceSha256": {
+    "src/components/Book.tsx": "51b5b4db4d85169a76df492ee59e79cc8f6c303d158ad8c80af14db9a45116de",
+    "src/components/paperGeometry.ts": "e2ba553170a7c21dde5966552c69792282f124255f045d817389077fa3e04ec3",
+    "src/components/paperPrint.ts": "1777c7bb93f29d7990891e7062fc63551b459fea4512055d640188a7230e877d",
+    "src/components/SceneArt.tsx": "01d0c7839915d5d9ceb2da7b2c35a6fd695558a0977f71cdcb70bc6f095da6a0",
+    "src/styles.css": "a370949f8b4f503bf8bf4d592553d3ea2feef524f1e613d8d6423cf326280f0a",
+    "tests/flexible-paper.spec.ts": "9d757a14620c0f46c48652db18ada33029617bc7007aadc3b6db416ae21e7c59",
+    "tests/continuity.spec.ts": "9148027f1798e5a70cfc308bc3f515ff34aa55bf474b8491c36293102750c0ae",
+    "scripts/capture-paper-evidence.mjs": "c3a4b5a0951b7332a7be5c8271bf65a379ef7412ceb6370759756f2fedc9c9b6",
+    "package-lock.json": "121e9310eb0a1b2e65d3e81c18bd761168067eced4fbd53a8474d2431a659fbe",
+    "scripts/benchmark-paper-segments.mjs": "c533f7d0d749ad4e373d3e4e7de7936a7f4a2803ab5e723074d0346f4deffe9d"
+  },
+  "poses": [
+    0,
+    0.25,
+    0.5,
+    0.75,
+    1
+  ],
+  "viewports": {
+    "desktop": "1280x720",
+    "mobile": "390x844"
+  },
+  "notes": "Same original GROW art, same camera and reduced-motion stills. Chromium cover contact repeats current cover, which was unchanged. Videos are real browser opening, forward, backward and closing. Interleaved p95 includes four flexible interior turns with preparation, not a real device test.",
+  "verdict": "iterate; Chromium 393px reverse endpoint and real-device acceptance remain open."
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "segments": 13,
+    "segmentCounts": [
+      13
+    ],
+    "frames": 136,
+    "p50": 44,
+    "p95": 57,
+    "max": 78
+  },
+  {
+    "segments": 8,
+    "segmentCounts": [
+      8
+    ],
+    "frames": 215,
+    "p50": 26,
+    "p95": 33,
+    "max": 74
+  },
+  {
+    "segments": 8,
+    "segmentCounts": [
+      8
+    ],
+    "frames": 214,
+    "p50": 27,
+    "p95": 35,
+    "max": 78
+  },
+  {
+    "segments": 13,
+    "segmentCounts": [
+      13
+    ],
+    "frames": 133,
+    "p50": 46,
+    "p95": 59,
+    "max": 81
+  },
+  {
+    "segments": 13,
+    "segmentCounts": [
+      13
+    ],
+    "frames": 135,
+    "p50": 45,
+    "p95": 59,
+    "max": 77
+  },
+  {
+    "segments": 8,
+    "segmentCounts": [
+      8
+    ],
+    "frames": 213,
+    "p50": 27,
+    "p95": 34,
+    "max": 77
+  }
+]
