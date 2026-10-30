@@ -74,23 +74,26 @@
   /* A real one-track grid, not the zero-width side columns that failed #27.
      The book occupies its own explicit grid cell; arrows OVERLAY, not squeeze. */
   .v2-showroom .exhibition {
-    flex:1;min-height:290px;display:grid;grid-template-columns:minmax(0,1fr);
-    grid-template-rows:1fr;place-items:center;padding:12px 8px 4px;
+    flex:1;min-height:310px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    grid-template-rows:minmax(0,1fr) 52px;align-items:center;justify-items:center;
+    padding:8px 8px 3px;
   }
   .v2-showroom .book-viewport {
-    grid-column:1;grid-row:1;width:min(100%,calc((100dvh - 244px)*12/7));
+    grid-column:1 / -1;grid-row:1;width:min(100%,calc((100dvh - 244px)*12/7));
     max-width:100%;position:relative;z-index:1;
   }
+  /* Navigation is BELOW the paper. Overlaying arrows on page corners would
+     make those corners impossible to pinch/grab on a phone. */
   .v2-showroom .turn-button {
-    position:absolute;top:50%;height:74px;width:48px;min-width:48px;
-    transform:translateY(-50%);border-radius:9px;
+    position:relative;top:auto;left:auto;right:auto;grid-row:2;
+    height:48px;width:56px;min-width:56px;transform:none;border-radius:9px;
     background:#141824c2;border:1px solid #f4d4b949;
     box-shadow:0 5px 18px #0007;display:grid;place-items:center;z-index:15;
     touch-action:manipulation;
   }
-  .v2-showroom .turn-button:hover:not(:disabled) {transform:translateY(-50%) scale(1.035)}
-  .v2-showroom .turn-prev {left:3px}
-  .v2-showroom .turn-next {right:3px}
+  .v2-showroom .turn-button:hover:not(:disabled) {transform:scale(1.035)}
+  .v2-showroom .turn-prev {grid-column:1;justify-self:end;margin-right:30px}
+  .v2-showroom .turn-next {grid-column:2;justify-self:start;margin-left:30px}
   .v2-showroom .turn-button:disabled {opacity:.22;pointer-events:none}
   .v2-showroom .hand-arrow {width:31px;height:30px}
   .v2-showroom .chapter-reader {
