@@ -213,9 +213,17 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 @media(max-width:560px){
  html,body,#root{min-height:100dvh}
  .site-head{grid-template-columns:1fr 1fr;height:86px}.site-title{display:none}
- .exhibition{grid-template-columns:24px minmax(0,1fr) 24px}
- .turn-button{height:78px}.hand-arrow{width:27px}
- .book-viewport{width:100%}
+ /* Place the bound two-page spread across the phone's available width.
+    Navigation overlays the edge instead of stealing 48px from the book.
+    Touch targets remain 48px wide even when the arrow drawings are smaller. */
+ .exhibition{grid-template-columns:0 minmax(0,1fr) 0}
+ .turn-button{position:absolute;top:50%;width:48px;height:80px;transform:translateY(-50%);border-radius:8px;
+   background:linear-gradient(90deg,#0e0e1199,#0e0e1100)}
+ .turn-button:hover:not(:disabled){transform:translateY(-50%) scale(1.05)}
+ .turn-prev{left:0}
+ .turn-next{right:0;background:linear-gradient(270deg,#0e0e1199,#0e0e1100)}
+ .hand-arrow{width:30px}
+ .book-viewport{width:calc(100% - 10px)}
  .book-depth{box-shadow:1px 5px 0 #958e8a,1px 8px 3px #55484c,2px 16px 32px #0008}
  .book-binding{width:6px;left:calc(50% - 3px)}
  .page-quote{bottom:3%;right:3%;max-width:94%;padding:2px 3px}
