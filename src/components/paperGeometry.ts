@@ -98,6 +98,9 @@ export function posePaper(leaf:HTMLElement, progress:number){
   const count=segments.length;
   const p=Math.max(0,Math.min(1,progress));
   leaf.dataset.progress=String(p);
+  // The zero-curvature endpoints are native DOM paper faces. This is exact,
+  // not an approximation, and avoids WebKit/Chromium strip sampling seams.
+  leaf.dataset.paperEndpoint=p===0?'front':p===1?'back':'none';
   const theta=Math.PI*p;
   const bend=MAX_BEND_RADIANS*Math.sin(theta);
   const pieces=paperGeometry(p,count,cuts);
