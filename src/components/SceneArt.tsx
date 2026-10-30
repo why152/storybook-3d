@@ -29,13 +29,13 @@ export function PageHalf({chapter,side,name,wish}:PageHalfProps){
             ? actingScenes[chapter.id].map(actor=><img
                 key={`actor-${actor}`}
                 className={`scene-plane scene-actor actor-${actor} acting-${chapter.id}`}
-                src={`/assets/${chapter.id}/actors/${actor}.svg`}
+                src={`${import.meta.env.BASE_URL}assets/${chapter.id}/actors/${actor}.svg`}
                 data-depth={index} data-actor={actor} alt=""
                 draggable={false}
               />)
             : <img
                 key={plane} className={`scene-plane plane-${plane}`}
-                src={`/assets/${chapter.id}/${plane}.svg`}
+                src={`${import.meta.env.BASE_URL}assets/${chapter.id}/${plane}.svg`}
                 data-depth={index} alt="" draggable={false}
               />
         )}
