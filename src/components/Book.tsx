@@ -42,6 +42,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,reduced
     released:boolean; commit:boolean;
     paint?:(progress:number)=>void; settle?:()=>void;
   }|null>(null);
+  const gripListenerCleanupRef=useRef<(()=>void)|null>(null);
   const leafRef=useRef<HTMLDivElement>(null);
   const shellRef=useRef<HTMLDivElement>(null);
   const lastTurn=useRef<PageTurn|null>(null);
@@ -303,10 +304,41 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,reduced
     };
   },[turning,debugPose,reducedMotion,onTurnFinished,waiting,flexible]);
 
+  useLayoutEffect(()=>()=>gripListenerCleanupRef.current?.(),[]);
+
+  // Pointer capture is not consistently delivered to React's bubble handlers
+  // when WebKit re-composites/mounts a curved page under the active pointer.
+  // Window CAPTURE listeners are the authoritative gesture transport. They
+  // continue to receive move/up/cancel if the original leaf DOM is replaced.
+  const moveGrip=(pointerId:number,clientX:number,host:HTMLDivElement)=>{
+    const grip=gripRef.current;
+    if(!grip||grip.released||grip.pointerId!==pointerId)return false;
+    const halfWidth=Math.max(1,host.getBoundingClientRect().width/2);
+    const traveled=(clientX-grip.startX)/halfWidth;
+    const progress=Math.max(0,Math.min(1,grip.direction===1?-traveled:1-traveled));
+    grip.progress=progress;
+    grip.paint?.(progress);
+    return true;
+  };
+  const releaseGrip=(pointerId:number,host:HTMLDivElement,cancelled=false)=>{
+    const grip=gripRef.current;
+    if(!grip||grip.released||grip.pointerId!==pointerId)return;
+    grip.released=true;
+    // A reader can drag 80% over and back to 10% without releasing.
+    // The current pose determines the outcome, not maximum travel.
+    grip.commit=!cancelled&&(grip.direction===1?grip.progress>=.5:grip.progress<=.5);
+    delete host.dataset.grabActive;
+    gripListenerCleanupRef.current?.();
+    gripListenerCleanupRef.current=null;
+    try{if(host.hasPointerCapture(pointerId))host.releasePointerCapture(pointerId);}
+    catch{/* a detached/composited element may have lost capture */}
+    grip.settle?.(); // If textures aren't ready, readiness will settle later.
+  };
   const handleGripStart=(event:PointerEvent<HTMLDivElement>)=>{
     if(turning||gripRef.current||debugPose!==null||!event.isPrimary||
        (event.pointerType==='mouse'&&event.button!==0))return;
-    const bounds=event.currentTarget.getBoundingClientRect();
+    const host=event.currentTarget;
+    const bounds=host.getBoundingClientRect();
     const local=event.clientX-bounds.left;
     const direction:1|-1=local>=bounds.width/2?1:-1;
     if((direction===1&&active>=5)||(direction===-1&&active<=0))return;
@@ -315,36 +347,38 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,reduced
       pointerId:event.pointerId,startX:event.clientX,direction,
       progress:direction===1?0:1,released:false,commit:false
     };
-    event.currentTarget.dataset.grabActive='true';
-    // Pointer capture keeps the paper attached to the hand when the finger
-    // moves outside the book, as long as the browser allows capture.
-    try{event.currentTarget.setPointerCapture(event.pointerId);}catch{/* synthetic QA pointer */}
+    host.dataset.grabActive='true';
+    const onMove=(e:globalThis.PointerEvent)=>{
+      if(moveGrip(e.pointerId,e.clientX,host)&&e.cancelable)e.preventDefault();
+    };
+    const onUp=(e:globalThis.PointerEvent)=>releaseGrip(e.pointerId,host,false);
+    const onCancel=(e:globalThis.PointerEvent)=>releaseGrip(e.pointerId,host,true);
+    const onBlur=()=>{
+      const grip=gripRef.current;
+      if(grip)releaseGrip(grip.pointerId,host,true);
+    };
+    window.addEventListener('pointermove',onMove,{capture:true,passive:false});
+    window.addEventListener('pointerup',onUp,true);
+    window.addEventListener('pointercancel',onCancel,true);
+    window.addEventListener('blur',onBlur);
+    gripListenerCleanupRef.current=()=>{
+      window.removeEventListener('pointermove',onMove,true);
+      window.removeEventListener('pointerup',onUp,true);
+      window.removeEventListener('pointercancel',onCancel,true);
+      window.removeEventListener('blur',onBlur);
+    };
+    try{host.setPointerCapture(event.pointerId);}catch{/* synthetic QA input */}
     event.preventDefault();
   };
   const handleGripMove=(event:PointerEvent<HTMLDivElement>)=>{
-    const grip=gripRef.current;
-    if(!grip||grip.released||grip.pointerId!==event.pointerId)return false;
-    const halfWidth=Math.max(1,event.currentTarget.getBoundingClientRect().width/2);
-    const traveled=(event.clientX-grip.startX)/halfWidth;
-    const progress=Math.max(0,Math.min(1,grip.direction===1?-traveled:1-traveled));
-    grip.progress=progress;
-    grip.paint?.(progress);
+    if(!moveGrip(event.pointerId,event.clientX,event.currentTarget))return false;
     event.preventDefault();
     return true;
   };
   const finishGrip=(event:PointerEvent<HTMLDivElement>,cancelled=false)=>{
-    const grip=gripRef.current;
-    if(!grip||grip.released||grip.pointerId!==event.pointerId)return;
-    grip.released=true;
-    // Evaluate the CURRENT position, never the farthest position reached.
-    // A reader can pull the sheet over 80%, pull it back to 10%, then release
-    // to cancel. No timer or velocity can force completion while held.
-    grip.commit=!cancelled&&(grip.direction===1?grip.progress>=.5:grip.progress<=.5);
-    delete event.currentTarget.dataset.grabActive;
-    try{if(event.currentTarget.hasPointerCapture(event.pointerId))
-      event.currentTarget.releasePointerCapture(event.pointerId);}catch{/* detached pointer */}
-    grip.settle?.(); // If paper images aren't ready, settling starts on readiness.
-    event.preventDefault();
+    const wasHolding=gripRef.current?.pointerId===event.pointerId;
+    releaseGrip(event.pointerId,event.currentTarget,cancelled);
+    if(wasHolding)event.preventDefault();
   };
   const handlePointer=(event:PointerEvent<HTMLDivElement>)=>{
     if(handleGripMove(event))return;
