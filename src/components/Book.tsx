@@ -176,7 +176,6 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     // Mounting a reverse turn must start at its left endpoint even while
     // incoming images decode. Never expose an empty or wrong-facing leaf.
     if(!flexible)gsap.set(leaf,{rotateY:initialAngle});
-    let cancelled=false;
     const printProgress={value:forward?0:1};
     const update=(progress:number)=>{
       leaf.style.setProperty('--leaf-shade',String(Math.sin(Math.PI*progress)*.34));
@@ -208,16 +207,15 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
         duration:moveDuration,ease:'power2.inOut'
       },0);
     }
-    // Hold the outgoing face until every incoming image is ready to paint.
-    const images=[...shell.querySelectorAll<HTMLImageElement>('.scene-plane')];
-    void Promise.all(images.map(image=>image.decode().catch(()=>undefined))).then(()=>{
-      if(!cancelled){
-        if(flexible)posePaper(leaf,forward?0:1);
-        timeline.play();
-      }
-    });
+    // Readiness is already established before this effect:
+    // capturePaperPrint waits for the source artwork and printReady waits for
+    // the mounted printed images to decode. A SECOND decode() of every scene
+    // image here deadlocks on WebKit when a hidden/paused source is present:
+    // the timeline never starts, so onComplete never unmounts the leaf.
+    // Start the physical motion after the readiness gate, synchronously.
+    if(flexible)posePaper(leaf,forward?0:1);
+    timeline.play();
     return()=>{
-      cancelled=true;
       timeline.kill();
       leaf.style.removeProperty('--leaf-shade');
       gsap.set(leaf,{clearProps:'transform'});
