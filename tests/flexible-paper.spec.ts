@@ -103,6 +103,23 @@ test('a mobile leaf keeps its segments while turning and adapts after resizing',
   await expect(page.locator('.book-static .page-surface[data-chapter="grow"]')).toHaveCount(2);
 });
 
+test('exactly flat poses use native, single-piece printed paper',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});
+  for(const [pose,expected] of [['0','front'],['0.5','none'],['1','back']] as const){
+    await page.goto('/?pose='+pose+'&from=grow');
+    const leaf=page.locator('.book-turn-leaf.is-flexible');
+    await expect(leaf).toHaveAttribute('data-texture-ready','true');
+    await expect(leaf).toHaveAttribute('data-paper-endpoint',expected);
+    const visible=leaf.locator('.paper-endpoint:visible');
+    await expect(visible).toHaveCount(expected==='none'?0:1);
+    const segments=leaf.locator('.paper-segment:visible');
+    await expect(segments).toHaveCount(expected==='none'
+      ? Number(await leaf.locator('.paper-segment').count()):0);
+    if(expected!=='none')
+      await expect(visible.locator('.page-surface')).toHaveCount(1);
+  }
+});
+
 test('front and reverse endpoint print match the actual settled pages at desktop and mobile sizes',async({page:desktop,browser},testInfo)=>{
   const retina=await browser.newContext({viewport:{width:393,height:852},deviceScaleFactor:3,reducedMotion:'reduce'});
   try{
