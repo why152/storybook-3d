@@ -313,7 +313,7 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
           <div className="paper-segment-face paper-back" data-face="back">
             <div className="paper-print"><Half position={leafBack} side="left" name={name} wish={wish} inkOnly printed={print?.back}/></div>
           </div>
-        </div>))}</>:<><div className="book-leaf-face book-leaf-front" data-face="front">
+        </div>)}</>:<><div className="book-leaf-face book-leaf-front" data-face="front">
           <Half position={leafFront} side="right" name={name} wish={wish}/>
           <span className="leaf-light" aria-hidden="true"/>
         </div>
