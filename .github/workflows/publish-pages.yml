@@ -69,3 +69,17 @@ jobs:
       - name: Publish verified static site
         id: pages
         uses: actions/deploy-pages@v4
+      - name: Check real public URL and illustrated assets
+        env:
+          DEPLOYED_URL: ${{ steps.pages.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          test -n "$DEPLOYED_URL"
+          base="${DEPLOYED_URL%/}/"
+          curl -fsSL --retry 12 --retry-all-errors --retry-delay 5 "${base}" -o /tmp/storybook-pages-index.html
+          grep -q '/storybook-3d/assets/' /tmp/storybook-pages-index.html
+          for asset in assets/hello/background.svg assets/grow/actors/rabbit.svg assets/wish/background.svg; do
+            curl -fsSL --retry 12 --retry-all-errors --retry-delay 5 "${base}${asset}" -o /tmp/storybook-pages-asset
+            grep -q '<svg' /tmp/storybook-pages-asset
+          done
+          echo "Published site and original storybook assets verified: ${base}"
