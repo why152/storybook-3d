@@ -1,0 +1,49 @@
+{
+  "environment": "Local macOS automated browser; viewport simulation, NOT a real phone benchmark",
+  "metrics": [
+    {
+      "engine": "webkit",
+      "device": "desktop",
+      "variant": "rigid",
+      "frames": 305,
+      "p50": 17,
+      "p95": 26,
+      "max": 41,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+      "dpr": 1
+    },
+    {
+      "engine": "webkit",
+      "device": "desktop",
+      "variant": "flexible",
+      "frames": 197,
+      "p50": 18,
+      "p95": 95,
+      "max": 126,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+      "dpr": 1
+    },
+    {
+      "engine": "webkit",
+      "device": "mobile",
+      "variant": "rigid",
+      "frames": 311,
+      "p50": 17,
+      "p95": 25,
+      "max": 35,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+      "dpr": 1
+    },
+    {
+      "engine": "webkit",
+      "device": "mobile",
+      "variant": "flexible",
+      "frames": 219,
+      "p50": 17,
+      "p95": 59,
+      "max": 100,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+      "dpr": 1
+    }
+  ]
+}

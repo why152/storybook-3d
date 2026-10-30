@@ -27,6 +27,9 @@ export function getChapter(position:number):Chapter {
 }
 export function initialPosition(){
   const params=new URLSearchParams(window.location.search);
+  // Pose previews start on their actual outgoing spread. Beginning on the
+  // closed cover would shift the book while its paper print is prepared.
+  if(params.has('pose'))return previewFrom();
   const chapter=chapters.findIndex(x=>x.id===params.get('scene'));
   return chapter<0?0:chapter+1;
 }

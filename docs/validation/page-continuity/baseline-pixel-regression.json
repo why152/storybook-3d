@@ -1,0 +1,27 @@
+{
+  "baseline": "0073f2d4d7e3df501f902a1fb14d5324266e3341",
+  "engine": "webkit",
+  "threshold": 3,
+  "results": [
+    {
+      "test": "painted 1280px turn endpoint 0 matches its settled artwork",
+      "status": "failed",
+      "meanChannelError": 23.302229180913987
+    },
+    {
+      "test": "painted 1280px turn endpoint 1 matches its settled artwork",
+      "status": "passed",
+      "meanChannelError": null
+    },
+    {
+      "test": "painted 390px turn endpoint 0 matches its settled artwork",
+      "status": "failed",
+      "meanChannelError": 21.492887861748525
+    },
+    {
+      "test": "painted 390px turn endpoint 1 matches its settled artwork",
+      "status": "passed",
+      "meanChannelError": null
+    }
+  ]
+}

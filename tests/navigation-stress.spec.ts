@@ -3,7 +3,8 @@ import { expect, test } from '@playwright/test';
 /** These are cheap invariants a future expensive shader solver should never
  * need to re-debug while investigating GPU-only paper deformation. */
 
-test('actual Chromium touch input turns physical pages forward and backward',async ({browser})=>{
+test('actual Chromium touch input turns physical pages forward and backward',async ({browser,browserName})=>{
+  test.skip(browserName!=='chromium','Native CDP touch dispatch is Chromium-specific.');
   const context=await browser.newContext({
     viewport:{width:390,height:844},
     isMobile:true,

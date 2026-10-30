@@ -35,7 +35,7 @@ const sizes = [
 
 function rounded(number:number){return Math.round(number*100)/100;}
 
-test('capture reproducible book asset/layout/readability baselines before premium shader work', async ({browser})=>{
+test('capture reproducible book asset/layout/readability baselines before premium shader work', async ({browser,browserName})=>{
   test.setTimeout(140_000);
   const captures: Capture[]=[];
   const problems: string[]=[];
@@ -123,7 +123,7 @@ test('capture reproducible book asset/layout/readability baselines before premiu
             durationMs:450,frames:raf.frames,
             medianIntervalMs:raf.p50===null?null:rounded(raf.p50),
             p95IntervalMs:raf.p95===null?null:rounded(raf.p95),
-            note:'Headless Chromium rAF cadence with reduced-motion stills; NOT a GPU benchmark, FPS guarantee, energy estimate, or final shader comparison.',
+            note:`Headless ${browserName} rAF cadence with reduced-motion stills; NOT a GPU benchmark, FPS guarantee, energy estimate, or final shader comparison.`,
           },
           screenCapture:imageName,
         };
@@ -147,13 +147,13 @@ test('capture reproducible book asset/layout/readability baselines before premiu
   const markdown=[
     '# Book readiness — two viewports × five chapters',
     '',
-    'CI evidence, not a frame-rate guarantee. Source: actual Chromium DOM + image decoding.',
+    `CI evidence, not a frame-rate guarantee. Source: actual ${browserName} DOM + image decoding.`,
     '',
     '| Viewport | Chapter | SVG images | Image loaded | Gutter Δpx | Overflow px | p95 rAF interval ms | Screenshot |',
     '| --- | --- | ---: | --- | ---: | ---: | ---: | --- |',
     ...captures.map(c=>`| ${c.viewport} | ${c.chapter.toUpperCase()} | ${c.sceneImageCount} | ${c.allImagesLoaded?'yes':'NO'} | ${c.bindingToBookMiddlePx} | ${c.horizontalOverflowPx} | ${c.browserSample.p95IntervalMs??'n/a'} | [open](${c.screenCapture}) |`),
     '',
-    'Treat the rAF interval as a **software Chromium environment observation**. Never use it to claim a GPU shader outperforms CSS. Real device profiling is required.',
+    `Treat the rAF interval as a **software ${browserName} environment observation**. Never use it to claim a GPU shader outperforms CSS. Real device profiling is required.`,
     '',
     'Full machine-readable data: [qa-readiness.json](qa-readiness.json).',
     '',

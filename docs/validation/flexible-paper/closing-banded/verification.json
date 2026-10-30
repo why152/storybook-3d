@@ -1,0 +1,16 @@
+{
+  "chromium": {
+    "passed": 42,
+    "failed": 1,
+    "skipped": 0,
+    "command": "STORYBOOK_TEST_BASE_URL=http://127.0.0.1:5175 playwright test",
+    "remaining": "393px DPR 1 reverse endpoint after resize; mean 3.8553259673793465, gate <2. Later DPR 3 cases not reached."
+  },
+  "webkit": {
+    "passed": 42,
+    "failed": 0,
+    "skipped": "Chromium-native CDP touch only",
+    "command": "STORYBOOK_TEST_BROWSER=webkit STORYBOOK_TEST_BASE_URL=http://127.0.0.1:5175 playwright test",
+    "expandedEndpointCases": "All passed, including 393px/DPR3/resize"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "baselineCommit": "38fcd9dc70f144392df459aedc3c13833c81a7f4",
+  "candidateParent": "54622333741e97483e457c06859bcf07c8121b52",
+  "candidateSourceSha256": {
+    "index.html": "4ae4974fc8fee8c3255ef06a6807088a80eb7daea892d79803a05d3bfe6f67fc",
+    "src/App.tsx": "910a05da4620467b7b3e0483837162c60e225cf5ffbe3d34d8107cb74106d8af",
+    "src/components/Book.tsx": "72779acb19db4723799afaa66b7446878eea2d0c876b379138a64f37166be239",
+    "src/components/SceneArt.tsx": "9f1aa42fdb7faa6a4368dd137a5e6017d0f64cd6609b42ff0cb34dd1b4da40fe",
+    "src/components/paperGeometry.ts": "afb0fc4f5cfb85964f367c495f407c4d1e1dc3e91ffac96b94c70e419f0bc01f",
+    "src/components/paperPrint.ts": "aa50813900016661bcf8a8370b0017bc8e96482b0d93c8e479c2b7c9b5701c3c",
+    "src/styles.css": "ced67deea45f83694578b87d1f1e12311c08c1186580b110888f9cb4a3298d07"
+  },
+  "originalArtwork": "unchanged",
+  "poses": [
+    0,
+    0.25,
+    0.5,
+    0.75,
+    1
+  ],
+  "chapter": "grow",
+  "viewports": [
+    {
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "verdict": "iterate: endpoint regressions, visible strip seams and high preparation/turn frame intervals; not accepted or deployed",
+  "lastLocalChecks": {
+    "chromium": {
+      "passed": 10,
+      "failed": 2,
+      "scope": "continuity + flexible-paper, production preview"
+    },
+    "webkit": {
+      "passed": 9,
+      "failed": 3,
+      "scope": "continuity + flexible-paper, production preview"
+    }
+  },
+  "recordCommand": "STORYBOOK_TEST_BROWSER=webkit node scripts/capture-paper-evidence.mjs <output>"
+}
