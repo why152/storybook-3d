@@ -60,20 +60,16 @@ export function PageHalf({chapter,side,name,wish,inkOnly=false,printed}:PageHalf
 }
 
 export function FrontCover(){
-  return <div className="book-front-cover" aria-label="A LITTLE STORY — 立体故事书封面">
-    <div className="cover-border" aria-hidden="true"/>
-    <div className="cover-decoration" aria-hidden="true">
-      <span className="cover-moon">☾</span>
-      <span className="cover-star-one">✦</span>
-      <span className="cover-star-two">✧</span>
-      <span className="cover-swirls">﹏﹏﹏</span>
-    </div>
+  return <div className="book-front-cover v2-cover" aria-label="A LITTLE STORY — 有书脊的生日绘本封面">
+    <img className="v2-cover-scene" src={import.meta.env.BASE_URL+'assets/v2/cover-art.svg'} alt="" draggable={false}/>
+    <div className="v2-cover-frame" aria-hidden="true"/>
     <div className="book-cover-copy">
-      <span className="cover-edition">AN ILLUSTRATED EDITION</span>
+      <span className="cover-edition">A HANDMADE BIRTHDAY TALE</span>
       <span className="cover-main-title">A LITTLE<i>story</i></span>
-      <span className="cover-separator">✳ &nbsp; — &nbsp; ✳</span>
-      <span className="cover-meta">A BOOK FOR SOMEONE SPECIAL<br/>EST. 2026</span>
+      <span className="v2-cover-flourish" aria-hidden="true">✦ · ✧ · ✦</span>
+      <span className="cover-meta">A BOOK FOR SOMEONE SPECIAL<br/>ONE STORY, JUST FOR YOU</span>
     </div>
+    <div className="v2-cover-bottom-note">Some stories begin with hello.</div>
     <div className="cover-hinge" aria-hidden="true"/>
   </div>;
 }

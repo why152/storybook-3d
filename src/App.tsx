@@ -3,6 +3,7 @@ import { Book, type PageTurn } from './components/Book';
 import { getChapter, initialPosition, previewFrom, previewPose, totalPositions } from './data/story';
 import { DEFAULT_GREETING, greetingFromHash, makeShareLink } from './data/share';
 import './styles.css';
+import './styles.v2.css';
 
 const debugPose=previewPose();
 const debugFrom=previewFrom();
@@ -99,7 +100,7 @@ export default function App(){
     }
   };
 
-  return <div className="showroom">
+  return <div className="showroom v2-showroom">
     <header className="site-head">
       <div className="site-name">little<span>story</span>.studio</div>
       <div className="site-title">A LITTLE STORY<br/>FOR SOMEONE SPECIAL</div>
