@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Book, type PageTurn } from './components/Book';
 import { getChapter, initialPosition, previewFrom, previewPose, totalPositions } from './data/story';
+import { DEFAULT_GREETING, greetingFromHash, makeShareLink } from './data/share';
 import './styles.css';
 
 const debugPose=previewPose();
 const debugFrom=previewFrom();
+const sharedGreeting=greetingFromHash(window.location.hash);
 
 function Arrow({back=false}:{back?:boolean}){
   return <svg aria-hidden="true" viewBox="0 0 115 52" className={`hand-arrow ${back?'is-back':''}`} fill="none">
@@ -17,8 +19,9 @@ export default function App(){
   const [active,setActive]=useState(initialPosition);
   const [turn,setTurn]=useState<PageTurn|null>(null);
   const [target,setTarget]=useState<number|null>(null);
-  const [name,setName]=useState('你');
-  const [wish,setWish]=useState('愿所有美好的事情，都在下一页等你。');
+  const [name,setName]=useState(sharedGreeting?.name??DEFAULT_GREETING.name);
+  const [wish,setWish]=useState(sharedGreeting?.wish??DEFAULT_GREETING.wish);
+  const [copyStatus,setCopyStatus]=useState('');
   const [editorOpen,setEditorOpen]=useState(false);
   const [reducedMotion,setReducedMotion]=useState(()=>
     window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -74,8 +77,17 @@ export default function App(){
   const shownChapter=currentIndex>0?getChapter(currentIndex):null;
   const readableTitle=shownChapter?.title.replace('{name}',name.trim()||'你');
   const readableMessage=shownChapter?.description.replace(
-    '{wish}',wish.trim()||'愿所有美好都在下一页等你。'
+    '{wish}',wish.trim()||DEFAULT_GREETING.wish
   );
+  const shareLink=makeShareLink({name,wish},window.location);
+  const copyShareLink=async()=>{
+    try{
+      await navigator.clipboard.writeText(shareLink);
+      setCopyStatus('专属链接已复制，可以发给朋友了。');
+    }catch{
+      setCopyStatus('自动复制不可用，请点按上方链接框全选后手动复制。');
+    }
+  };
 
   return <div className="showroom">
     <header className="site-head">
@@ -161,14 +173,21 @@ export default function App(){
         <p>调整名字与祝福，最后一章会立即使用这些内容。五个插画跨页和实体书翻页动作保持不变。</p>
         <label htmlFor="recipient">收礼人的名字</label>
         <input id="recipient" value={name} maxLength={12}
-          onChange={e=>setName(e.target.value)}/>
+          onChange={e=>{setName(e.target.value);setCopyStatus('');}}/>
         <label htmlFor="greeting">最后一页的祝福</label>
         <textarea id="greeting" value={wish} maxLength={60} rows={4}
-          onChange={e=>setWish(e.target.value)}/>
+          onChange={e=>{setWish(e.target.value);setCopyStatus('');}}/>
+        <label htmlFor="share-link">专属绘本链接</label>
+        <input id="share-link" value={shareLink} readOnly
+          onFocus={e=>e.currentTarget.select()}/>
+        <button type="button" className="drawer-share" onClick={copyShareLink}>
+          复制专属链接 ↗
+        </button>
+        <span className="share-status" role="status" aria-live="polite">{copyStatus}</span>
         <button type="button" className="drawer-done" onClick={()=>{
           closeEditor();goTo(totalPositions-1);
         }}>看看最后一章 ↗</button>
-        <small>仅在此页面预览，不上传任何个人内容</small>
+        <small>链接把姓名和祝福保存在网址中，不需要账户或上传到后台。拿到链接的人可以读到其中的内容。</small>
       </aside>
     </div>}
   </div>;
