@@ -296,14 +296,24 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
         data-visible-face={debugPose!==null?(debugPose<.5?'front':'back'):
           showingTurn.direction===1?'front':'back'}
         style={flexible||debugPose===null?undefined:{transform:`rotateY(${-180*debugPose}deg)`}}>
-        {flexible?Array.from({length:paperSegments},(_,index)=><div className="paper-segment" key={index}>
+        {flexible?<>
+          {/* The physical sheet is exactly flat at both endpoints. Render one
+              native page face there rather than N separately resampled strips;
+              it preserves printed text and avoids per-strip pixel seams. */}
+          <div className="paper-endpoint paper-endpoint-front">
+            <Half position={leafFront} side="right" name={name} wish={wish}/>
+          </div>
+          <div className="paper-endpoint paper-endpoint-back">
+            <Half position={leafBack} side="left" name={name} wish={wish}/>
+          </div>
+          {Array.from({length:paperSegments},(_,index)=><div className="paper-segment" key={index}>
           <div className="paper-segment-face paper-front" data-face="front">
             <div className="paper-print"><Half position={leafFront} side="right" name={name} wish={wish} inkOnly printed={print?.front}/></div>
           </div>
           <div className="paper-segment-face paper-back" data-face="back">
             <div className="paper-print"><Half position={leafBack} side="left" name={name} wish={wish} inkOnly printed={print?.back}/></div>
           </div>
-        </div>):<><div className="book-leaf-face book-leaf-front" data-face="front">
+        </div>))}</>:<><div className="book-leaf-face book-leaf-front" data-face="front">
           <Half position={leafFront} side="right" name={name} wish={wish}/>
           <span className="leaf-light" aria-hidden="true"/>
         </div>
