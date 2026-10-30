@@ -25,6 +25,16 @@ export default function App(){
   const [editorOpen,setEditorOpen]=useState(false);
   const [reducedMotion,setReducedMotion]=useState(()=>
     window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  useEffect(()=>{
+    // Navigating to another #gift URL on the same path does not remount React.
+    // Reload that document to restore the new greeting and restart at the cover.
+    // Also handles unsupported/corrupt gift fragments with safe defaults.
+    const onGiftNavigation=()=>{
+      if(window.location.hash.startsWith('#gift='))window.location.reload();
+    };
+    window.addEventListener('hashchange',onGiftNavigation);
+    return()=>window.removeEventListener('hashchange',onGiftNavigation);
+  },[]);
   const startTouch=useRef<number|null>(null);
   const customizeTrigger=useRef<HTMLButtonElement>(null);
   const closeEditor=useCallback(()=>{
