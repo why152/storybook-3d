@@ -16,7 +16,8 @@
     "qa:local": "npm run test:actors && npm run test:assets && npm run lint && npm run typecheck && npm run build && npm run test:e2e && npm run qa:gallery",
     "qa:baseline": "playwright test tests/readiness.spec.ts",
     "qa:gallery": "node scripts/build-review-gallery.mjs test-results",
-    "qa:browser:setup": "playwright install chromium"
+    "qa:browser:setup": "playwright install chromium webkit",
+    "qa:continuity": "node scripts/capture-continuity.mjs"
   },
   "dependencies": {
     "gsap": "^3.14.0",
