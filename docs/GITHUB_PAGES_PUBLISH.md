@@ -52,3 +52,12 @@ AWS keys, servers, containers, database, or paid build services are required.
 If publishing all of the repository history isn't acceptable, keep it
 private and use a hosting service that can build directly from a private repo,
 or create a **new clean public static-only publication repository**.
+
+## Public-visibility activation
+
+The owner switched this repository to **Public** on 2026-10-30. The
+`publish-pages.yml` workflow deploys only the built `dist/` artifact, and
+therefore must run from a new `main` push after visibility was changed.
+The GitHub Pages setting `Build and deployment → Source: GitHub Actions`
+remains required. A successful Pages deployment and a verified live URL are
+independent of a successful CI build.
