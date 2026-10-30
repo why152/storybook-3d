@@ -36,7 +36,6 @@ export default function App(){
     window.addEventListener('hashchange',onGiftNavigation);
     return()=>window.removeEventListener('hashchange',onGiftNavigation);
   },[]);
-  const startTouch=useRef<number|null>(null);
   const customizeTrigger=useRef<HTMLButtonElement>(null);
   const closeEditor=useCallback(()=>{
     setEditorOpen(false);
@@ -54,6 +53,12 @@ export default function App(){
     const next=active+(position>active?1:-1);
     setTurn({from:active,to:next,direction:next>active?1:-1});
   },[turn,active]);
+  const grabTurn=useCallback((direction:-1|1)=>{
+    if(turn||editorOpen||debugPose!==null||active+direction<0||active+direction>=totalPositions)return false;
+    setTarget(null);
+    setTurn({from:active,to:active+direction,direction,interactive:true});
+    return true;
+  },[turn,editorOpen,active]);
   useEffect(()=>{
     if(turn||target===null)return;
     if(active===target){setTarget(null);return;}
@@ -108,19 +113,12 @@ export default function App(){
         CUSTOMIZE <span aria-hidden="true">↗</span>
       </button>
     </header>
-    <main className="exhibition"
-      onTouchStart={e=>{startTouch.current=e.touches[0]?.clientX??null}}
-      onTouchEnd={e=>{
-        if(startTouch.current===null)return;
-        const moved=e.changedTouches[0].clientX-startTouch.current;
-        startTouch.current=null;
-        if(Math.abs(moved)>65)goTo(active+(moved<0?1:-1));
-      }}>
+    <main className="exhibition">
       <button type="button" aria-label="上一页" title="向左翻书"
         className="turn-button turn-prev"
         disabled={active===0||!!turn||debugPose!==null}
         onClick={()=>goTo(active-1)}><Arrow back/></button>
-      <Book active={active} turning={turn} onTurnFinished={onTurnFinished}
+      <Book active={active} turning={turn} onTurnFinished={onTurnFinished} onGrabTurn={grabTurn}
         name={name} wish={wish} reducedMotion={reducedMotion}
         debugPose={debugPose} debugFrom={debugFrom}/>
       <button type="button" aria-label="下一页" title="向右翻书"
@@ -138,7 +136,7 @@ export default function App(){
         : <>
           <div className="reader-meta">THE BEGINNING</div>
           <h2>一本为特别的你准备的小书</h2>
-          <p>点击右侧箭头翻开封面，开始阅读。</p>
+          <p>用手指或鼠标按住纸页拖动，或点击右侧箭头翻开故事。</p>
         </>}
     </section>
     <div className="page-navigation">
@@ -163,7 +161,7 @@ export default function App(){
     </div>
     <footer className="site-foot">
       <span>AN ORIGINAL INTERACTIVE BOOK</span>
-      <span>← → &nbsp; TURN THE PAGES &nbsp; · &nbsp; SWIPE ON MOBILE</span>
+      <span>← → &nbsp; HOLD &amp; DRAG PAPER &nbsp; · &nbsp; RELEASE TO SETTLE</span>
       <span>MADE WITH CARE · 2026</span>
     </footer>
 
