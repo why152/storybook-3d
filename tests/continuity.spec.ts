@@ -27,6 +27,20 @@ for(const chapter of chapters.slice(0,-1)){
     const leaf=page.locator('.book-turn-leaf');
     await expect(leaf).toBeVisible();
     await expect(leaf).toHaveAttribute('data-texture-ready','true');
+    // Check the actual in-motion DOM while the physical leaf is still present.
+    // Taking full-page screenshots first can outlast a 1.28-second GSAP turn
+    // on slower CI hardware and accidentally inspect a normally unmounted leaf.
+    const moving=await page.locator('.paper-source[data-print=front] .scene-plane').evaluateAll(planes=>
+      planes.map(el=>(el as HTMLElement).style.transform));
+    const stationary=await page.locator('.book-left .scene-plane').evaluateAll(planes=>
+      planes.map(el=>getComputedStyle(el).transform));
+    expect(moving).toEqual(source);
+    expect(stationary).toEqual(source);
+    // Incoming page and its printed reverse must agree before landing.
+    const arrival=await page.locator('.book-right .scene-plane').evaluateAll(planes=>
+      planes.map(el=>getComputedStyle(el).transform));
+    expect(await page.locator('.paper-source[data-print=back] .scene-plane').evaluateAll(planes=>
+      planes.map(el=>(el as HTMLElement).style.transform))).toEqual(arrival);
     // Paint the actual shared composition at the same viewport coordinates. Resizing
     // an element screenshot into a canvas changes its fractional pixel phase.
     await page.evaluate(async box=>{
@@ -56,17 +70,6 @@ for(const chapter of chapters.slice(0,-1)){
       }return sum/n;
     },{native:nativePrint.toString('base64'),proof:printedProof.toString('base64'),box:printBox});
     expect(bitmapError,'shared print must preserve the actual frozen artwork, not just source metadata').toBeLessThan(2.5);
-    const moving=await page.locator('.paper-source[data-print=front] .scene-plane').evaluateAll(planes=>
-      planes.map(el=>(el as HTMLElement).style.transform));
-    const stationary=await page.locator('.book-left .scene-plane').evaluateAll(planes=>
-      planes.map(el=>getComputedStyle(el).transform));
-    expect(moving).toEqual(source);
-    expect(stationary).toEqual(source);
-    // Incoming page and its printed reverse must agree before landing.
-    const arrival=await page.locator('.book-right .scene-plane').evaluateAll(planes=>
-      planes.map(el=>getComputedStyle(el).transform));
-    expect(await page.locator('.paper-source[data-print=back] .scene-plane').evaluateAll(planes=>
-      planes.map(el=>(el as HTMLElement).style.transform))).toEqual(arrival);
     await expect(leaf).toHaveCount(0);
     const playing=await page.locator('.book-static .scene-plane').evaluateAll(planes=>
       planes.flatMap(plane=>plane.getAnimations().map(animation=>animation.playState)));
