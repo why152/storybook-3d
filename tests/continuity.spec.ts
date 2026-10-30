@@ -71,10 +71,14 @@ for(const chapter of chapters.slice(0,-1)){
     },{native:nativePrint.toString('base64'),proof:printedProof.toString('base64'),box:printBox});
     expect(bitmapError,'shared print must preserve the actual frozen artwork, not just source metadata').toBeLessThan(2.5);
     await expect(leaf).toHaveCount(0);
-    const playing=await page.locator('.book-static .scene-plane').evaluateAll(planes=>
-      planes.flatMap(plane=>plane.getAnimations().map(animation=>animation.playState)));
-    expect(playing.length).toBeGreaterThan(0);
-    expect(playing.every(state=>state==='running')).toBe(true);
+    // WebKit may finish the React commit before sampling the resumed CSS
+    // animation on its next display tick. Poll the actual animations rather
+    // than racing one immediate playState read against that paint transaction.
+    await expect.poll(async()=>{
+      const playing=await page.locator('.book-static .scene-plane').evaluateAll(planes=>
+        planes.flatMap(plane=>plane.getAnimations().map(animation=>animation.playState)));
+      return playing.length>0&&playing.every(state=>state==='running');
+    },{timeout:8000}).toBe(true);
     // Both halves must continue the same animation clocks on the spread.
     const phaseError=await page.locator('.book-shell').evaluate(shell=>{
       const left=shell.querySelectorAll('.book-left .scene-plane');
