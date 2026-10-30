@@ -114,12 +114,16 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .book-leaf-face .plane-effects{animation:none}
 .book-leaf-face .page-chapter-left{text-shadow:0 1px 3px #3d303790}
 
-/* At zero bend, the correct page face is a single unwarped DOM surface:
-   no repeated strips, text resampling, or extra blending at endpoints. */
-.paper-endpoint{display:none;position:absolute;top:0;left:0;width:100%;height:100%;z-index:3;pointer-events:none}
-.paper-endpoint-back{left:-100%}
-.book-turn-leaf.is-flexible[data-paper-endpoint="front"] .paper-endpoint-front,
-.book-turn-leaf.is-flexible[data-paper-endpoint="back"] .paper-endpoint-back{display:block}
+/* A zero-curvature sheet is already present in .paper-source-pair.
+   Reuse those two native surfaces at endpoints, avoiding duplicate images
+   and different per-strip raster sampling. During preparation the source
+   pair remains in its original positions for the print capture. */
+.paper-source-pair.is-ready[data-paper-endpoint="front"],
+.paper-source-pair.is-ready[data-paper-endpoint="back"]{visibility:visible;z-index:10}
+.paper-source-pair.is-ready[data-paper-endpoint="front"] .paper-source[data-print="front"]{left:50%}
+.paper-source-pair.is-ready[data-paper-endpoint="back"] .paper-source[data-print="back"]{left:0}
+.paper-source-pair.is-ready[data-paper-endpoint="front"] .paper-source[data-print="back"],
+.paper-source-pair.is-ready[data-paper-endpoint="back"] .paper-source[data-print="front"]{visibility:hidden}
 .book-turn-leaf.is-flexible[data-paper-endpoint="front"] .paper-segment,
 .book-turn-leaf.is-flexible[data-paper-endpoint="back"] .paper-segment{display:none}
 
