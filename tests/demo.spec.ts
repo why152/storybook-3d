@@ -373,3 +373,13 @@ test('V2 first prototype uses an original cover and mobile book with real touch 
   await page.getByRole('button',{name:'下一页'}).click();
   await expect(page.locator('.book-static .page-surface[data-chapter="grow"]')).toHaveCount(2);
 });
+
+test('V2 remains self-contained when Google Fonts is unavailable',async({page})=>{
+  const thirdPartyFonts:string[]=[];
+  page.on('request',request=>{
+    if(/fonts\.(googleapis|gstatic)\.com/i.test(request.url()))thirdPartyFonts.push(request.url());
+  });
+  await page.goto('/?scene=hello');
+  await expect(page.locator('.book-static .page-surface[data-chapter="hello"]')).toHaveCount(2);
+  expect(thirdPartyFonts).toEqual([]);
+});
