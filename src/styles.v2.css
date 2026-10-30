@@ -30,7 +30,9 @@
  background:radial-gradient(ellipse at center,#d5ac8640,transparent 65%);
  filter:blur(34px);
 }
-.v2-showroom .book-viewport {filter:drop-shadow(0 17px 34px #0008)}
+/* Never filter the book viewport: a filtered ancestor forces WebKit to
+   rasterize/flatten the entire nested 3D sheet and its animated SVG layers.
+   The existing .book-depth shadow supplies stage depth without this cost. */
 .v2-showroom .book-binding {
  background:linear-gradient(90deg,#26222bb9 0%,#746775c9 18%,#ddc4aa 45%,#655867d9 74%,#292530a9 100%);
 }
@@ -64,7 +66,7 @@
 .v2-cover-bottom-note {position:absolute;z-index:4;bottom:9%;left:12%;right:9%;text-align:center;font:italic 13px Georgia,serif;color:#f8e3c7;text-shadow:0 3px 9px #172333}
 .v2-showroom .theme-hello .page-chapter-left {font-family:Georgia,serif;font-style:italic;font-size:clamp(10px,1vw,15px)}
 .v2-showroom .page-surface {--paper-corner:12px}
-.v2-showroom .page-quote {padding:10px 14px;backdrop-filter:blur(3px);background:linear-gradient(90deg,#24313b7a,#24313b16)}
+.v2-showroom .page-quote {padding:10px 14px;background:linear-gradient(90deg,#24313b7a,#24313b16)}
 .v2-showroom .page-quote h2 {font-family:'Noto Sans SC',serif;font-weight:700;letter-spacing:.025em}
 @media (max-width:600px) {
   .v2-showroom {min-height:100dvh;overflow:visible}
