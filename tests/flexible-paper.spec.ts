@@ -181,3 +181,23 @@ test('front and reverse endpoint print match the actual settled pages at desktop
   }finally{await retina.close();}
 });
 
+
+test('WebKit resumes real book time after a blocked paint frame',async({page})=>{
+  await page.goto('/?scene=grow');
+  await page.evaluate(async()=>Promise.all([...document.images].map(image=>image.decode())));
+  await page.getByRole('button',{name:'下一页'}).click();
+  const leaf=page.locator('.book-turn-leaf.is-flexible');
+  await expect(leaf).toHaveAttribute('data-texture-ready','true');
+  // An expensive WebKit frame/screenshot must not make a 1.28s sheet
+  // spend several more seconds at 3% progress due to GSAP lag smoothing.
+  await page.evaluate(()=>{
+    const deadline=performance.now()+850;
+    while(performance.now()<deadline){ /* simulate one blocked frame */ }
+  });
+  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>resolve())));
+  if(await leaf.count()){
+    expect(Number(await leaf.getAttribute('data-progress'))).toBeGreaterThan(.55);
+  }
+  await expect(leaf).toHaveCount(0,{timeout:10000});
+  await expect(page.locator('.book-static .page-surface[data-chapter="together"]')).toHaveCount(2);
+});
