@@ -20,6 +20,9 @@ The previous whole-card 3D rotation prototype is retired. Read
 - Recipient and wish editor affects last page without redoing engine.
 
 ### Stage 4 — evidence and polish
+- Current local work: flexible interior paper in Draft PR #20, not accepted or
+  deployed. Resolve its real rendering and continuity failures, inspect matched
+  screenshots and footage, then obtain local visual feedback before deployment.
 - CI: lint, typecheck, Vite build, Playwright behavior.
 - Authentic screenshots at 0/25/50/75/100% of a book leaf, all 5
   illustrated spreads, mobile cover and open book.
@@ -30,6 +33,6 @@ The previous whole-card 3D rotation prototype is retired. Read
 
 ### Future, not part of demo
 
-Character-specific pose animation, paper mesh bending, richer parallax
+Detailed character joint animation, richer parallax
 shader, content templates/admin UI, safe upload pipeline, deployment,
 payments, customer accounts and shareable published books.

@@ -41,28 +41,26 @@ finished limb animation.
 Node.js 22+.
 
 ```bash
-npm install
+npm ci
 npm run dev
 npm run test:assets
 npm run test:actors
 npm run lint
 npm run typecheck
 npm run build
-npx playwright install chromium
+npx playwright install chromium webkit
 npm run test:e2e
+STORYBOOK_TEST_BROWSER=webkit npm run test:e2e
 ```
 
 Vite normally serves at http://localhost:5173.
 
 Keyboard Left/Right, hand-drawn arrows, page progress dots and
 touch swipes flip the book. Selecting a distant chapter turns through
-each intervening leaf. CUSTOMIZE edits the final page's name and wish. The CUSTOMIZE drawer also creates a
-shareable #gift= link: names and greetings survive refresh and reopening,
-including non-ASCII text, without an account or backend. Recipients begin at
-the portrait cover. A link encodes readable content, not encrypted/private
-storage; anyone with it can decode the greeting. Share links rely on keeping
-the hosting URL alive; they are not persistent database records.
-See [docs/shareable-links.md](docs/shareable-links.md).
+each intervening leaf. CUSTOMIZE edits the final page's name and wish.
+This candidate also generates a versioned, shareable `#gift=` URL: the recipient
+opens the cover and keeps the custom greeting on refresh, without a backend.
+The link is **encoded, not encrypted**; see [sharing limitations](docs/shareable-links.md).
 
 ## Inspect
 
@@ -92,8 +90,11 @@ Passing CI is not proof of artistic equivalence.
 
 ## Known limitations
 
-Leaf is rigid paper with cover/pages and shadows, not a smoothly
-deformable page curl. Illustration is original and still needs
+The deployed baseline uses rigid leaves. This local branch is developing
+flexible interior paper in [Draft PR #20](https://github.com/why152/storybook-3d/pull/20);
+it has not passed full browser and visual acceptance. See
+[experiment results and remaining gates](docs/flexible-paper.md).
+Illustration is original and still needs
 professional art refinement, scene-specific character acting and
 performance profiling. No back end, payments, accounts or customer
 file uploads. **PR #9 was owner-approved and merged on 2026-10-25; artistic polish and future deployments still require separate validation.**
@@ -107,7 +108,7 @@ escalation rules.
 
 ```bash
 nvm use 22
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund
 npm run qa:browser:setup
 npm run qa:local
 ```
@@ -125,11 +126,14 @@ index. New browser tests use Chrome's actual touch input, not just simulated
 keyboard navigation. The expensive Codex model should only tackle a
 reproducible high-impact issue after two truly attempted lower-cost fixes.
 
-**Reproducibility note:** npm dependencies are currently semver-range pinned
-in `package.json` but there is no committed `package-lock.json`.
-For bit-for-bit repeatability, generate and commit a lockfile in a separate
-normal engineering pass before comparing environments. This is NOT a
-problem that requires expensive Codex reasoning.
+**Reproducibility:** `package-lock.json` is committed. Use `npm ci` to install
+the locked dependency versions locally and in hosting builds.
+
+## AWS preview deployment
+
+The selected host is the existing Tokyo EC2 and its Caddy static file server.
+See [deployment instructions](docs/AWS_DEPLOYMENT.md) for production browser
+checks, independent releases, HTTPS and rollback.
 
 ## AI-first engineering and project tracking
 
