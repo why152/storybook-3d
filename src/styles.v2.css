@@ -119,3 +119,10 @@
 @media (prefers-reduced-motion:reduce) {
  .v2-showroom .v2-cover-scene {animation:none!important}
 }
+
+/* V2 direct manipulation: the complete turning leaf follows a captured
+   pointer, so selection, native image dragging and horizontal pan must never
+   compete with paper motion. Vertical scrolling is still permitted on phones. */
+.v2-showroom .book-viewport[data-grab-enabled="true"] {cursor:grab;touch-action:pan-y;}
+.v2-showroom .book-viewport[data-grab-active="true"] {cursor:grabbing;}
+.v2-showroom .book-viewport img {-webkit-user-drag:none;user-select:none;}
