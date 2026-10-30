@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { PAPER_SEGMENTS } from '../src/components/paperGeometry';
 
 const screenshot={fullPage:false,animations:'disabled' as const,timeout:15000};
 const chapters=['hello','grow','together','dream','wish'] as const;
@@ -54,12 +55,12 @@ for(const chapter of chapters){
   });
 }
 
-for(const [step,pose] of ['0','0.5','1'].entries()){
+for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
   test(`cover opens by turning a bound right leaf at ${Math.round(Number(pose)*100)}%`,async ({page})=>{
     await page.emulateMedia({reducedMotion:'reduce'});
     await page.goto('/?pose='+pose+'&from=cover');
     const leaf=page.locator('.book-turn-leaf');
-    await expect(leaf).toHaveCount(1);
+    await expect(leaf).toBeVisible();
     await expect(leaf.locator('.book-front-cover')).toHaveCount(1);
     await expect(leaf.locator('.page-surface[data-chapter="hello"]')).toHaveCount(1);
     // The cover is not a rotating full landscape card: width is book/2.
@@ -75,9 +76,10 @@ for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
   test(`physical book leaf at ${Math.round(Number(pose)*100)}% of turn`,async ({page})=>{
     await page.emulateMedia({reducedMotion:'reduce'});
     await page.goto('/?pose='+pose+'&from=grow');
-    await expect(page.locator('[data-page-role="turning-leaf"]')).toHaveCount(1);
+    await expect(page.locator('[data-page-role="turning-leaf"]')).toBeVisible();
+    await expect(page.locator('[data-page-role="turning-leaf"]')).toHaveAttribute('data-texture-ready','true');
     await expect(page.locator('.book-static')).toHaveCount(2);
-    await expect(page.locator('.book-leaf-face')).toHaveCount(2);
+    await expect(page.locator('.paper-segment-face')).toHaveCount(PAPER_SEGMENTS*2);
     const geometry=await page.locator('.book-shell').evaluate(shell=>{
       const leaf=shell.querySelector<HTMLElement>('.book-turn-leaf');
       if(!leaf)return null;
@@ -85,14 +87,14 @@ for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
         binding:Math.abs(leaf.offsetLeft-shell.clientWidth/2),
         leafWidth:Math.abs(leaf.offsetWidth-shell.clientWidth/2),
         origin:getComputedStyle(leaf).transformOrigin,
-        faceStyles:[...shell.querySelectorAll('.book-leaf-face')].map(el=>getComputedStyle(el).backfaceVisibility)
+        faceStyles:[...shell.querySelectorAll('.paper-segment-face')].map(el=>getComputedStyle(el).backfaceVisibility)
       };
     });
     expect(geometry).not.toBeNull();
     expect(geometry!.binding).toBeLessThan(3);
     expect(geometry!.leafWidth).toBeLessThan(3);
     expect(geometry!.origin.startsWith('0px')).toBeTruthy();
-    expect(geometry!.faceStyles).toEqual(['hidden','hidden']);
+    expect(geometry!.faceStyles).toEqual(Array(PAPER_SEGMENTS*2).fill('visible'));
     await page.screenshot({path:`test-results/book-turn-${String(step).padStart(2,'0')}.png`,...screenshot});
   });
 }
@@ -229,7 +231,7 @@ test('HELLO and GROW actors are independently registered, animated and still on 
   await page.screenshot({path:'test-results/acting-hello-live.png',fullPage:false});
   await page.getByRole('button',{name:'下一页'}).click();
   await expect(page.locator('.book-turn-leaf')).toHaveCount(1);
-  await expect(page.locator('.book-turn-leaf .actor-rabbit').first()).toHaveCSS('animation-name','none');
+  await expect(page.locator('.paper-source .actor-rabbit').first()).toHaveCSS('animation-name','none');
   await expect(page.locator('.book-turn-leaf')).toHaveCount(0,{timeout:15000});
   await waitForChapterAssets(page,'grow');
   await expect(page.locator('.book-static.book-left .acting-grow.actor-rabbit').first()).toHaveCSS('animation-name','grow-rabbit-reaching');
@@ -245,6 +247,10 @@ test('actor performances respect reduced motion and remain aligned with the 2-pa
     await waitForChapterAssets(page,chapter);
     await expect(page.locator('.book-static .actor-rabbit').first()).toHaveCSS('animation-name','none');
     await expect(page.locator('.book-static .actor-fox').first()).toHaveCSS('animation-name','none');
+    expect(await page.locator('.book-static .scene-plane').evaluateAll(planes=>
+      planes.every(plane=>plane.getAnimations().length===0)
+    ),'reduced motion must stop effects as well as actors').toBe(true);
+    await expect(page.locator('.book-viewport')).toHaveCSS('transition-duration','0s');
     const halves=page.locator('.book-static .scene-actor');
     await expect.poll(async()=>halves.evaluateAll(items=>items.every(node=>
       (node as HTMLImageElement).naturalWidth===1200 &&
@@ -305,7 +311,7 @@ test('five-chapter continuous real-browser recording includes distinct acting an
       if(scene==='wish')break;
       await page.getByRole('button',{name:'下一页'}).click();
       await expect(page.locator('.book-turn-leaf')).toHaveCount(1);
-      await expect(page.locator('.book-turn-leaf .scene-actor').first()).toHaveCSS('animation-name','none');
+      await expect(page.locator('.paper-source .scene-actor').first()).toHaveCSS('animation-name','none');
       await expect(page.locator('.book-turn-leaf')).toHaveCount(0,{timeout:12000});
     }
   }finally{await context.close();}
