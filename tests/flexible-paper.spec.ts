@@ -110,7 +110,9 @@ test('exactly flat poses use native, single-piece printed paper',async({page})=>
     const leaf=page.locator('.book-turn-leaf.is-flexible');
     await expect(leaf).toHaveAttribute('data-texture-ready','true');
     await expect(leaf).toHaveAttribute('data-paper-endpoint',expected);
-    const visible=leaf.locator('.paper-endpoint:visible');
+    const source=page.locator('.paper-source-pair.is-ready');
+    await expect(source).toHaveAttribute('data-paper-endpoint',expected);
+    const visible=source.locator('.paper-source:visible');
     await expect(visible).toHaveCount(expected==='none'?0:1);
     const segments=leaf.locator('.paper-segment:visible');
     await expect(segments).toHaveCount(expected==='none'
