@@ -53,7 +53,7 @@ type StripElements={
   front:HTMLElement|null;
   back:HTMLElement|null;
 };
-type Layout={width:number;height:number;camera:number;cuts:number[];segments:StripElements[]};
+type Layout={width:number;height:number;camera:number;cuts:number[];segments:StripElements[];sourcePair:HTMLElement|null};
 /** Weak references prevent a detached turning leaf retaining its DOM. */
 const layouts=new WeakMap<HTMLElement,Layout>();
 
@@ -84,7 +84,8 @@ export function layoutPaper(leaf:HTMLElement){
     };
   });
   const camera=parseFloat(getComputedStyle(leaf.closest('.book-viewport')!).perspective);
-  layouts.set(leaf,{width,height,camera,cuts,segments:strips});
+  const sourcePair=leaf.closest('.book-shell')?.querySelector<HTMLElement>('.paper-source-pair')??null;
+  layouts.set(leaf,{width,height,camera,cuts,segments:strips,sourcePair});
 }
 
 /** Per-frame O(N) vertex transforms, face visibility and lighting only.
@@ -94,13 +95,15 @@ export function posePaper(leaf:HTMLElement, progress:number){
   let layout=layouts.get(leaf);
   if(!layout){layoutPaper(leaf);layout=layouts.get(leaf);}
   if(!layout)return;
-  const {width,height,camera,cuts,segments}=layout;
+  const {width,height,camera,cuts,segments,sourcePair}=layout;
   const count=segments.length;
   const p=Math.max(0,Math.min(1,progress));
   leaf.dataset.progress=String(p);
   // The zero-curvature endpoints are native DOM paper faces. This is exact,
   // not an approximation, and avoids WebKit/Chromium strip sampling seams.
-  leaf.dataset.paperEndpoint=p===0?'front':p===1?'back':'none';
+  const endpoint=p===0?'front':p===1?'back':'none';
+  leaf.dataset.paperEndpoint=endpoint;
+  if(sourcePair)sourcePair.dataset.paperEndpoint=endpoint;
   const theta=Math.PI*p;
   const bend=MAX_BEND_RADIANS*Math.sin(theta);
   const pieces=paperGeometry(p,count,cuts);
