@@ -56,7 +56,13 @@ Vite normally serves at http://localhost:5173.
 
 Keyboard Left/Right, hand-drawn arrows, page progress dots and
 touch swipes flip the book. Selecting a distant chapter turns through
-each intervening leaf. CUSTOMIZE edits the final page's name and wish.
+each intervening leaf. CUSTOMIZE edits the final page's name and wish. The CUSTOMIZE drawer also creates a
+shareable #gift= link: names and greetings survive refresh and reopening,
+including non-ASCII text, without an account or backend. Recipients begin at
+the portrait cover. A link encodes readable content, not encrypted/private
+storage; anyone with it can decode the greeting. Share links rely on keeping
+the hosting URL alive; they are not persistent database records.
+See [docs/shareable-links.md](docs/shareable-links.md).
 
 ## Inspect
 

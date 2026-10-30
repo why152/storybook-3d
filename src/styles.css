@@ -156,6 +156,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .editor-drawer p{line-height:1.8;font-size:13px;color:#bbb1b5;margin-bottom:35px}
 .editor-drawer label{display:block;margin:22px 0 9px;font-size:13px}
 .editor-drawer input,.editor-drawer textarea{width:100%;background:#14141c;color:#fff;border:1px solid #645d67;padding:13px;border-radius:3px;resize:vertical}
+.drawer-share{display:block;width:100%;margin-top:12px;padding:12px;border:1px solid #eab991;background:transparent;color:#f2d2ae;font-weight:600}
+.drawer-share:hover{background:#eab99118}
+.editor-drawer input[readonly]{font-size:11px;color:#dfd1c2;cursor:text}
+.share-status{display:block;min-height:18px;margin-top:8px;color:#e8c7a8;font-size:11px;line-height:1.4}
 .drawer-done{display:block;width:100%;margin-top:26px;padding:16px;border:0;background:#eab991;color:#2b2a2b;font-weight:700}
 .editor-drawer small{display:block;margin-top:18px;color:#9d929a}
 
