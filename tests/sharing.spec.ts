@@ -37,9 +37,11 @@ test('malformed, unsupported and oversized share fragments are harmless',async (
     '#gift=eyJ2IjoyLCJuIjoiQSIsInciOiJCIn0', // version 2 is unsupported.
     '#gift='+ 'a'.repeat(700),
   ];
-  for(const hash of invalid){
-    await page.goto('/?scene=wish'+hash);
-    await expect(page.getByRole('region',{name:'故事朗读文字'}).getByRole('heading',{name:'生日快乐，你'})).toBeVisible();
+  for(const [index,hash] of invalid.entries()){
+    // Force a new document on each case; changing only #gift on the same
+    // path triggers the application's hashchange reload asynchronously.
+    await page.goto('/?scene=wish&invalid-case='+index+hash);
+    await expect(page.locator('.chapter-reader h2')).toHaveText('生日快乐，你');
     await page.getByRole('button',{name:/CUSTOMIZE/}).click();
     await expect(page.getByLabel('收礼人的名字')).toHaveValue('你');
     await page.getByRole('button',{name:'关闭定制面板'}).click();
