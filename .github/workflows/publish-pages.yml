@@ -1,0 +1,70 @@
+name: Publish verified storybook to GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: storybook-public-pages
+  cancel-in-progress: true
+
+jobs:
+  validate-and-build:
+    # Don't attempt publication from this private repo before the owner enables
+    # public visibility + Settings > Pages > Source: GitHub Actions.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.repository.private == false }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check original scenes and character sprites
+        run: |
+          npm run test:assets
+          npm run test:actors
+      - name: Lint and check types
+        run: |
+          npm run lint
+          npm run typecheck
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Test cover, page turns, links, and mobile UI
+        run: npm run test:e2e
+      - name: Build for the /storybook-3d/ project subpath
+        run: npm run build -- --mode pages
+      - name: Verify hosted assets and path prefixes
+        run: |
+          test -s dist/index.html
+          grep -q '/storybook-3d/' dist/index.html
+          for chapter in hello grow together dream wish; do
+            test -s "dist/assets/$chapter/background.svg"
+            test -s "dist/assets/$chapter/actors/rabbit.svg"
+          done
+          grep -q '/storybook-3d/' dist/assets/*.js
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Stage only the compiled static site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+  deploy:
+    needs: validate-and-build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - name: Publish verified static site
+        id: pages
+        uses: actions/deploy-pages@v4
