@@ -13,11 +13,12 @@ import { BlankPage, FrontCover, PageHalf } from './SceneArt';
 import { capturePaperPrint, releasePaperPrint, type PaperPrint, type PrintedSurface } from './paperPrint';
 import { PAPER_SEGMENTS, layoutPaper, posePaper, segmentCountForTolerance } from './paperGeometry';
 
-export type PageTurn = Readonly<{from:number;to:number;direction:-1|1}>;
+export type PageTurn = Readonly<{from:number;to:number;direction:-1|1;interactive?:true}>;
 type Props={
   active:number;
   turning:PageTurn|null;
   onTurnFinished:(position:number)=>void;
+  onGrabTurn:(direction:-1|1)=>boolean;
   name:string;
   wish:string;
   reducedMotion:boolean;
@@ -32,7 +33,15 @@ function Half({position,side,name,wish,inkOnly=false,printed}:{
   return <PageHalf chapter={getChapter(position)} side={side} name={name} wish={wish} inkOnly={inkOnly} printed={printed}/>;
 }
 
-export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debugPose,debugFrom}:Props){
+export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,reducedMotion,debugPose,debugFrom}:Props){
+  // The grip owns the gesture until pointerup/cancel; React never owns its
+  // frame-by-frame progress. Moving a pointer backward is a physical reversal
+  // of the SAME mounted sheet, not a second page-turn command.
+  const gripRef=useRef<{
+    pointerId:number; startX:number; direction:-1|1; progress:number;
+    released:boolean; commit:boolean;
+    paint?:(progress:number)=>void; settle?:()=>void;
+  }|null>(null);
   const leafRef=useRef<HTMLDivElement>(null);
   const shellRef=useRef<HTMLDivElement>(null);
   const lastTurn=useRef<PageTurn|null>(null);
@@ -41,7 +50,7 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
   const [print,setPrint]=useState<(PaperPrint&{turn:PageTurn|null;pose:number|null;from:number;name:string;wish:string})|null>(null);
   const [decodedPrint,setDecodedPrint]=useState<{print:PaperPrint;segments:number}|null>(null);
   const showingTurn=debugPose===null?turning:{from:debugFrom,to:debugFrom+1,direction:1 as const};
-  const flexible=!!showingTurn&&showingTurn.from>0&&showingTurn.to>0&&(!reducedMotion||debugPose!==null);
+  const flexible=!!showingTurn&&showingTurn.from>0&&showingTurn.to>0&&(!reducedMotion||debugPose!==null||!!turning?.interactive);
   const printAvailable=!!print&&print.turn===turning&&print.pose===debugPose&&print.from===debugFrom&&print.name===name&&print.wish===wish;
   const printReady=printAvailable&&decodedPrint?.print===print&&decodedPrint.segments===paperSegments;
   const waiting=flexible?!printReady:debugPose===null&&turning!==null&&preparedTurn!==turning;
@@ -168,8 +177,70 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     return()=>observer.disconnect();
   },[flexible,turning,debugPose,preparedTurn,printAvailable,print,paperSegments]);
 
+
+  // Physically coupled dragging: the animation never advances by its own
+  // clock while the pointer is held. Both forward and backward turns share
+  // the same 0..1 sheet pose (1=left, 0=right). Releasing settles to the
+  // nearest legal page; dragging back before release cancels naturally.
   useLayoutEffect(()=>{
-    if(debugPose!==null||!turning||waiting||!leafRef.current||!shellRef.current)return;
+    if(debugPose!==null||!turning?.interactive||waiting||!leafRef.current||!shellRef.current)return;
+    const leaf=leafRef.current;
+    const shell=shellRef.current;
+    const grip=gripRef.current;
+    if(!grip)return;
+    let tween:gsap.core.Tween|undefined;
+    let finished=false;
+    const fromShift=turning.from===0?-25:0;
+    const toShift=turning.to===0?-25:0;
+    const stageStack=shell.querySelector<HTMLElement>('.book-depth');
+    const paint=(value:number)=>{
+      const p=Math.max(0,Math.min(1,value));
+      grip.progress=p;
+      leaf.style.setProperty('--leaf-shade',String(Math.sin(Math.PI*p)*.34));
+      if(flexible)posePaper(leaf,p);
+      else {
+        gsap.set(leaf,{rotateY:-180*p});
+        leaf.dataset.visibleFace=p<.5?'front':'back';
+      }
+      if(fromShift!==toShift){
+        const completed=turning.direction===1?p:1-p;
+        gsap.set(shell,{xPercent:fromShift+(toShift-fromShift)*completed});
+        if(stageStack)stageStack.style.clipPath='inset(0 0 0 '+(turning.from===0?50*(1-completed):50*completed)+'%)';
+      }
+    };
+    const settle=()=>{
+      if(!grip.released||finished||tween)return;
+      const endpoint=grip.commit?(turning.direction===1?1:0):(turning.direction===1?0:1);
+      const done=()=>{
+        if(finished)return;
+        finished=true;
+        if(gripRef.current===grip)gripRef.current=null;
+        onTurnFinished(grip.commit?turning.to:turning.from);
+      };
+      if(reducedMotion||Math.abs(endpoint-grip.progress)<.005){
+        paint(endpoint);done();return;
+      }
+      const transition={progress:grip.progress};
+      tween=gsap.to(transition,{progress:endpoint,duration:Math.max(.18,.46*Math.abs(endpoint-grip.progress)),
+        ease:'power2.out',onUpdate:()=>paint(transition.progress),onComplete:done});
+    };
+    grip.paint=paint;
+    grip.settle=settle;
+    paint(grip.progress);
+    if(grip.released)settle();
+    return()=>{
+      tween?.kill();
+      grip.paint=undefined;
+      grip.settle=undefined;
+      leaf.style.removeProperty('--leaf-shade');
+      gsap.set(leaf,{clearProps:'transform'});
+      gsap.set(shell,{clearProps:'transform'});
+      if(stageStack)gsap.set(stageStack,{clearProps:'clipPath'});
+    };
+  },[turning,waiting,debugPose,reducedMotion,flexible,onTurnFinished]);
+
+  useLayoutEffect(()=>{
+    if(debugPose!==null||!turning||turning.interactive||waiting||!leafRef.current||!shellRef.current)return;
     if(reducedMotion){onTurnFinished(turning.to);return;}
     const leaf=leafRef.current;
     const shell=shellRef.current;
@@ -232,7 +303,51 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     };
   },[turning,debugPose,reducedMotion,onTurnFinished,waiting,flexible]);
 
+  const handleGripStart=(event:PointerEvent<HTMLDivElement>)=>{
+    if(turning||gripRef.current||debugPose!==null||!event.isPrimary||
+       (event.pointerType==='mouse'&&event.button!==0))return;
+    const bounds=event.currentTarget.getBoundingClientRect();
+    const local=event.clientX-bounds.left;
+    const direction:1|-1=local>=bounds.width/2?1:-1;
+    if((direction===1&&active>=5)||(direction===-1&&active<=0))return;
+    if(!onGrabTurn(direction))return;
+    gripRef.current={
+      pointerId:event.pointerId,startX:event.clientX,direction,
+      progress:direction===1?0:1,released:false,commit:false
+    };
+    event.currentTarget.dataset.grabActive='true';
+    // Pointer capture keeps the paper attached to the hand when the finger
+    // moves outside the book, as long as the browser allows capture.
+    try{event.currentTarget.setPointerCapture(event.pointerId);}catch{/* synthetic QA pointer */}
+    event.preventDefault();
+  };
+  const handleGripMove=(event:PointerEvent<HTMLDivElement>)=>{
+    const grip=gripRef.current;
+    if(!grip||grip.released||grip.pointerId!==event.pointerId)return false;
+    const halfWidth=Math.max(1,event.currentTarget.getBoundingClientRect().width/2);
+    const traveled=(event.clientX-grip.startX)/halfWidth;
+    const progress=Math.max(0,Math.min(1,grip.direction===1?-traveled:1-traveled));
+    grip.progress=progress;
+    grip.paint?.(progress);
+    event.preventDefault();
+    return true;
+  };
+  const finishGrip=(event:PointerEvent<HTMLDivElement>,cancelled=false)=>{
+    const grip=gripRef.current;
+    if(!grip||grip.released||grip.pointerId!==event.pointerId)return;
+    grip.released=true;
+    // Evaluate the CURRENT position, never the farthest position reached.
+    // A reader can pull the sheet over 80%, pull it back to 10%, then release
+    // to cancel. No timer or velocity can force completion while held.
+    grip.commit=!cancelled&&(grip.direction===1?grip.progress>=.5:grip.progress<=.5);
+    delete event.currentTarget.dataset.grabActive;
+    try{if(event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);}catch{/* detached pointer */}
+    grip.settle?.(); // If paper images aren't ready, settling starts on readiness.
+    event.preventDefault();
+  };
   const handlePointer=(event:PointerEvent<HTMLDivElement>)=>{
+    if(handleGripMove(event))return;
     if(turning||debugPose!==null||reducedMotion||event.pointerType!=='mouse')return;
     const bounds=event.currentTarget.getBoundingClientRect();
     const dx=((event.clientX-bounds.left)/bounds.width-.5)*2;
@@ -268,7 +383,10 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     :active;
 
   const stageShift=debugPose!==null&&showingTurn?.from===0?(-25+25*debugPose):undefined;
-  return <div className="book-viewport" onPointerMove={handlePointer} onPointerLeave={clearPointer}>
+  return <div className="book-viewport" data-grab-enabled={debugPose===null?"true":"false"}
+    onPointerDown={handleGripStart} onPointerMove={handlePointer}
+    onPointerUp={event=>finishGrip(event)} onPointerCancel={event=>finishGrip(event,true)}
+    onPointerLeave={clearPointer}>
     <div className={`book-shell ${closed?'is-closed':'is-open'} ${showingTurn?'is-turning':''} ${!waiting&&showingTurn?.from===0?'is-opening':''} ${!waiting&&showingTurn?.to===0?'is-closing':''}`}
       ref={shellRef} data-book-mode={closed?'closed':'open'}
       style={stageShift===undefined?undefined:{transform:`translateX(${stageShift}%)`}}>
