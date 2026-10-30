@@ -223,7 +223,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
  .turn-prev{left:0}
  .turn-next{right:0;background:linear-gradient(270deg,#0e0e1199,#0e0e1100)}
  .hand-arrow{width:30px}
- .book-viewport{width:calc(100% - 10px)}
+ .book-viewport{grid-column:2;width:calc(100% - 10px)}
  .book-depth{box-shadow:1px 5px 0 #958e8a,1px 8px 3px #55484c,2px 16px 32px #0008}
  .book-binding{width:6px;left:calc(50% - 3px)}
  .page-quote{bottom:3%;right:3%;max-width:94%;padding:2px 3px}
