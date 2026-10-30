@@ -39,7 +39,7 @@ test('malformed, unsupported and oversized share fragments are harmless',async (
   ];
   for(const hash of invalid){
     await page.goto('/?scene=wish'+hash);
-    await expect(page.getByRole('heading',{name:'生日快乐，你'})).toBeVisible();
+    await expect(page.getByRole('region',{name:'故事朗读文字'}).getByRole('heading',{name:'生日快乐，你'})).toBeVisible();
     await page.getByRole('button',{name:/CUSTOMIZE/}).click();
     await expect(page.getByLabel('收礼人的名字')).toHaveValue('你');
     await page.getByRole('button',{name:'关闭定制面板'}).click();
