@@ -58,6 +58,9 @@ Vite normally serves at http://localhost:5173.
 Keyboard Left/Right, hand-drawn arrows, page progress dots and
 touch swipes flip the book. Selecting a distant chapter turns through
 each intervening leaf. CUSTOMIZE edits the final page's name and wish.
+This candidate also generates a versioned, shareable `#gift=` URL: the recipient
+opens the cover and keeps the custom greeting on refresh, without a backend.
+The link is **encoded, not encrypted**; see [sharing limitations](docs/shareable-links.md).
 
 ## Inspect
 
