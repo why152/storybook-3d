@@ -139,6 +139,25 @@ test('keyboard and mobile touch keep book usable',async ({page})=>{
   await expect(page.getByLabel('收礼人的名字')).toBeVisible();
 });
 
+test('portrait phone keeps a wide bound book and usable 48px page controls',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/?scene=hello');
+  const book=await page.locator('.book-viewport').boundingBox();
+  expect(book).not.toBeNull();
+  expect(book!.width,'book should use >=92% of portrait width').toBeGreaterThanOrEqual(359);
+  const previous=await page.getByRole('button',{name:'上一页'}).boundingBox();
+  const next=await page.getByRole('button',{name:'下一页'}).boundingBox();
+  expect(previous?.width).toBeGreaterThanOrEqual(44);
+  expect(next?.width).toBeGreaterThanOrEqual(44);
+  expect(previous!.x).toBeGreaterThanOrEqual(0);
+  expect(next!.x+next!.width).toBeLessThanOrEqual(390.5);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(2);
+  await page.screenshot({path:'test-results/mobile-wide-book-48px-controls.png',fullPage:false,animations:'disabled'});
+  await page.getByRole('button',{name:'下一页'}).click();
+  await expect(page.locator('.book-static .page-surface[data-chapter="grow"]')).toHaveCount(2);
+});
+
 test('mobile final chapter remains readable after customization',async ({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.emulateMedia({reducedMotion:'reduce'});
