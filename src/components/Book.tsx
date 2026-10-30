@@ -1,6 +1,13 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
 import { gsap } from 'gsap';
+
+// WebKit can spend >500ms painting/screenshotting one curved multi-layer leaf.
+// GSAP's default 500ms lag smoothing would then advance only ~33ms of book
+// time after every stalled frame, effectively trapping navigation mid-turn.
+// Honor elapsed wall-clock time on resumed frames rather than extending a
+// 1.28s physical turn into a multi-second frozen sheet.
+gsap.ticker.lagSmoothing(0);
 import { getChapter } from '../data/story';
 import { BlankPage, FrontCover, PageHalf } from './SceneArt';
 import { capturePaperPrint, releasePaperPrint, type PaperPrint, type PrintedSurface } from './paperPrint';
