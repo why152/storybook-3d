@@ -156,3 +156,23 @@
   .v2-showroom .site-foot span:last-child{display:block}
   .v2-showroom .site-foot{justify-content:center;height:38px;}
 }
+
+/* iPhone landscape reports a WIDE viewport even though available height is
+   small. The original desktop formula ('dvh - 230px') shrank the book to a
+   postage stamp. Keep the physical two-page geometry, but dedicate nearly
+   the whole available vertical stage to it. */
+@media (orientation:landscape) and (max-height:520px) and (min-width:601px) and (max-width:1100px){
+ .v2-showroom{min-height:100dvh;}
+ .v2-showroom .site-head{height:46px;padding:7px 22px;align-items:center}
+ .v2-showroom .site-name{font-size:14px}
+ .v2-showroom .site-title{font-size:10px;line-height:1.1}
+ .v2-showroom .customize-trigger{padding:6px 12px;min-height:34px;font-size:9px}
+ .v2-showroom .exhibition{grid-template-columns:56px minmax(0,1fr) 56px;min-height:0}
+ .v2-showroom .book-viewport{
+   width:min(100%,calc((100dvh - 138px)*12/7));max-width:100%;
+ }
+ .v2-showroom .turn-button{height:52px}
+ .v2-showroom .hand-arrow{width:40px}
+ .v2-showroom .page-navigation{height:43px;padding:0 40px}
+ .v2-showroom .site-foot{height:23px;font-size:8px}
+}

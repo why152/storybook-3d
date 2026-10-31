@@ -383,3 +383,16 @@ test('V2 remains self-contained when Google Fonts is unavailable',async({page})=
   await expect(page.locator('.book-static .page-surface[data-chapter="hello"]')).toHaveCount(2);
   expect(thirdPartyFonts).toEqual([]);
 });
+
+test('landscape iPhone viewport does not shrink the 3D book into a tiny thumbnail',async({page})=>{
+  await page.setViewportSize({width:844,height:390});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/?scene=hello');
+  const book=page.locator('.book-viewport');
+  const rect=await book.boundingBox();
+  expect(rect).not.toBeNull();
+  expect(rect!.width,'landscape book should use most of the available height').toBeGreaterThanOrEqual(395);
+  expect(rect!.height).toBeGreaterThanOrEqual(225);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(2);
+  await page.screenshot({path:'test-results/v2-iphone-landscape-hello.png',fullPage:false,animations:'disabled'});
+});
