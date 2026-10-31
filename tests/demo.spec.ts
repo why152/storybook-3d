@@ -345,3 +345,54 @@ test('records an actual cover opening and right-to-left/left-to-right book turno
   }
   expect(errors).toEqual([]);
 });
+
+test('V2 first prototype uses an original cover and mobile book with real touch targets',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/');
+  const scene=page.locator('.v2-cover-scene');
+  await expect(scene).toHaveAttribute('src',/assets\/v2\/cover-art\.svg$/);
+  await expect.poll(()=>scene.evaluate((img:HTMLImageElement)=>img.complete&&img.naturalWidth>0)).toBe(true);
+  await expect(page.locator('.book-shell.is-closed')).toHaveCount(1);
+  const book=page.locator('.book-viewport');
+  await expect(book).toBeVisible();
+  const rect=await book.boundingBox();
+  expect(rect).not.toBeNull();
+  expect(rect!.width,'mobile book should occupy >=90% of the viewport').toBeGreaterThanOrEqual(351);
+  for(const name of ['上一页','下一页']){
+    const b=await page.getByRole('button',{name}).boundingBox();
+    expect(b?.width, name+' touch width').toBeGreaterThanOrEqual(44);
+    expect(b?.height, name+' touch height').toBeGreaterThanOrEqual(44);
+  }
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(2);
+  await page.screenshot({path:'test-results/v2-mobile-cover.png',fullPage:false,animations:'disabled'});
+  await page.getByRole('button',{name:'下一页'}).click();
+  await expect(page.locator('.book-static .page-surface[data-chapter="hello"]')).toHaveCount(2);
+  await expect(book).toBeVisible();
+  await page.screenshot({path:'test-results/v2-mobile-hello.png',fullPage:false,animations:'disabled'});
+  await page.getByRole('button',{name:'下一页'}).click();
+  await expect(page.locator('.book-static .page-surface[data-chapter="grow"]')).toHaveCount(2);
+});
+
+test('V2 remains self-contained when Google Fonts is unavailable',async({page})=>{
+  const thirdPartyFonts:string[]=[];
+  page.on('request',request=>{
+    if(/fonts\.(googleapis|gstatic)\.com/i.test(request.url()))thirdPartyFonts.push(request.url());
+  });
+  await page.goto('/?scene=hello');
+  await expect(page.locator('.book-static .page-surface[data-chapter="hello"]')).toHaveCount(2);
+  expect(thirdPartyFonts).toEqual([]);
+});
+
+test('landscape iPhone viewport does not shrink the 3D book into a tiny thumbnail',async({page})=>{
+  await page.setViewportSize({width:844,height:390});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/?scene=hello');
+  const book=page.locator('.book-viewport');
+  const rect=await book.boundingBox();
+  expect(rect).not.toBeNull();
+  expect(rect!.width,'landscape book should use most of the available height').toBeGreaterThanOrEqual(395);
+  expect(rect!.height).toBeGreaterThanOrEqual(225);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(2);
+  await page.screenshot({path:'test-results/v2-iphone-landscape-hello.png',fullPage:false,animations:'disabled'});
+});

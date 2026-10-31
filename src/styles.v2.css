@@ -1,0 +1,178 @@
+/* V2 editorial prototype — ISOLATED from the baseline CSS.
+   Goal: create a compelling physical book, not a rotating full-spread card.
+   This stage is deliberately review-only; no production merge before owner QA. */
+:root { --v2-ink: #0e1018; --v2-champagne: #f1d2ac; --v2-mist: #c5a9a2; }
+.v2-showroom {
+  background:
+    radial-gradient(ellipse at 50% 63%,#45404b 0%,#242630 32%,#11141c 69%,#090b12 100%);
+  color:#f6e8d9;
+}
+.v2-showroom::before {
+  opacity:.28;
+  background:
+    radial-gradient(circle at 23% 14%,#b5a1a246 0,transparent 32%),
+    radial-gradient(circle at 83% 74%,#8c716c28 0,transparent 36%),
+    repeating-linear-gradient(132deg,transparent 0 82px,#ffffff06 84px 88px,transparent 90px 190px);
+}
+.v2-showroom .site-head { align-items:center; }
+.v2-showroom .site-name { font-family:Georgia,'Times New Roman',serif; font-size:16px;letter-spacing:-.5px; }
+.v2-showroom .site-name span {color:#eac89d}
+.v2-showroom .site-title {font-size:13px;letter-spacing:2.4px;font-weight:600;color:#e7d2bf}
+.v2-showroom .customize-trigger {
+  border:1px solid #eacda077; border-radius:50px; background:#d8b99710;
+  font-size:11px;padding:12px 20px;min-height:44px;
+}
+.v2-showroom .customize-trigger:hover {background:#dbb9952d}
+.v2-showroom .exhibition {isolation:isolate}
+.v2-showroom .exhibition::before {
+ content:"";position:absolute;left:15%;right:15%;top:14%;bottom:9%;
+ z-index:-1;pointer-events:none;
+ background:radial-gradient(ellipse at center,#d5ac8640,transparent 65%);
+ filter:blur(34px);
+}
+/* Never filter the book viewport: a filtered ancestor forces WebKit to
+   rasterize/flatten the entire nested 3D sheet and its animated SVG layers.
+   The existing .book-depth shadow supplies stage depth without this cost. */
+.v2-showroom .book-binding {
+ background:linear-gradient(90deg,#26222bb9 0%,#746775c9 18%,#ddc4aa 45%,#655867d9 74%,#292530a9 100%);
+}
+.v2-showroom .page-navigation {font-size:12px}
+.v2-showroom .page-dot {border-color:#f7e3ca8f}
+.v2-showroom .page-dot:focus-visible {outline-offset:5px}
+.v2-showroom .site-foot {color:#b09d9a;opacity:.75}
+.v2-cover {
+ overflow:hidden;isolation:isolate;
+ background:linear-gradient(125deg,#14223a,#313b50 62%,#66576a);
+ border:1px solid #edcca277;
+ box-shadow:inset 1px 0 15px #0009,inset -5px 0 20px #0006,0 6px 25px #0009;
+}
+.v2-cover::after {
+ content:"";position:absolute;inset:0;z-index:5;pointer-events:none;
+ background:linear-gradient(94deg,#060a19a8 0,transparent 9%,transparent 89%,#0f142c5e 100%);
+}
+.v2-cover-scene {position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;pointer-events:none}
+.v2-cover-frame {position:absolute;inset:4.5% 5% 4.5% 7%;z-index:3;border:1px solid #f5d9a680;border-radius:5px;pointer-events:none}
+.v2-cover-frame::after {content:"";position:absolute;inset:2%;border:1px solid #d8b58c49;border-radius:3px}
+.v2-cover .book-cover-copy {
+ z-index:4;justify-content:flex-start;padding:18% 7% 10%;gap:12px;
+ text-shadow:0 3px 18px #151626d9;
+}
+.v2-cover .cover-edition {font-family:Georgia,serif;font-size:clamp(8px,.8vw,13px);letter-spacing:.27em;margin:0;color:#f0dcb7}
+.v2-cover .cover-main-title {font-family:Georgia,'Times New Roman',serif;font-size:clamp(28px,4.15vw,60px);line-height:1.02;letter-spacing:-.065em}
+.v2-cover .cover-main-title i {font-family:'Caveat',Georgia,cursive;font-weight:700;font-size:1.5em;letter-spacing:0;line-height:.84;color:#f7cda2;transform:rotate(-6deg)}
+.v2-cover .cover-meta {letter-spacing:.12em;line-height:1.65;font-weight:600;color:#f1dcc8}
+.v2-cover .cover-hinge {z-index:7;background:linear-gradient(90deg,#090e20,#5e5871a0 55%,transparent)}
+.v2-cover-flourish {font-size:21px;line-height:1;color:#e6c69f;letter-spacing:7px;opacity:.9}
+.v2-cover-bottom-note {position:absolute;z-index:4;bottom:9%;left:12%;right:9%;text-align:center;font:italic 13px Georgia,serif;color:#f8e3c7;text-shadow:0 3px 9px #172333}
+.v2-showroom .theme-hello .page-chapter-left {font-family:Georgia,serif;font-style:italic;font-size:clamp(10px,1vw,15px)}
+.v2-showroom .page-surface {--paper-corner:12px}
+.v2-showroom .page-quote {padding:10px 14px;background:linear-gradient(90deg,#24313b7a,#24313b16)}
+.v2-showroom .page-quote h2 {font-family:'Noto Sans SC',serif;font-weight:700;letter-spacing:.025em}
+@media (max-width:600px) {
+  .v2-showroom {min-height:100dvh;overflow:visible}
+  .v2-showroom .site-head {height:72px;min-height:72px;padding:12px 17px}
+  .v2-showroom .site-name {font-size:15px}
+  .v2-showroom .customize-trigger {font-size:10px;min-height:44px;padding:9px 14px;letter-spacing:.6px}
+  /* A real one-track grid, not the zero-width side columns that failed #27.
+     The book occupies its own explicit grid cell; arrows OVERLAY, not squeeze. */
+  .v2-showroom .exhibition {
+    flex:1;min-height:310px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    grid-template-rows:minmax(0,1fr) 52px;align-items:center;justify-items:center;
+    padding:8px 8px 3px;
+  }
+  .v2-showroom .book-viewport {
+    grid-column:1 / -1;grid-row:1;width:min(100%,calc((100dvh - 244px)*12/7));
+    max-width:100%;position:relative;z-index:1;
+  }
+  /* Navigation is BELOW the paper. Overlaying arrows on page corners would
+     make those corners impossible to pinch/grab on a phone. */
+  .v2-showroom .turn-button {
+    position:relative;top:auto;left:auto;right:auto;grid-row:2;
+    height:48px;width:56px;min-width:56px;transform:none;border-radius:9px;
+    background:#141824c2;border:1px solid #f4d4b949;
+    box-shadow:0 5px 18px #0007;display:grid;place-items:center;z-index:15;
+    touch-action:manipulation;
+  }
+  .v2-showroom .turn-button:hover:not(:disabled) {transform:scale(1.035)}
+  .v2-showroom .turn-prev {grid-column:1;justify-self:end;margin-right:30px}
+  .v2-showroom .turn-next {grid-column:2;justify-self:start;margin-left:30px}
+  .v2-showroom .turn-button:disabled {opacity:.22;pointer-events:none}
+  .v2-showroom .hand-arrow {width:31px;height:30px}
+  .v2-showroom .chapter-reader {
+    display:flex;min-height:108px;max-height:none;
+    overflow:visible;padding:14px 17px 10px;margin:4px 18px 0;
+    border-top:1px solid #d2b99d61;line-height:1.4;
+  }
+  .v2-showroom .chapter-reader h2 {font-size:18px;line-height:1.5}
+  .v2-showroom .chapter-reader p {font-size:14px;line-height:1.65}
+  .v2-showroom .page-navigation {height:59px;padding:0 25px}
+  .v2-showroom .page-dot {width:15px;height:15px}
+  .v2-showroom .site-foot {height:30px;padding-bottom:6px}
+  .v2-showroom .page-quote {padding:3px 5px;backdrop-filter:none}
+  .v2-showroom .page-quote h2 {font-size:9px}
+  .v2-showroom .page-quote p {font-size:7px}
+  .v2-cover .cover-main-title {font-size:clamp(25px,7.5vw,40px)}
+  .v2-cover .cover-edition {font-size:8px}
+  .v2-cover .cover-meta {font-size:7px}
+  .v2-cover-bottom-note {font-size:11px}
+}
+@media (max-height:640px) and (max-width:600px) {
+  .v2-showroom .exhibition {min-height:240px}
+  .v2-showroom .book-viewport {width:min(100%,calc((100dvh - 215px)*12/7))}
+  .v2-showroom .chapter-reader {padding-top:9px;padding-bottom:6px}
+}
+@media (prefers-reduced-motion:reduce) {
+ .v2-showroom .v2-cover-scene {animation:none!important}
+}
+
+/* V2 direct manipulation: the complete turning leaf follows a captured
+   pointer, so selection, native image dragging and horizontal pan must never
+   compete with paper motion. Vertical scrolling is still permitted on phones. */
+.v2-showroom .book-viewport[data-grab-enabled="true"] {cursor:grab;touch-action:pan-y;}
+.v2-showroom .book-viewport[data-grab-active="true"] {cursor:grabbing;}
+.v2-showroom .book-viewport img {-webkit-user-drag:none;user-select:none;}
+
+/* The other, non-birthday letter is a distinct editorial edition. */
+.v2-showroom .letter-variant-trigger{display:grid;place-items:center;text-decoration:none;letter-spacing:.08em;}
+.v2-showroom .letter-edition-link{color:#e4c69f;text-decoration:underline;text-underline-offset:3px;}
+.v2-showroom.v2-letter-edition .site-title{color:#ecd2ac;}
+.v2-showroom.v2-letter-edition .chapter-reader{background:linear-gradient(180deg,#edcda50f,transparent);}
+.v2-showroom.v2-letter-edition .page-quote{max-width:90%;background:linear-gradient(90deg,#1d2b3bd6,#1d2b3b73);}
+/* The letter's paragraphs are significantly longer than the birthday copy. */
+.v2-showroom.v2-letter-edition .page-quote h2{font-size:clamp(8px,1.13vw,16px);}
+.v2-showroom.v2-letter-edition .page-quote p{font-size:clamp(7px,.97vw,13px);line-height:1.65;}
+@media(max-width:600px){
+ .v2-showroom.v2-letter-edition .page-quote{max-width:93%;padding:3px;}
+ .v2-showroom.v2-letter-edition .page-quote h2{font-size:8px;}
+ .v2-showroom.v2-letter-edition .page-quote p{font-size:7px;line-height:1.25;}
+ .v2-showroom .letter-variant-trigger{font-size:9px;padding:7px;}
+ .v2-showroom .letter-edition-link{font-size:9px;}
+}
+
+/* On phone the original footer hid its last cell; make the ordinary-letter
+   edition discoverable without obscuring the book or its graspable corners. */
+@media (max-width:600px){
+  .v2-showroom .site-foot span:nth-child(2){display:none}
+  .v2-showroom .site-foot span:last-child{display:block}
+  .v2-showroom .site-foot{justify-content:center;height:38px;}
+}
+
+/* iPhone landscape reports a WIDE viewport even though available height is
+   small. The original desktop formula ('dvh - 230px') shrank the book to a
+   postage stamp. Keep the physical two-page geometry, but dedicate nearly
+   the whole available vertical stage to it. */
+@media (orientation:landscape) and (max-height:520px) and (min-width:601px) and (max-width:1100px){
+ .v2-showroom{min-height:100dvh;}
+ .v2-showroom .site-head{height:46px;padding:7px 22px;align-items:center}
+ .v2-showroom .site-name{font-size:14px}
+ .v2-showroom .site-title{font-size:10px;line-height:1.1}
+ .v2-showroom .customize-trigger{padding:6px 12px;min-height:34px;font-size:9px}
+ .v2-showroom .exhibition{grid-template-columns:56px minmax(0,1fr) 56px;min-height:0}
+ .v2-showroom .book-viewport{
+   width:min(100%,calc((100dvh - 138px)*12/7));max-width:100%;
+ }
+ .v2-showroom .turn-button{height:52px}
+ .v2-showroom .hand-arrow{width:40px}
+ .v2-showroom .page-navigation{height:43px;padding:0 40px}
+ .v2-showroom .site-foot{height:23px;font-size:8px}
+}

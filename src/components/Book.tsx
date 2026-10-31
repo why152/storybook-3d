@@ -8,31 +8,42 @@ import { gsap } from 'gsap';
 // Honor elapsed wall-clock time on resumed frames rather than extending a
 // 1.28s physical turn into a multi-second frozen sheet.
 gsap.ticker.lagSmoothing(0);
-import { getChapter } from '../data/story';
+import { getChapter, type StoryMode } from '../data/story';
 import { BlankPage, FrontCover, PageHalf } from './SceneArt';
 import { capturePaperPrint, releasePaperPrint, type PaperPrint, type PrintedSurface } from './paperPrint';
 import { PAPER_SEGMENTS, layoutPaper, posePaper, segmentCountForTolerance } from './paperGeometry';
 
-export type PageTurn = Readonly<{from:number;to:number;direction:-1|1}>;
+export type PageTurn = Readonly<{from:number;to:number;direction:-1|1;interactive?:true}>;
 type Props={
   active:number;
   turning:PageTurn|null;
   onTurnFinished:(position:number)=>void;
+  onGrabTurn:(direction:-1|1)=>boolean;
   name:string;
   wish:string;
+  storyMode:StoryMode;
   reducedMotion:boolean;
   debugPose:number|null;
   debugFrom:number;
 };
 
-function Half({position,side,name,wish,inkOnly=false,printed}:{
-  position:number;side:'left'|'right';name:string;wish:string;inkOnly?:boolean;printed?:PrintedSurface;
+function Half({position,side,name,wish,storyMode,inkOnly=false,printed}:{
+  position:number;side:'left'|'right';name:string;wish:string;storyMode:StoryMode;inkOnly?:boolean;printed?:PrintedSurface;
 }){
   if(position===0)return side==='right'?<FrontCover/>:<BlankPage/>;
-  return <PageHalf chapter={getChapter(position)} side={side} name={name} wish={wish} inkOnly={inkOnly} printed={printed}/>;
+  return <PageHalf chapter={getChapter(position,storyMode)} side={side} name={name} wish={wish} inkOnly={inkOnly} printed={printed}/>;
 }
 
-export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debugPose,debugFrom}:Props){
+export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMode,reducedMotion,debugPose,debugFrom}:Props){
+  // The grip owns the gesture until pointerup/cancel; React never owns its
+  // frame-by-frame progress. Moving a pointer backward is a physical reversal
+  // of the SAME mounted sheet, not a second page-turn command.
+  const gripRef=useRef<{
+    pointerId:number; startX:number; direction:-1|1; progress:number;
+    released:boolean; commit:boolean;
+    paint?:(progress:number)=>void; settle?:()=>void;
+  }|null>(null);
+  const gripListenerCleanupRef=useRef<(()=>void)|null>(null);
   const leafRef=useRef<HTMLDivElement>(null);
   const shellRef=useRef<HTMLDivElement>(null);
   const lastTurn=useRef<PageTurn|null>(null);
@@ -41,7 +52,7 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
   const [print,setPrint]=useState<(PaperPrint&{turn:PageTurn|null;pose:number|null;from:number;name:string;wish:string})|null>(null);
   const [decodedPrint,setDecodedPrint]=useState<{print:PaperPrint;segments:number}|null>(null);
   const showingTurn=debugPose===null?turning:{from:debugFrom,to:debugFrom+1,direction:1 as const};
-  const flexible=!!showingTurn&&showingTurn.from>0&&showingTurn.to>0&&(!reducedMotion||debugPose!==null);
+  const flexible=!!showingTurn&&showingTurn.from>0&&showingTurn.to>0&&(!reducedMotion||debugPose!==null||!!turning?.interactive);
   const printAvailable=!!print&&print.turn===turning&&print.pose===debugPose&&print.from===debugFrom&&print.name===name&&print.wish===wish;
   const printReady=printAvailable&&decodedPrint?.print===print&&decodedPrint.segments===paperSegments;
   const waiting=flexible?!printReady:debugPose===null&&turning!==null&&preparedTurn!==turning;
@@ -168,8 +179,70 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     return()=>observer.disconnect();
   },[flexible,turning,debugPose,preparedTurn,printAvailable,print,paperSegments]);
 
+
+  // Physically coupled dragging: the animation never advances by its own
+  // clock while the pointer is held. Both forward and backward turns share
+  // the same 0..1 sheet pose (1=left, 0=right). Releasing settles to the
+  // nearest legal page; dragging back before release cancels naturally.
   useLayoutEffect(()=>{
-    if(debugPose!==null||!turning||waiting||!leafRef.current||!shellRef.current)return;
+    if(debugPose!==null||!turning?.interactive||waiting||!leafRef.current||!shellRef.current)return;
+    const leaf=leafRef.current;
+    const shell=shellRef.current;
+    const grip=gripRef.current;
+    if(!grip)return;
+    let tween:gsap.core.Tween|undefined;
+    let finished=false;
+    const fromShift=turning.from===0?-25:0;
+    const toShift=turning.to===0?-25:0;
+    const stageStack=shell.querySelector<HTMLElement>('.book-depth');
+    const paint=(value:number)=>{
+      const p=Math.max(0,Math.min(1,value));
+      grip.progress=p;
+      leaf.style.setProperty('--leaf-shade',String(Math.sin(Math.PI*p)*.34));
+      if(flexible)posePaper(leaf,p);
+      else {
+        gsap.set(leaf,{rotateY:-180*p});
+        leaf.dataset.visibleFace=p<.5?'front':'back';
+      }
+      if(fromShift!==toShift){
+        const completed=turning.direction===1?p:1-p;
+        gsap.set(shell,{xPercent:fromShift+(toShift-fromShift)*completed});
+        if(stageStack)stageStack.style.clipPath='inset(0 0 0 '+(turning.from===0?50*(1-completed):50*completed)+'%)';
+      }
+    };
+    const settle=()=>{
+      if(!grip.released||finished||tween)return;
+      const endpoint=grip.commit?(turning.direction===1?1:0):(turning.direction===1?0:1);
+      const done=()=>{
+        if(finished)return;
+        finished=true;
+        if(gripRef.current===grip)gripRef.current=null;
+        onTurnFinished(grip.commit?turning.to:turning.from);
+      };
+      if(reducedMotion||Math.abs(endpoint-grip.progress)<.005){
+        paint(endpoint);done();return;
+      }
+      const transition={progress:grip.progress};
+      tween=gsap.to(transition,{progress:endpoint,duration:Math.max(.18,.46*Math.abs(endpoint-grip.progress)),
+        ease:'power2.out',onUpdate:()=>paint(transition.progress),onComplete:done});
+    };
+    grip.paint=paint;
+    grip.settle=settle;
+    paint(grip.progress);
+    if(grip.released)settle();
+    return()=>{
+      tween?.kill();
+      grip.paint=undefined;
+      grip.settle=undefined;
+      leaf.style.removeProperty('--leaf-shade');
+      gsap.set(leaf,{clearProps:'transform'});
+      gsap.set(shell,{clearProps:'transform'});
+      if(stageStack)gsap.set(stageStack,{clearProps:'clipPath'});
+    };
+  },[turning,waiting,debugPose,reducedMotion,flexible,onTurnFinished]);
+
+  useLayoutEffect(()=>{
+    if(debugPose!==null||!turning||turning.interactive||waiting||!leafRef.current||!shellRef.current)return;
     if(reducedMotion){onTurnFinished(turning.to);return;}
     const leaf=leafRef.current;
     const shell=shellRef.current;
@@ -232,7 +305,84 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     };
   },[turning,debugPose,reducedMotion,onTurnFinished,waiting,flexible]);
 
+  useLayoutEffect(()=>()=>gripListenerCleanupRef.current?.(),[]);
+
+  // Pointer capture is not consistently delivered to React's bubble handlers
+  // when WebKit re-composites/mounts a curved page under the active pointer.
+  // Window CAPTURE listeners are the authoritative gesture transport. They
+  // continue to receive move/up/cancel if the original leaf DOM is replaced.
+  const moveGrip=(pointerId:number,clientX:number,host:HTMLDivElement)=>{
+    const grip=gripRef.current;
+    if(!grip||grip.released||grip.pointerId!==pointerId)return false;
+    const halfWidth=Math.max(1,host.getBoundingClientRect().width/2);
+    const traveled=(clientX-grip.startX)/halfWidth;
+    const progress=Math.max(0,Math.min(1,grip.direction===1?-traveled:1-traveled));
+    grip.progress=progress;
+    grip.paint?.(progress);
+    return true;
+  };
+  const releaseGrip=(pointerId:number,host:HTMLDivElement,cancelled=false)=>{
+    const grip=gripRef.current;
+    if(!grip||grip.released||grip.pointerId!==pointerId)return;
+    grip.released=true;
+    // A reader can drag 80% over and back to 10% without releasing.
+    // The current pose determines the outcome, not maximum travel.
+    grip.commit=!cancelled&&(grip.direction===1?grip.progress>=.5:grip.progress<=.5);
+    delete host.dataset.grabActive;
+    gripListenerCleanupRef.current?.();
+    gripListenerCleanupRef.current=null;
+    try{if(host.hasPointerCapture(pointerId))host.releasePointerCapture(pointerId);}
+    catch{/* a detached/composited element may have lost capture */}
+    grip.settle?.(); // If textures aren't ready, readiness will settle later.
+  };
+  const handleGripStart=(event:PointerEvent<HTMLDivElement>)=>{
+    if(turning||gripRef.current||debugPose!==null||!event.isPrimary||
+       (event.pointerType==='mouse'&&event.button!==0))return;
+    const host=event.currentTarget;
+    const bounds=host.getBoundingClientRect();
+    const local=event.clientX-bounds.left;
+    const direction:1|-1=local>=bounds.width/2?1:-1;
+    if((direction===1&&active>=5)||(direction===-1&&active<=0))return;
+    if(!onGrabTurn(direction))return;
+    gripRef.current={
+      pointerId:event.pointerId,startX:event.clientX,direction,
+      progress:direction===1?0:1,released:false,commit:false
+    };
+    host.dataset.grabActive='true';
+    const onMove=(e:globalThis.PointerEvent)=>{
+      if(moveGrip(e.pointerId,e.clientX,host)&&e.cancelable)e.preventDefault();
+    };
+    const onUp=(e:globalThis.PointerEvent)=>releaseGrip(e.pointerId,host,false);
+    const onCancel=(e:globalThis.PointerEvent)=>releaseGrip(e.pointerId,host,true);
+    const onBlur=()=>{
+      const grip=gripRef.current;
+      if(grip)releaseGrip(grip.pointerId,host,true);
+    };
+    window.addEventListener('pointermove',onMove,{capture:true,passive:false});
+    window.addEventListener('pointerup',onUp,true);
+    window.addEventListener('pointercancel',onCancel,true);
+    window.addEventListener('blur',onBlur);
+    gripListenerCleanupRef.current=()=>{
+      window.removeEventListener('pointermove',onMove,true);
+      window.removeEventListener('pointerup',onUp,true);
+      window.removeEventListener('pointercancel',onCancel,true);
+      window.removeEventListener('blur',onBlur);
+    };
+    try{host.setPointerCapture(event.pointerId);}catch{/* synthetic QA input */}
+    event.preventDefault();
+  };
+  const handleGripMove=(event:PointerEvent<HTMLDivElement>)=>{
+    if(!moveGrip(event.pointerId,event.clientX,event.currentTarget))return false;
+    event.preventDefault();
+    return true;
+  };
+  const finishGrip=(event:PointerEvent<HTMLDivElement>,cancelled=false)=>{
+    const wasHolding=gripRef.current?.pointerId===event.pointerId;
+    releaseGrip(event.pointerId,event.currentTarget,cancelled);
+    if(wasHolding)event.preventDefault();
+  };
   const handlePointer=(event:PointerEvent<HTMLDivElement>)=>{
+    if(handleGripMove(event))return;
     if(turning||debugPose!==null||reducedMotion||event.pointerType!=='mouse')return;
     const bounds=event.currentTarget.getBoundingClientRect();
     const dx=((event.clientX-bounds.left)/bounds.width-.5)*2;
@@ -268,7 +418,10 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
     :active;
 
   const stageShift=debugPose!==null&&showingTurn?.from===0?(-25+25*debugPose):undefined;
-  return <div className="book-viewport" onPointerMove={handlePointer} onPointerLeave={clearPointer}>
+  return <div className="book-viewport" data-grab-enabled={debugPose===null?"true":"false"}
+    onPointerDown={handleGripStart} onPointerMove={handlePointer}
+    onPointerUp={event=>finishGrip(event)} onPointerCancel={event=>finishGrip(event,true)}
+    onPointerLeave={clearPointer}>
     <div className={`book-shell ${closed?'is-closed':'is-open'} ${showingTurn?'is-turning':''} ${!waiting&&showingTurn?.from===0?'is-opening':''} ${!waiting&&showingTurn?.to===0?'is-closing':''}`}
       ref={shellRef} data-book-mode={closed?'closed':'open'}
       style={stageShift===undefined?undefined:{transform:`translateX(${stageShift}%)`}}>
@@ -277,18 +430,18 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
           {clipPath:`inset(0 0 0 ${50*(1-debugPose)}%)`}:undefined}/>
       {!closed&&<>
         <div key={`static-left-${leftUnder}`} className="book-static book-left" data-page-role="left-under">
-          <Half position={leftUnder} side="left" name={name} wish={wish}/>
+          <Half position={leftUnder} side="left" name={name} wish={wish} storyMode={storyMode}/>
         </div>
         <div key={`static-right-${rightUnder}`} className="book-static book-right" data-page-role="right-under">
-          <Half position={rightUnder} side="right" name={name} wish={wish}/>
+          <Half position={rightUnder} side="right" name={name} wish={wish} storyMode={storyMode}/>
         </div>
       </>}
       {closed&&<div className="book-static book-right book-closed-cover">
         <FrontCover/>
       </div>}
       {flexible&&<div className={`paper-source-pair ${printReady?'is-ready':''}`} aria-hidden="true">
-        <div className="paper-source" data-print="front"><Half position={leafFront} side="right" name={name} wish={wish}/></div>
-        <div className="paper-source" data-print="back"><Half position={leafBack} side="left" name={name} wish={wish}/></div>
+        <div className="paper-source" data-print="front"><Half position={leafFront} side="right" name={name} wish={wish} storyMode={storyMode}/></div>
+        <div className="paper-source" data-print="back"><Half position={leafBack} side="left" name={name} wish={wish} storyMode={storyMode}/></div>
       </div>}
       <div className="book-binding" aria-hidden="true"/>
       {showingTurn&&<div
@@ -303,17 +456,17 @@ export function Book({active,turning,onTurnFinished,name,wish,reducedMotion,debu
         style={flexible||debugPose===null?undefined:{transform:`rotateY(${-180*debugPose}deg)`}}>
         {flexible?Array.from({length:paperSegments},(_,index)=><div className="paper-segment" key={index}>
           <div className="paper-segment-face paper-front" data-face="front">
-            <div className="paper-print"><Half position={leafFront} side="right" name={name} wish={wish} inkOnly printed={print?.front}/></div>
+            <div className="paper-print"><Half position={leafFront} side="right" name={name} wish={wish} storyMode={storyMode} inkOnly printed={print?.front}/></div>
           </div>
           <div className="paper-segment-face paper-back" data-face="back">
-            <div className="paper-print"><Half position={leafBack} side="left" name={name} wish={wish} inkOnly printed={print?.back}/></div>
+            <div className="paper-print"><Half position={leafBack} side="left" name={name} wish={wish} storyMode={storyMode} inkOnly printed={print?.back}/></div>
           </div>
         </div>):<><div className="book-leaf-face book-leaf-front" data-face="front">
-          <Half position={leafFront} side="right" name={name} wish={wish}/>
+          <Half position={leafFront} side="right" name={name} wish={wish} storyMode={storyMode}/>
           <span className="leaf-light" aria-hidden="true"/>
         </div>
         <div className="book-leaf-face book-leaf-back" data-face="back">
-          <Half position={leafBack} side="left" name={name} wish={wish}/>
+          <Half position={leafBack} side="left" name={name} wish={wish} storyMode={storyMode}/>
           <span className="leaf-light" aria-hidden="true"/>
         </div>
         </>}
