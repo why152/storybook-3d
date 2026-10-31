@@ -30,8 +30,8 @@ type Props={
 function Half({position,side,name,wish,storyMode,inkOnly=false,printed}:{
   position:number;side:'left'|'right';name:string;wish:string;storyMode:StoryMode;inkOnly?:boolean;printed?:PrintedSurface;
 }){
-  if(position===0)return side==='right'?<FrontCover/>:<BlankPage/>;
-  return <PageHalf chapter={getChapter(position,storyMode)} side={side} name={name} wish={wish} inkOnly={inkOnly} printed={printed}/>;
+  if(position===0)return side==='right'?<FrontCover storyMode={storyMode}/>:<BlankPage/>;
+  return <PageHalf chapter={getChapter(position,storyMode)} side={side} name={name} wish={wish} storyMode={storyMode} inkOnly={inkOnly} printed={printed}/>;
 }
 
 export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMode,reducedMotion,debugPose,debugFrom}:Props){
@@ -437,7 +437,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
         </div>
       </>}
       {closed&&<div className="book-static book-right book-closed-cover">
-        <FrontCover/>
+        <FrontCover storyMode={storyMode}/>
       </div>}
       {flexible&&<div className={`paper-source-pair ${printReady?'is-ready':''}`} aria-hidden="true">
         <div className="paper-source" data-print="front"><Half position={leafFront} side="right" name={name} wish={wish} storyMode={storyMode}/></div>
