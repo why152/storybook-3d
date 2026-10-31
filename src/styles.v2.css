@@ -148,3 +148,11 @@
  .v2-showroom .letter-variant-trigger{font-size:9px;padding:7px;}
  .v2-showroom .letter-edition-link{font-size:9px;}
 }
+
+/* On phone the original footer hid its last cell; make the ordinary-letter
+   edition discoverable without obscuring the book or its graspable corners. */
+@media (max-width:600px){
+  .v2-showroom .site-foot span:nth-child(2){display:none}
+  .v2-showroom .site-foot span:last-child{display:block}
+  .v2-showroom .site-foot{justify-content:center;height:38px;}
+}
