@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Book, type PageTurn } from './components/Book';
-import { getChapter, initialPosition, previewFrom, previewPose, totalPositions } from './data/story';
+import { getChapter, initialPosition, previewFrom, previewPose, totalPositions, type StoryMode } from './data/story';
 import { DEFAULT_GREETING, greetingFromHash, makeShareLink } from './data/share';
 import './styles.css';
 import './styles.v2.css';
@@ -8,6 +8,7 @@ import './styles.v2.css';
 const debugPose=previewPose();
 const debugFrom=previewFrom();
 const sharedGreeting=greetingFromHash(window.location.hash);
+const storyMode:StoryMode=new URLSearchParams(window.location.search).get('story')==='letter'?'letter':'birthday';
 
 function Arrow({back=false}:{back?:boolean}){
   return <svg aria-hidden="true" viewBox="0 0 115 52" className={`hand-arrow ${back?'is-back':''}`} fill="none">
@@ -90,7 +91,7 @@ export default function App(){
   },[active,goTo,editorOpen,closeEditor]);
 
   const currentIndex=debugPose===null?active:debugFrom;
-  const shownChapter=currentIndex>0?getChapter(currentIndex):null;
+  const shownChapter=currentIndex>0?getChapter(currentIndex,storyMode):null;
   const readableTitle=shownChapter?.title.replace('{name}',name.trim()||'你');
   const readableMessage=shownChapter?.description.replace(
     '{wish}',wish.trim()||DEFAULT_GREETING.wish
@@ -105,13 +106,15 @@ export default function App(){
     }
   };
 
-  return <div className="showroom v2-showroom">
+  return <div className={`showroom v2-showroom ${storyMode==='letter'?'v2-letter-edition':''}`}>
     <header className="site-head">
       <div className="site-name">little<span>story</span>.studio</div>
       <div className="site-title">A LITTLE STORY<br/>FOR SOMEONE SPECIAL</div>
-      <button ref={customizeTrigger} type="button" className="customize-trigger" disabled={!!turn} onClick={()=>setEditorOpen(true)}>
-        CUSTOMIZE <span aria-hidden="true">↗</span>
-      </button>
+      {storyMode==='letter'
+        ? <a className="customize-trigger letter-variant-trigger" href={window.location.pathname}>BIRTHDAY EDITION ↗</a>
+        : <button ref={customizeTrigger} type="button" className="customize-trigger" disabled={!!turn} onClick={()=>setEditorOpen(true)}>
+          CUSTOMIZE <span aria-hidden="true">↗</span>
+        </button>}
     </header>
     <main className="exhibition">
       <button type="button" aria-label="上一页" title="向左翻书"
@@ -119,7 +122,7 @@ export default function App(){
         disabled={active===0||!!turn||debugPose!==null}
         onClick={()=>goTo(active-1)}><Arrow back/></button>
       <Book active={active} turning={turn} onTurnFinished={onTurnFinished} onGrabTurn={grabTurn}
-        name={name} wish={wish} reducedMotion={reducedMotion}
+        name={name} wish={wish} storyMode={storyMode} reducedMotion={reducedMotion}
         debugPose={debugPose} debugFrom={debugFrom}/>
       <button type="button" aria-label="下一页" title="向右翻书"
         className="turn-button turn-next"
@@ -135,7 +138,7 @@ export default function App(){
         </>
         : <>
           <div className="reader-meta">THE BEGINNING</div>
-          <h2>一本为特别的你准备的小书</h2>
+          <h2>{storyMode==='letter'?'有一封信，想慢慢读给你听':'一本为特别的你准备的小书'}</h2>
           <p>用手指或鼠标按住纸页拖动，或点击右侧箭头翻开故事。</p>
         </>}
     </section>
@@ -146,7 +149,7 @@ export default function App(){
       </div>
       <nav className="page-dots" aria-label="故事进度">
         {Array.from({length:totalPositions},(_,index)=>{
-          const chapter=index?getChapter(index):null;
+          const chapter=index?getChapter(index,storyMode):null;
           return <button key={index} type="button"
             aria-label={index===0?'查看封面':`查看第 ${index} 个故事跨页`}
             aria-current={active===index?'page':undefined}
@@ -162,10 +165,10 @@ export default function App(){
     <footer className="site-foot">
       <span>AN ORIGINAL INTERACTIVE BOOK</span>
       <span>← → &nbsp; HOLD &amp; DRAG PAPER &nbsp; · &nbsp; RELEASE TO SETTLE</span>
-      <span>MADE WITH CARE · 2026</span>
+      <span>{storyMode==='letter'?'A LETTER · TOKIRINN':<a className="letter-edition-link" href={window.location.pathname+'?story=letter'}>READ THE OTHER LETTER ↗</a>}</span>
     </footer>
 
-    {editorOpen&&<div className="editor-backdrop" role="presentation"
+    {editorOpen&&storyMode==='birthday'&&<div className="editor-backdrop" role="presentation"
       onMouseDown={e=>{if(e.target===e.currentTarget)closeEditor()}}>
       <aside className="editor-drawer" role="dialog" aria-modal="true" aria-labelledby="editor-heading"
         onKeyDown={event=>{

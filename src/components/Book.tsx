@@ -8,7 +8,7 @@ import { gsap } from 'gsap';
 // Honor elapsed wall-clock time on resumed frames rather than extending a
 // 1.28s physical turn into a multi-second frozen sheet.
 gsap.ticker.lagSmoothing(0);
-import { getChapter } from '../data/story';
+import { getChapter, type StoryMode } from '../data/story';
 import { BlankPage, FrontCover, PageHalf } from './SceneArt';
 import { capturePaperPrint, releasePaperPrint, type PaperPrint, type PrintedSurface } from './paperPrint';
 import { PAPER_SEGMENTS, layoutPaper, posePaper, segmentCountForTolerance } from './paperGeometry';
@@ -21,19 +21,20 @@ type Props={
   onGrabTurn:(direction:-1|1)=>boolean;
   name:string;
   wish:string;
+  storyMode:StoryMode;
   reducedMotion:boolean;
   debugPose:number|null;
   debugFrom:number;
 };
 
-function Half({position,side,name,wish,inkOnly=false,printed}:{
-  position:number;side:'left'|'right';name:string;wish:string;inkOnly?:boolean;printed?:PrintedSurface;
+function Half({position,side,name,wish,storyMode,inkOnly=false,printed}:{
+  position:number;side:'left'|'right';name:string;wish:string;storyMode:StoryMode;inkOnly?:boolean;printed?:PrintedSurface;
 }){
   if(position===0)return side==='right'?<FrontCover/>:<BlankPage/>;
-  return <PageHalf chapter={getChapter(position)} side={side} name={name} wish={wish} inkOnly={inkOnly} printed={printed}/>;
+  return <PageHalf chapter={getChapter(position,storyMode)} side={side} name={name} wish={wish} inkOnly={inkOnly} printed={printed}/>;
 }
 
-export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,reducedMotion,debugPose,debugFrom}:Props){
+export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMode,reducedMotion,debugPose,debugFrom}:Props){
   // The grip owns the gesture until pointerup/cancel; React never owns its
   // frame-by-frame progress. Moving a pointer backward is a physical reversal
   // of the SAME mounted sheet, not a second page-turn command.
@@ -429,18 +430,18 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,reduced
           {clipPath:`inset(0 0 0 ${50*(1-debugPose)}%)`}:undefined}/>
       {!closed&&<>
         <div key={`static-left-${leftUnder}`} className="book-static book-left" data-page-role="left-under">
-          <Half position={leftUnder} side="left" name={name} wish={wish}/>
+          <Half position={leftUnder} side="left" name={name} wish={wish} storyMode={storyMode}/>
         </div>
         <div key={`static-right-${rightUnder}`} className="book-static book-right" data-page-role="right-under">
-          <Half position={rightUnder} side="right" name={name} wish={wish}/>
+          <Half position={rightUnder} side="right" name={name} wish={wish} storyMode={storyMode}/>
         </div>
       </>}
       {closed&&<div className="book-static book-right book-closed-cover">
         <FrontCover/>
       </div>}
       {flexible&&<div className={`paper-source-pair ${printReady?'is-ready':''}`} aria-hidden="true">
-        <div className="paper-source" data-print="front"><Half position={leafFront} side="right" name={name} wish={wish}/></div>
-        <div className="paper-source" data-print="back"><Half position={leafBack} side="left" name={name} wish={wish}/></div>
+        <div className="paper-source" data-print="front"><Half position={leafFront} side="right" name={name} wish={wish} storyMode={storyMode}/></div>
+        <div className="paper-source" data-print="back"><Half position={leafBack} side="left" name={name} wish={wish} storyMode={storyMode}/></div>
       </div>}
       <div className="book-binding" aria-hidden="true"/>
       {showingTurn&&<div
@@ -455,17 +456,17 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,reduced
         style={flexible||debugPose===null?undefined:{transform:`rotateY(${-180*debugPose}deg)`}}>
         {flexible?Array.from({length:paperSegments},(_,index)=><div className="paper-segment" key={index}>
           <div className="paper-segment-face paper-front" data-face="front">
-            <div className="paper-print"><Half position={leafFront} side="right" name={name} wish={wish} inkOnly printed={print?.front}/></div>
+            <div className="paper-print"><Half position={leafFront} side="right" name={name} wish={wish} storyMode={storyMode} inkOnly printed={print?.front}/></div>
           </div>
           <div className="paper-segment-face paper-back" data-face="back">
-            <div className="paper-print"><Half position={leafBack} side="left" name={name} wish={wish} inkOnly printed={print?.back}/></div>
+            <div className="paper-print"><Half position={leafBack} side="left" name={name} wish={wish} storyMode={storyMode} inkOnly printed={print?.back}/></div>
           </div>
         </div>):<><div className="book-leaf-face book-leaf-front" data-face="front">
-          <Half position={leafFront} side="right" name={name} wish={wish}/>
+          <Half position={leafFront} side="right" name={name} wish={wish} storyMode={storyMode}/>
           <span className="leaf-light" aria-hidden="true"/>
         </div>
         <div className="book-leaf-face book-leaf-back" data-face="back">
-          <Half position={leafBack} side="left" name={name} wish={wish}/>
+          <Half position={leafBack} side="left" name={name} wish={wish} storyMode={storyMode}/>
           <span className="leaf-light" aria-hidden="true"/>
         </div>
         </>}

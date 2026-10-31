@@ -131,3 +131,20 @@
 .v2-showroom .book-viewport[data-grab-enabled="true"] {cursor:grab;touch-action:pan-y;}
 .v2-showroom .book-viewport[data-grab-active="true"] {cursor:grabbing;}
 .v2-showroom .book-viewport img {-webkit-user-drag:none;user-select:none;}
+
+/* The other, non-birthday letter is a distinct editorial edition. */
+.v2-showroom .letter-variant-trigger{display:grid;place-items:center;text-decoration:none;letter-spacing:.08em;}
+.v2-showroom .letter-edition-link{color:#e4c69f;text-decoration:underline;text-underline-offset:3px;}
+.v2-showroom.v2-letter-edition .site-title{color:#ecd2ac;}
+.v2-showroom.v2-letter-edition .chapter-reader{background:linear-gradient(180deg,#edcda50f,transparent);}
+.v2-showroom.v2-letter-edition .page-quote{max-width:90%;background:linear-gradient(90deg,#1d2b3bd6,#1d2b3b73);}
+/* The letter's paragraphs are significantly longer than the birthday copy. */
+.v2-showroom.v2-letter-edition .page-quote h2{font-size:clamp(8px,1.13vw,16px);}
+.v2-showroom.v2-letter-edition .page-quote p{font-size:clamp(7px,.97vw,13px);line-height:1.65;}
+@media(max-width:600px){
+ .v2-showroom.v2-letter-edition .page-quote{max-width:93%;padding:3px;}
+ .v2-showroom.v2-letter-edition .page-quote h2{font-size:8px;}
+ .v2-showroom.v2-letter-edition .page-quote p{font-size:7px;line-height:1.25;}
+ .v2-showroom .letter-variant-trigger{font-size:9px;padding:7px;}
+ .v2-showroom .letter-edition-link{font-size:9px;}
+}

@@ -1,6 +1,9 @@
 /** A chapter is a complete 1200×700 two-page illustrated spread.
  * The renderer owns the physical left/right split; content stays renderer-free.
  */
+import { letterChapters } from './letterStory';
+
+export type StoryMode = 'birthday' | 'letter';
 export type ChapterId = 'hello' | 'grow' | 'together' | 'dream' | 'wish';
 export type Chapter = Readonly<{
   id: ChapterId;
@@ -20,8 +23,8 @@ export const chapters: readonly Chapter[] = [
 ] as const;
 
 export const totalPositions=chapters.length+1; // cover + five open spreads
-export function getChapter(position:number):Chapter {
-  const found=chapters[position-1];
+export function getChapter(position:number,mode:StoryMode='birthday'):Chapter {
+  const found=(mode==='letter'?letterChapters:chapters)[position-1];
   if(!found)throw new RangeError('Invalid story position: '+position);
   return found;
 }
