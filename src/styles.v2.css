@@ -176,3 +176,53 @@
  .v2-showroom .page-navigation{height:43px;padding:0 40px}
  .v2-showroom .site-foot{height:23px;font-size:8px}
 }
+
+/* Actual ten leaves of the non-birthday handwritten letter.
+   Text lives IN each physical paper surface (static and moving) so the sheet
+   carries words through forwards and backwards drags. Art is a faint border
+   motif, NOT a competing full-size title behind 8px type. */
+.v2-showroom.v2-letter-edition .page-surface{background:#f3dfc4}
+.v2-showroom.v2-letter-edition .spread-composition{opacity:.39;filter:saturate(.62)}
+.v2-showroom.v2-letter-edition .page-print-grain{opacity:.1}
+.v2-showroom .letter-leaf{
+ position:absolute;inset:6.5% 5.5% 5.5%;z-index:9;
+ display:flex;flex-direction:column;justify-content:space-between;
+ padding:6.5% 7% 4%;overflow:hidden;pointer-events:none;
+ border:1px solid #a8795e89;border-radius:3px;
+ background:linear-gradient(145deg,#fff6e9f5 0%,#f3dfc9ed 65%,#f5e7d7f5 100%);
+ box-shadow:inset 0 0 30px #a0795855,0 2px 11px #55372a41;
+ color:#49342f;text-shadow:none;
+}
+.v2-showroom .letter-leaf::before{
+ content:"";pointer-events:none;position:absolute;inset:6px;border:1px solid #b28c6c55;border-radius:2px;
+}
+.v2-showroom .letter-leaf-top,.v2-showroom .letter-leaf-bottom{display:flex;gap:8px;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.v2-showroom .letter-leaf-top{font-family:Georgia,serif;font-size:clamp(8px,.8vw,12px);font-weight:600;letter-spacing:.16em;color:#9b6c5b}
+.v2-showroom .letter-leaf-flower{font-size:1.5em;color:#bd9075}
+.v2-showroom .letter-leaf-body{display:flex;flex-direction:column;justify-content:center;gap:.75em;flex:1;min-height:0;position:relative;z-index:1}
+.v2-showroom .letter-leaf-line{
+ margin:0;font-family:STKaiti,KaiTi,'Songti SC','Noto Serif CJK SC',serif;
+ font-weight:600;font-size:clamp(12px,1.5vw,25px);line-height:1.56;letter-spacing:.025em;
+ color:#49342f;overflow-wrap:anywhere;
+}
+.v2-showroom .letter-leaf-signature{
+ position:relative;z-index:1;text-align:right;align-self:flex-end;
+ font-family:Georgia,cursive;font-style:italic;font-size:clamp(10px,1.2vw,19px);color:#805b4c;
+}
+.v2-showroom .letter-leaf-bottom{font-family:Georgia,serif;font-size:clamp(8px,.65vw,11px);letter-spacing:.18em;color:#ad8b77}
+.v2-showroom.v2-letter-edition .page-chapter,.v2-showroom.v2-letter-edition .page-quote{display:none}
+.v2-showroom .reader-letter-transcript{display:flex;flex-wrap:wrap;column-gap:.55em;row-gap:.2em;margin-top:5px}
+.v2-showroom .reader-letter-transcript p{margin:0;line-height:1.55}
+@media(max-width:600px){
+ .v2-showroom .letter-leaf{inset:5% 3.5% 4%;padding:5% 6% 3.5%}
+ .v2-showroom .letter-leaf::before{inset:3px}
+ .v2-showroom .letter-leaf-top{font-size:7px;letter-spacing:.065em}
+ .v2-showroom .letter-leaf-bottom{font-size:6px;letter-spacing:.1em}
+ .v2-showroom .letter-leaf-line{font-size:clamp(9px,2.85vw,12px);line-height:1.4;letter-spacing:0}
+ .v2-showroom .letter-leaf-body{gap:.4em}
+ .v2-showroom .letter-leaf-signature{font-size:9px}
+}
+@media(max-height:520px) and (orientation:landscape){
+ .v2-showroom .letter-leaf{inset:4% 4%;padding:4% 6% 3%}
+ .v2-showroom .letter-leaf-line{font-size:clamp(10px,1.5vw,15px);line-height:1.4}
+}

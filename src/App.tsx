@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Book, type PageTurn } from './components/Book';
 import { getChapter, initialPosition, previewFrom, previewPose, totalPositions, type StoryMode } from './data/story';
 import { DEFAULT_GREETING, greetingFromHash, makeShareLink } from './data/share';
+import { letterSpreads } from './data/letterStory';
 import './styles.css';
 import './styles.v2.css';
 
@@ -134,7 +135,11 @@ export default function App(){
         ? <>
           <div className="reader-meta">{shownChapter.label} · {shownChapter.word}</div>
           <h2>{readableTitle}</h2>
-          <p>{readableMessage}</p>
+          {storyMode==='letter'?<div className="reader-letter-transcript" aria-label="本跨页的完整信件文字">
+            {letterSpreads[currentIndex-1].left.lines.slice(1).map((line,i)=><p key={`left-${i}`}>{line}</p>)}
+            {letterSpreads[currentIndex-1].right.lines.map((line,i)=><p key={`right-${i}`}>{line}</p>)}
+            {letterSpreads[currentIndex-1].right.signature&&<p>— {letterSpreads[currentIndex-1].right.signature}</p>}
+          </div>:<p>{readableMessage}</p>}
         </>
         : <>
           <div className="reader-meta">THE BEGINNING</div>
