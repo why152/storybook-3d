@@ -14,6 +14,18 @@ import { capturePaperPrint, releasePaperPrint, type PaperPrint, type PrintedSurf
 import { PAPER_SEGMENTS, layoutPaper, posePaper, segmentCountForTolerance } from './paperGeometry';
 
 export type PageTurn = Readonly<{from:number;to:number;direction:-1|1;interactive?:true}>;
+
+// A single source of truth for the illustrated left underlay of a turning
+// hardcover. The interior leaves continue to use their existing paper mesh.
+function revealCoverUnderlay(shell:HTMLElement,progress:number) {
+  const page=shell.querySelector<HTMLElement>('.book-static.book-left');
+  if(!page)return;
+  const p=Math.max(0,Math.min(1,progress));
+  page.style.clipPath=`inset(0 0 0 ${(1-p)*100}%)`;
+}
+function clearCoverUnderlay(shell:HTMLElement) {
+  shell.querySelector<HTMLElement>('.book-static.book-left')?.style.removeProperty('clip-path');
+}
 type Props={
   active:number;
   turning:PageTurn|null;
@@ -205,6 +217,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
         leaf.dataset.visibleFace=p<.5?'front':'back';
       }
       if(fromShift!==toShift){
+        revealCoverUnderlay(shell,p);
         const completed=turning.direction===1?p:1-p;
         gsap.set(shell,{xPercent:fromShift+(toShift-fromShift)*completed});
         if(stageStack)stageStack.style.clipPath='inset(0 0 0 '+(turning.from===0?50*(1-completed):50*completed)+'%)';
@@ -238,6 +251,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
       gsap.set(leaf,{clearProps:'transform'});
       gsap.set(shell,{clearProps:'transform'});
       if(stageStack)gsap.set(stageStack,{clearProps:'clipPath'});
+      if(fromShift!==toShift)clearCoverUnderlay(shell);
     };
   },[turning,waiting,debugPose,reducedMotion,flexible,onTurnFinished]);
 
@@ -261,6 +275,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
       leaf.style.setProperty('--leaf-shade',String(Math.sin(Math.PI*progress)*.34));
       if(flexible)posePaper(leaf,progress);
       else leaf.dataset.visibleFace=progress<.5?'front':'back';
+      if(fromShift!==toShift)revealCoverUnderlay(shell,progress);
     };
     if(flexible){
       // Project the joined curve as individual print surfaces; the hinge
@@ -302,6 +317,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
       gsap.set(shell,{clearProps:'transform'});
       const stack=shell.querySelector<HTMLElement>('.book-depth');
       if(stack)gsap.set(stack,{clearProps:'clipPath'});
+      if(fromShift!==toShift)clearCoverUnderlay(shell);
     };
   },[turning,debugPose,reducedMotion,onTurnFinished,waiting,flexible]);
 
@@ -404,8 +420,15 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
   // Two fixed pages sit under a *single* movable half-width leaf. During a
   // forward turn its front is today's right page, its reverse tomorrow's LEFT
   // page. Backward turning traverses the exact same physical path in reverse.
+  // During a cover transition the left-hand chapter must already be mounted
+  // behind the turning hardcover. Rendering position 0 here used to insert
+  // a blank leaf until the final React commit, creating an obvious visual pop.
+  // Clip the real first chapter from the central binding outward as the cover
+  // opens (and in reverse as it closes).
+  const coverTransition=!!showingTurn&&(showingTurn.from===0||showingTurn.to===0);
   const leftUnder=showingTurn&&!waiting
-    ?(showingTurn.direction===1?showingTurn.from:showingTurn.to)
+    ?(coverTransition?Math.max(showingTurn.from,showingTurn.to)
+      :(showingTurn.direction===1?showingTurn.from:showingTurn.to))
     :active;
   const rightUnder=showingTurn&&!waiting
     ?(showingTurn.direction===1?showingTurn.to:showingTurn.from)
@@ -429,7 +452,9 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
         style={debugPose!==null&&showingTurn?.from===0?
           {clipPath:`inset(0 0 0 ${50*(1-debugPose)}%)`}:undefined}/>
       {!closed&&<>
-        <div key={`static-left-${leftUnder}`} className="book-static book-left" data-page-role="left-under">
+        <div key={`static-left-${leftUnder}`} className="book-static book-left" data-page-role="left-under"
+          style={debugPose!==null&&coverTransition?
+            {clipPath:`inset(0 0 0 ${(1-debugPose)*100}%)`}:undefined}>
           <Half position={leftUnder} side="left" name={name} wish={wish} storyMode={storyMode}/>
         </div>
         <div key={`static-right-${rightUnder}`} className="book-static book-right" data-page-role="right-under">
