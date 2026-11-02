@@ -5,7 +5,7 @@ import path from 'node:path';
 const target=process.env.COVER_REVIEW_TARGET||'candidate';
 const baseURL=process.env.COVER_REVIEW_URL||'http://127.0.0.1:5175';
 const story=process.env.COVER_REVIEW_STORY||'birthday';
-const output=path.resolve(process.env.COVER_REVIEW_OUTPUT||`docs/validation/cover-local/${target}`);
+const output=path.resolve(process.env.COVER_REVIEW_OUTPUT||`test-results/cover-review/${target}`);
 await mkdir(output,{recursive:true});
 const metrics=[];
 for(const [engine,type] of [['chromium',chromium],['webkit',webkit]]){

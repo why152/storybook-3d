@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 from PIL import Image, ImageDraw, ImageChops, ImageStat
 
-root = Path('docs/validation/cover-local')
+root = Path('test-results/cover-review')
 poses = ['0', '0.25', '0.5', '0.75', '1']
 sections = []
 parity = []

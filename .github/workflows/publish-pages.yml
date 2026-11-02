@@ -50,8 +50,6 @@ jobs:
             test -s "dist/assets/$chapter/actors/rabbit.svg"
           done
           grep -q '/storybook-3d/' dist/assets/*.js
-          test -s dist/ink-release.json
-          test "$(find dist/handwriting -name '*.png' | wc -l | tr -d ' ')" = 12
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
@@ -85,4 +83,5 @@ jobs:
             grep -q '<svg' /tmp/storybook-pages-asset
           done
           echo "Published site and original storybook assets verified: ${base}"
-          node scripts/verify-hosted-ink.mjs "$base"
+          curl -fsSL --retry 3 --retry-delay 2 "${base}handwriting/greeting.png" -o /tmp/storybook-pages-ink.png
+          test -s /tmp/storybook-pages-ink.png

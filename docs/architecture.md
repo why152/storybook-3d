@@ -77,8 +77,7 @@ animates toward the full landscape open spread, without card flipping.
   caused WebKit clipping. Printed surfaces decode and paint over the retained
   outgoing spread before the page stack changes. Reduced motion disables CSS
   animations and transitions, rather than making infinite animations faster.
-  Current regression failures and acceptance status are
-  recorded in `docs/flexible-paper.md`; this is not an accepted renderer yet.
+  Current integration checks are recorded in `docs/validation/authentic-ink/README.md`. Older paper/cover experiments remain historical evidence; their implementation status is not the current product status.
 
 ## Validation/acceptance
 

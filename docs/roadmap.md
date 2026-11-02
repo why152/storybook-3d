@@ -1,36 +1,21 @@
-# Roadmap — BOOK FIRST (2026-10-25)
+# 当前路线 — BOOK FIRST
 
-The previous whole-card 3D rotation prototype is retired. Read
-`AGENTS.md` for the hard product contract.
+权威产品约束见 `AGENTS.md`。2026-11-02 用户要求重新收敛工程组织与产品目标；这不是另开一轮独立引擎实验。
 
-### Stage 1 — recognizable bound storybook
-- Closed portrait cover, page edges, central binding.
-- Two distinct stationary physical pages and one half-width leaf flipping
-  around their joint. Correct front/back content and reversed navigation.
-- Authored artwork split across a two-page spread without duplicate overlays.
+## 主线应保留的成果
 
-### Stage 2 — five demo illustrated spreads
-- HELLO, GROW, TOGETHER, DREAM and WISH.
-- Each spread has six independent original SVG files on a common artboard.
-- Content metadata in `src/data/story.ts`, renderer not hardcoded to chapters.
+五章原画与角色、真实手写笔迹、肖像封面到双页书脊、同一张半宽柔性纸页的双向跟手翻动，以及已有定制/分享和无障碍。
 
-### Stage 3 — viewer-ready interaction
-- Sequenced bookmark navigation turns each intermediate physical page.
-- Accessible arrow and keyboard navigation, mobile swipes, reduced motion.
-- Recipient and wish editor affects last page without redoing engine.
+当前 PR #39 已把这些增量收在同一候选中。旧 Shader、刚性页、早期柔性/DPR 实验是历史对照，不是都应合进 main 的功能。
 
-### Stage 4 — evidence and polish
-- Current work: the main renderer already has flexible paper and physical dragging. PR #38 fixes the cover; its browser CI passed. The next private candidate integrates 12 real source-faithful handwriting fragments into the five illustrated spreads. Inspect its real motion and approve the selected public-use scope before publication; see `docs/validation/authentic-ink/README.md`.
-- CI: lint, typecheck, Vite build, Playwright behavior.
-- Authentic screenshots at 0/25/50/75/100% of a book leaf, all 5
-  illustrated spreads, mobile cover and open book.
-- Authentic browser video of opening + one next + one previous turn.
-- Visual comparison to the inspiration site with explicit remaining gaps:
-  the site is a craft benchmark, not a card geometry specification.
-- Book-first baseline was approved and merged in PR #9. Require evidence-based acceptance for subsequent visual changes, not permanent references to an old draft PR.
+## 下一阶段的顺序
 
-### Future, not part of demo
+1. 清理本地工作区：保存原未提交源码，归档旧实验及截图录像，让项目根目录直接对应当前候选。
+2. 按产品目标评审候选，再将一个验证后的版本合入 main；GitHub Pages 从 main 发布，保留清晰回退点。
+3. 小范围改善真实笔迹与插画的融合、手机阅读和真实 Safari 表现。根据实测缺陷决定局部重构，不先重写整个书本引擎。
 
-Detailed character joint animation, richer parallax
-shader, content templates/admin UI, safe upload pipeline, deployment,
-payments, customer accounts and shareable published books.
+发布检查保持为 lint、类型、构建、桌面/手机行为以及真实截图录像；逐文件哈希不作为发布门槛。
+
+## 本轮不扩展
+
+新产品模式、后台、店铺、支付、客户上传、新渲染引擎、与首发无关的持续实验。历史证据保留在 Git 提交、原分支和工作区外归档中。

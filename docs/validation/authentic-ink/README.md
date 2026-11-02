@@ -44,7 +44,7 @@ STORYBOOK_TEST_PRIVATE_INK=1 STORYBOOK_PRIVATE_EVIDENCE_DIR=/PRIVATE/evidence ST
 
 Alongside `private-source-map.json`, the private crop directory contains a reviewed `layout.json` with typed fragment IDs, chapter/page side, local PNG filename, percentage left/top/width, order and a cautious accessible label. Full original handwriting, not the partial label, is the visual source of truth.
 
-Public builds now use the owner-authorized 12 PNGs in `public/handwriting/`, with base-path-aware URLs and a SHA-256 release manifest. The published-ink browser tests verify the real images, all five spreads and reader in public CI; the eight external-private-evidence tests remain separate. The source video and provenance are still private.
+Public builds now use the owner-authorized 12 PNGs in `public/handwriting/`, with base-path-aware URLs. The published-ink browser tests verify image loading, all five spreads and the reader in public CI; the eight external-private-evidence tests remain separate. The source video and provenance are still private.
 
 ## Release gate and rollback
 
