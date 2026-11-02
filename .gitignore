@@ -26,3 +26,6 @@ Thumbs.db
 *.psd
 *.ai
 *.blend
+
+# Local browser runs; curated evidence lives in docs/validation.
+/test-results/
