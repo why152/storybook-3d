@@ -37,11 +37,16 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .book-static{position:absolute;top:0;width:50%;height:100%;z-index:1}
 .book-left{left:0}
 .book-right{left:50%}
-/* Keep the incoming left illustration mounted from the very first cover frame.
-   Reveal it from the spine as the hardcover rotates; hiding the entire left
-   half until onComplete made HELLO pop in abruptly at the transition end. */
-.book-shell.is-opening .book-left{clip-path:inset(0 0 0 100%)}
-.book-shell.is-closing .book-left{clip-path:inset(0 0 0 0%)}
+/* The first left illustration belongs to the moving hardcover back until
+   it lands. Keep its static twin mounted for pose handoff without painting a
+   duplicate. The paper stack stays under the RIGHT pages: expanding it left
+   during opening exposed the pale rectangular slab reported in #31. */
+.book-shell.is-opening .book-left,
+.book-shell.is-closing .book-left{visibility:hidden}
+.book-shell.is-opening .book-depth,
+.book-shell.is-closing .book-depth,
+.book-shell.is-opening .book-edge-shadow,
+.book-shell.is-closing .book-edge-shadow{clip-path:inset(0 0 0 50%)}
 .book-shell.is-closed .book-depth{left:50%;border-radius:4px 14px 14px 4px}
 .book-static.book-closed-cover{z-index:6}
 .book-binding{position:absolute;z-index:11;top:.2%;bottom:.25%;left:calc(50% - 6px);width:12px;pointer-events:none;

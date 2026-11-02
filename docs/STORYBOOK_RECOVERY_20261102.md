@@ -32,13 +32,17 @@ The current app has two routes: the default `birthday` edition and `?story=lette
 | Typed temporary letter / source notes | `src/data/letterStory.ts`, `docs/LETTER_4569_SOURCE.md` |
 | Stage layout | `src/styles.css`, `src/styles.v2.css` |
 
-### Cover repair hypothesis (requires visual confirmation)
+### Cover repair — local comparison and corrected candidate
 
-In the previous `Book.tsx` cover opening from position 0 mounted `BlankPage` for the left static half, and `styles.css` hid it until the cover completed. On closing it also replaced the left chapter with a blank. The current branch changes only the *static first-chapter underlay*: keep HELLO mounted, clip it from the central binding according to cover progress, preserve moving cover/front/back and the interior curved-page engine. Tests compare the real DOM/content at fixed poses and complete forward/reverse trips. This is a **candidate** fix until browser screenshots and the user's reported symptom are checked.
+Local audit on 2026-11-02 preserved the dirty `codex/flexible-paper-local` worktree and all its evidence. Current work is isolated on `codex/cover-local-validation-20261102`, based on PR #36 (`41db2d6`), with immutable main (`88fcc365`) as comparison.
+
+Matched Chromium/WebKit desktop/mobile captures show two distinct defects: main expands the pale `.book-depth` rectangle into the empty left region; PR #36's linear wipe instead reveals a second stationary copy of HELLO beside the moving hardcover back. Keep PR #36's mounted HELLO underlay for correct pose matching, but let only the hardcover back paint the left illustration until landing. Keep the paper stack and its shadow on the right during cover motion. The interior flexible renderer is unchanged.
+
+[Findings, actual footage and reproducible comparison](validation/cover-local/README.md). Local/browser checks and owner/device visual sign-off remain separate gates. Nothing has been merged or deployed.
 
 ## Handwriting integration contract
 
-Source named in the existing private project: `why152/envelope-mvp/reference/4569.mp4` (non-birthday), **not** `4568.mp4`. This source is private; the storybook repository is public.
+Source named in the existing private project: `why152/envelope-mvp/reference/4569.mp4` (non-birthday), **not** `4568.mp4`. This source is private; the storybook repository is public. The source video was found in the existing local private project during recovery; no handwriting or video has been copied into this checkout or published.
 
 1. Select authentic complete source frames and define exact crop boxes with a private source-to-fragment manifest.
 2. Make optimized visual fragments retaining the original handwriting, punctuation, signature and reading order. Do not synthesize or guess missing strokes.

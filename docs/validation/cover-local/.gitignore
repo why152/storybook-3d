@@ -1,0 +1,4 @@
+# Full-resolution capture sets remain local; matched contact sheets and named
+# continuous recordings are the curated, reviewable Git evidence.
+*/*.png
+*/page@*.webm

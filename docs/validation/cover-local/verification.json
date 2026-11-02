@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-02",
+  "baseline": "88fcc365274f82776ce062586407fa60430135cc",
+  "previousCandidate": "41db2d648b2457696434e6d92f5a8772c54d8069",
+  "validationNode": "22.22.0",
+  "playwright": "1.64.1",
+  "vite": "7.3.7",
+  "gsap": "3.15.0",
+  "checks": {
+    "lint": "pass",
+    "typecheck": "pass",
+    "build": "pass",
+    "originalPlanes": "30/30 pass",
+    "originalActors": "14/14 pass",
+    "chromium": {
+      "passed": 84,
+      "failed": 0
+    },
+    "webkit": {
+      "passed": 83,
+      "failed": 0,
+      "skipped": 1,
+      "skipReason": "Chromium-only native CDP touch dispatch"
+    }
+  },
+  "visualReview": {
+    "source": "Actual browser PNGs and continuous WebM, matched desktop/mobile, main / PR36 / corrected",
+    "reviewed": [
+      "Four cover comparison contact sheets",
+      "Chromium/WebKit mobile motion contacts and full recordings through extracted frames",
+      "Interior GROW five poses in both engines/viewports"
+    ],
+    "ownerApproved": false,
+    "realIPhoneTested": false
+  },
+  "scope": "Cover-only production edit; unchanged interior geometry/print capture/artwork. Existing hidden-strip print-proof test corrected without changing threshold.",
+  "release": {
+    "merged": false,
+    "deployed": false,
+    "privateHandwritingPublished": false
+  }
+}
