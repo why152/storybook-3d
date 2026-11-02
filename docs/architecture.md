@@ -19,6 +19,9 @@ HELLO, GROW, TOGETHER, DREAM and WISH.
 | `src/components/Book.tsx` | Binding geometry, stationary pages, dual-sided turning leaf, GSAP animation and pointer parallax |
 | `src/components/paperGeometry.ts` | Joined constant-length interior curve, strip layout and camera projection |
 | `src/components/paperPrint.ts` | Cached lower/upper art bands with frozen poses; original vector lettering and HTML text remain native |
+| `src/components/Handwriting.tsx` | Native original-ink images on physical page surfaces and optional readable expansions |
+| `src/components/BookReadingStage.tsx` | Mobile aperture around the same Book instance; left/right page magnification without a second renderer |
+| `src/data/handwriting.ts` | Select reviewed private or owner-approved published ink layout for a build |
 | `src/App.tsx` | Navigation and sequential bookmarks, keyboard / touch, lightweight editable name and wish |
 | `src/styles.css` | Actual book cover, spine, page thickness, paper faces, gallery lighting, responsive styles |
 | `tests/demo.spec.ts` | Real-browser evidence: closed cover, opening, 5 chapters, 5 poses, physical reverse turn, mobile and video |
@@ -62,6 +65,16 @@ animates toward the full landscape open spread, without card flipping.
   the original SVG lettering stays between them so browser font/mask rendering
   remains unchanged. SceneArt uses its existing composition slot, native HTML
   text and paper finish for both printed and stationary leaves.
+- Authentic ink uses the same native page surface on static pages, flat endpoints and curved front/back strips; original crop images remain independent from the cached art bands. Private sources/builds stay outside Git until publication is approved. Temporary print textures are released immediately after landing.
+- The current HELLO letter sample reserves the upper paper for original ink,
+  with the original layered illustration below it. Masking is confined to
+  `spread-composition`, a flat image plane; it is identical on settled and
+  curved pages. Browser-only tonal correction neutralizes photographed paper
+  color; the source PNGs and stroke geometry are not regenerated or edited.
+- Phone reading enlarges the same two-page Book in an outer scroll aperture.
+  Its perspective viewport and preserve-3d shell remain intact. Magnified
+  reading disables page-grab input; navigation restores the full spread before
+  a turn. Escape and leaving the phone breakpoint restore the full view.
 - Stationary open book retains per-plane pointer parallax and ambient
   decoration movement within each physical page.
 - No ancestor filter or isolation may flatten the turning-leaf backface
@@ -74,8 +87,7 @@ animates toward the full landscape open spread, without card flipping.
   caused WebKit clipping. Printed surfaces decode and paint over the retained
   outgoing spread before the page stack changes. Reduced motion disables CSS
   animations and transitions, rather than making infinite animations faster.
-  Current regression failures and acceptance status are
-  recorded in `docs/flexible-paper.md`; this is not an accepted renderer yet.
+  Current integration checks are recorded in `docs/validation/authentic-ink/README.md`. Older paper/cover experiments remain historical evidence; their implementation status is not the current product status.
 
 ## Validation/acceptance
 
@@ -90,6 +102,6 @@ animates toward the full landscape open spread, without card flipping.
 
 ## Out of scope
 
-Back-end, payments, accounts, uploaded files, public sharing, AI-generated
+Back-end, payments, accounts, uploaded files, AI-generated
 customer image pipeline, actual page-curl shaders. The local flexible candidate
 uses CSS projection of a developable curve; no WebGL mesh rewrite is included.

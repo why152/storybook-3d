@@ -1,0 +1,24 @@
+/* Original ink is a native image on each physical page, like the native
+   lettering plane. The same crop follows the mesh without another encoding. */
+.v2-showroom.v2-letter-edition.has-authentic-handwriting .spread-composition{opacity:1;filter:none}
+.v2-showroom.v2-letter-edition.has-authentic-handwriting .page-print-grain{opacity:.16}
+.handwriting-on-page{position:absolute;inset:0;z-index:9;pointer-events:none}
+.handwriting-fragment{position:absolute;padding:.6% .8%;background:#f5e2bd;
+ border:1px solid #e4c79c;box-shadow:0 2px 4px #3c2b3338;border-radius:2px}
+.handwriting-image{display:block;width:100%;height:auto;user-select:none;pointer-events:none}
+.handwriting-reader{margin-top:6px;color:#e8d1b8;font-size:13px;text-align:left}
+.handwriting-reader summary{cursor:pointer;min-height:36px;line-height:36px}
+.handwriting-reader summary:focus-visible{outline:2px solid #f8d3a4;outline-offset:2px}
+.handwriting-reader summary span{float:right;margin-right:8px}
+.handwriting-reader-images{display:flex;flex-direction:column;gap:16px;padding:18px 12px;
+ background:#f5e2bd;border-radius:4px;max-height:50dvh;overflow:auto;overscroll-behavior:contain}
+.handwriting-reader-images img{display:block;width:100%;height:auto;object-fit:contain;align-self:flex-start}
+.handwriting-reader-images img[data-compact="true"]{max-width:65%}
+.has-authentic-handwriting .chapter-reader:has(.handwriting-reader[open]){position:relative;z-index:20}
+@media(min-width:601px){
+ .has-authentic-handwriting .chapter-reader:has(.handwriting-reader){display:block;position:absolute;right:30px;bottom:40px;
+  width:260px;padding:8px 14px;background:#171a24e8;border:1px solid #e5c49955;border-radius:8px;z-index:20}
+ .has-authentic-handwriting .chapter-reader:has(.handwriting-reader) h2,
+ .has-authentic-handwriting .chapter-reader:has(.handwriting-reader) .reader-meta,
+ .has-authentic-handwriting .page-count{display:none}
+}

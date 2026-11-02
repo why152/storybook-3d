@@ -1,0 +1,32 @@
+{
+  "date": "2026-11-02",
+  "node": "22.22.0",
+  "originalPixels": {
+    "matched": 12,
+    "total": 12
+  },
+  "privateBrowserChecks": {
+    "chromium": 8,
+    "webkit": 8
+  },
+  "publicCodeChecks": {
+    "chromium": {
+      "passed": 90,
+      "skipped": 8
+    },
+    "webkit": {
+      "passed": 89,
+      "skipped": 9
+    },
+    "skipReason": "8 external-private-evidence tests in both engines; WebKit additionally skips native Chromium CDP touch."
+  },
+  "staticToPrintedEndpointMeanErrorMax": 0.40680780406807804,
+  "retainedPrintURLsBefore": 4,
+  "retainedPrintURLsAfter": 0,
+  "retainedPrintBlobBytesAfter": 0,
+  "privateSourcesPushed": false,
+  "ownerVisualApproval": false,
+  "realIPhoneVerified": false,
+  "merged": false,
+  "deployed": false
+}

@@ -1,6 +1,8 @@
 import type { Chapter, ChapterId, StoryMode } from '../data/story';
 import { letterSpreadFor } from '../data/letterStory';
 import type { PrintedSurface } from './paperPrint';
+import { hasHandwriting } from '../data/handwriting';
+import { HandwritingOnPage } from './Handwriting';
 
 const planes=['background','midground','lettering','characters','foreground','effects'] as const;
 
@@ -23,7 +25,8 @@ type PageHalfProps={chapter:Chapter;side:PageSide;name:string;wish:string;storyM
 export function PageHalf({chapter,side,name,wish,storyMode='birthday',inkOnly=false,printed}:PageHalfProps){
   const title=chapter.title.replace('{name}',name.trim()||'你');
   const description=chapter.description.replace('{wish}',wish.trim()||'愿所有美好都在下一页等你。');
-  return <div className={`page-surface theme-${chapter.id} page-${side}`} data-chapter={chapter.id} data-side={side}>
+  const letterOpening=storyMode==='letter'&&hasHandwriting&&chapter.id==='hello';
+  return <div className={`page-surface theme-${chapter.id} page-${side} ${letterOpening?'letter-opening':''}`} data-chapter={chapter.id} data-side={side}>
     <div className="page-window">
       {(!inkOnly||printed)&&<div className="spread-composition" aria-hidden="true">
         {printed?<>
@@ -48,7 +51,12 @@ export function PageHalf({chapter,side,name,wish,storyMode='birthday',inkOnly=fa
         )}
       </div>}
       <div className="page-print-grain" aria-hidden="true"/>
-      {storyMode==='letter'?<LetterLeafText id={chapter.id} side={side}/>:<>
+      {letterOpening&&<div className="letter-running-head" aria-hidden="true">
+        <span>{side==='left'?'一封来信':'展信舒颜'}</span><span>{side==='left'?'01':'02'}</span>
+      </div>}
+      {storyMode==='letter'?(hasHandwriting
+        ?<HandwritingOnPage chapter={chapter.id} side={side}/>
+        :<LetterLeafText id={chapter.id} side={side}/>):<>
       {side==='right'&&<>
         <div className="page-chapter">{chapter.label} <span aria-hidden="true">✳</span></div>
         <div className="page-quote">

@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install dependencies (consistent with existing main CI)
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Check original scenes and character sprites
         run: |
           npm run test:assets
@@ -83,3 +83,5 @@ jobs:
             grep -q '<svg' /tmp/storybook-pages-asset
           done
           echo "Published site and original storybook assets verified: ${base}"
+          curl -fsSL --retry 3 --retry-delay 2 "${base}handwriting/greeting.png" -o /tmp/storybook-pages-ink.png
+          test -s /tmp/storybook-pages-ink.png

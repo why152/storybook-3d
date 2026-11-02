@@ -1,38 +1,11 @@
-# Roadmap — BOOK FIRST (2026-10-25)
+# 当前路线 — 来信优先，实体书为基础
 
-The previous whole-card 3D rotation prototype is retired. Read
-`AGENTS.md` for the hard product contract.
+权威几何约束见 `AGENTS.md`；本轮目标和验收见 [product-direction.md](product-direction.md)。用户于 2026-11-02 确认有边界的重做，允许大幅重构。
 
-### Stage 1 — recognizable bound storybook
-- Closed portrait cover, page edges, central binding.
-- Two distinct stationary physical pages and one half-width leaf flipping
-  around their joint. Correct front/back content and reversed navigation.
-- Authored artwork split across a two-page spread without duplicate overlays.
+1. **当前：HELLO 可翻动样章。** 重排真实笔迹与原画，手机在同一本书里放大阅读，保留角色和柔性翻页。以 `fded90c` 为同条件对照。
+2. **视觉方向验证后：统一五章。** 依据真实信件内容逐章安排留白、笔迹与角色，整理入口及内容模型。不要机械复制一个通用纸条模板。
+3. **发布：** 完成性能与真机检查后，将选中的实现整合到 main，发布 GitHub Pages。旧实验不批量合并；不部署 AWS。
 
-### Stage 2 — five demo illustrated spreads
-- HELLO, GROW, TOGETHER, DREAM and WISH.
-- Each spread has six independent original SVG files on a common artboard.
-- Content metadata in `src/data/story.ts`, renderer not hardcoded to chapters.
+书脊、双页、原画、原笔迹、无障碍是约束；旧组件和行数不是。新引擎只在实测证明当前路径阻碍产品时考虑。
 
-### Stage 3 — viewer-ready interaction
-- Sequenced bookmark navigation turns each intermediate physical page.
-- Accessible arrow and keyboard navigation, mobile swipes, reduced motion.
-- Recipient and wish editor affects last page without redoing engine.
-
-### Stage 4 — evidence and polish
-- Current local work: flexible interior paper in Draft PR #20, not accepted or
-  deployed. Resolve its real rendering and continuity failures, inspect matched
-  screenshots and footage, then obtain local visual feedback before deployment.
-- CI: lint, typecheck, Vite build, Playwright behavior.
-- Authentic screenshots at 0/25/50/75/100% of a book leaf, all 5
-  illustrated spreads, mobile cover and open book.
-- Authentic browser video of opening + one next + one previous turn.
-- Visual comparison to the inspiration site with explicit remaining gaps:
-  the site is a craft benchmark, not a card geometry specification.
-- Book-first baseline was approved and merged in PR #9. Require evidence-based acceptance for subsequent visual changes, not permanent references to an old draft PR.
-
-### Future, not part of demo
-
-Detailed character joint animation, richer parallax
-shader, content templates/admin UI, safe upload pipeline, deployment,
-payments, customer accounts and shareable published books.
+截图/连续录像用于视觉判断；类型、构建、桌面与手机行为测试用于回归。逐文件哈希不作为发布关卡。不扩展后台、店铺、支付、上传或新的产品模式。

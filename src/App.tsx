@@ -3,8 +3,13 @@ import { Book, type PageTurn } from './components/Book';
 import { getChapter, initialPosition, previewFrom, previewPose, totalPositions, type StoryMode } from './data/story';
 import { DEFAULT_GREETING, greetingFromHash, makeShareLink } from './data/share';
 import { letterSpreads } from './data/letterStory';
+import { hasHandwriting } from './data/handwriting';
+import { HandwritingReader } from './components/Handwriting';
+import {BookReadingStage, type ReadingSide} from './components/BookReadingStage';
 import './styles.css';
 import './styles.v2.css';
+import './handwriting.css';
+import './letter-reading.css';
 
 const debugPose=previewPose();
 const debugFrom=previewFrom();
@@ -26,6 +31,7 @@ export default function App(){
   const [wish,setWish]=useState(sharedGreeting?.wish??DEFAULT_GREETING.wish);
   const [copyStatus,setCopyStatus]=useState('');
   const [editorOpen,setEditorOpen]=useState(false);
+  const [readingSide,setReadingSide]=useState<ReadingSide>(null);
   const [reducedMotion,setReducedMotion]=useState(()=>
     window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   useEffect(()=>{
@@ -49,12 +55,19 @@ export default function App(){
 
   const goTo=useCallback((position:number)=>{
     if(turn||debugPose!==null||position===active||position<0||position>=totalPositions)return;
+    setReadingSide(null);
     // Bookmarks are not portals: visiting a distant chapter turns through
     // intervening sheets, one physical leaf at a time.
     setTarget(position);
     const next=active+(position>active?1:-1);
     setTurn({from:active,to:next,direction:next>active?1:-1});
   },[turn,active]);
+  useEffect(()=>{
+    const media=window.matchMedia('(max-width: 600px)');
+    const leavePhone=()=>{if(!media.matches)setReadingSide(null);};
+    media.addEventListener('change',leavePhone);
+    return()=>media.removeEventListener('change',leavePhone);
+  },[]);
   const grabTurn=useCallback((direction:-1|1)=>{
     if(turn||editorOpen||debugPose!==null||active+direction<0||active+direction>=totalPositions)return false;
     setTarget(null);
@@ -80,6 +93,7 @@ export default function App(){
   useEffect(()=>{
     const onKey=(event:KeyboardEvent)=>{
       if(event.key==='Escape'&&editorOpen){closeEditor();return;}
+      if(event.key==='Escape'&&readingSide){setReadingSide(null);return;}
       // Reading/editing a greeting in a modal must not also turn the book.
       if(editorOpen)return;
       if(event.target instanceof HTMLInputElement||
@@ -89,7 +103,7 @@ export default function App(){
     };
     window.addEventListener('keydown',onKey);
     return()=>window.removeEventListener('keydown',onKey);
-  },[active,goTo,editorOpen,closeEditor]);
+  },[active,goTo,editorOpen,closeEditor,readingSide]);
 
   const currentIndex=debugPose===null?active:debugFrom;
   const shownChapter=currentIndex>0?getChapter(currentIndex,storyMode):null;
@@ -97,6 +111,8 @@ export default function App(){
   const readableMessage=shownChapter?.description.replace(
     '{wish}',wish.trim()||DEFAULT_GREETING.wish
   );
+  const authenticLetter=storyMode==='letter'&&hasHandwriting;
+  const readingControls=authenticLetter&&currentIndex>0&&debugPose===null;
   const shareLink=makeShareLink({name,wish},window.location);
   const copyShareLink=async()=>{
     try{
@@ -107,10 +123,10 @@ export default function App(){
     }
   };
 
-  return <div className={`showroom v2-showroom ${storyMode==='letter'?'v2-letter-edition':''}`}>
+  return <div className={`showroom v2-showroom ${storyMode==='letter'?'v2-letter-edition':''} ${authenticLetter?'has-authentic-handwriting letter-reading-edition':''}`}>
     <header className="site-head">
-      <div className="site-name">little<span>story</span>.studio</div>
-      <div className="site-title">A LITTLE STORY<br/>FOR SOMEONE SPECIAL</div>
+      <div className="site-name">{authenticLetter?'一封来信':<>little<span>story</span>.studio</>}</div>
+      <div className="site-title">{authenticLetter?'写在纸上的话，留在故事里。':<>A LITTLE STORY<br/>FOR SOMEONE SPECIAL</>}</div>
       {storyMode==='letter'
         ? <a className="customize-trigger letter-variant-trigger" href={window.location.pathname}>BIRTHDAY EDITION ↗</a>
         : <button ref={customizeTrigger} type="button" className="customize-trigger" disabled={!!turn} onClick={()=>setEditorOpen(true)}>
@@ -122,20 +138,28 @@ export default function App(){
         className="turn-button turn-prev"
         disabled={active===0||!!turn||debugPose!==null}
         onClick={()=>goTo(active-1)}><Arrow back/></button>
+      <BookReadingStage side={readingSide}>
       <Book active={active} turning={turn} onTurnFinished={onTurnFinished} onGrabTurn={grabTurn}
         name={name} wish={wish} storyMode={storyMode} reducedMotion={reducedMotion}
-        debugPose={debugPose} debugFrom={debugFrom}/>
+        debugPose={debugPose} debugFrom={debugFrom} reading={readingSide!==null}/>
+      </BookReadingStage>
       <button type="button" aria-label="下一页" title="向右翻书"
         className="turn-button turn-next"
         disabled={active===totalPositions-1||!!turn||debugPose!==null}
         onClick={()=>goTo(active+1)}><Arrow/></button>
     </main>
+    {readingControls&&<nav className="book-reading-controls" aria-label="书页阅读大小">
+      {([null,'left','right'] as const).map(side=><button type="button" key={side??'spread'}
+        aria-pressed={readingSide===side} disabled={!!turn} onClick={()=>setReadingSide(side)}>
+        {side===null?'双页全貌':side==='left'?'放大左页':'放大右页'}
+      </button>)}
+    </nav>}
     <section className="chapter-reader" aria-label="故事朗读文字" aria-live="polite">
       {shownChapter
         ? <>
           <div className="reader-meta">{shownChapter.label} · {shownChapter.word}</div>
-          <h2>{readableTitle}</h2>
-          {storyMode==='letter'?<div className="reader-letter-transcript" aria-label="本跨页的完整信件文字">
+          <h2>{storyMode==='letter'&&hasHandwriting?'朋友的来信':readableTitle}</h2>
+          {authenticLetter&&shownChapter.id==='hello'?<p className="book-reading-hint">{readingSide?'正在读原来的书页 · 点「双页全貌」返回':'拖动书角翻页，或放大书页细读。'}</p>:authenticLetter?<HandwritingReader chapter={shownChapter.id}/>:storyMode==='letter'?<div className="reader-letter-transcript" aria-label="本跨页的完整信件文字">
             {letterSpreads[currentIndex-1].left.lines.slice(1).map((line,i)=><p key={`left-${i}`}>{line}</p>)}
             {letterSpreads[currentIndex-1].right.lines.map((line,i)=><p key={`right-${i}`}>{line}</p>)}
             {letterSpreads[currentIndex-1].right.signature&&<p>— {letterSpreads[currentIndex-1].right.signature}</p>}

@@ -1,160 +1,69 @@
-# Storybook 3D — A Little Story
+# Storybook 3D — 朋友的来信绘本
 
-**Work in progress · book-first baseline merged into main (PR #9) · ongoing AI-first quality upgrades**
+一个可分享、可定制的 3D 插画实体书 Demo。当前首发重点是：**把朋友的真实手写信融入原来的五章插画，让它成为一本能打开、能翻页、值得送给朋友的书。**
 
-An original, personalized **physical 3D illustrated storybook demo**.
-This is a **book**, not a rotating card. A centered binding joins two
-visible pages. Each page turn moves one **right-hand half-width paper leaf**
-to the left; reverse navigation turns it back. A portrait cover opens
-into a landscape two-page book.
+这是一本书：肖像封面打开后是左右双页与中央书脊，只有一张半宽纸页沿装订处柔性翻动。原参考站只作为美术和动作编排的工艺参考，资产不复制。
 
-The reference https://howtotalktowhitekidsaboutracism.com/ is an
-inspiration for **editorial illustration and art direction**, not for
-book physics, and its proprietary artwork is not included.
+## 当前目标
 
-## Five illustrated chapter spreads
+- 保留 HELLO → GROW → TOGETHER → DREAM → WISH 五章原画、独立角色与场景动画。
+- 真实 4569 笔迹保留原笔画，随纸页正反面一起翻动；手机能放大读清。
+- 封面开合、正反翻、拖动取消、键盘、触摸和减少动态保持连贯。
+- 用 GitHub Pages 提供一个可以直接分享的网页。保留已有生日定制和分享功能，先不增加更多产品模式。
+- 不做后台、商店、支付、客户上传或新的渲染引擎。
 
-| Chapter | Story | Source art |
-|---|---|---|
-| HELLO | Meeting and greeting in a village | `public/assets/hello/` |
-| GROW | Two friends nurturing new growth | `public/assets/grow/` |
-| TOGETHER | Two friends at a warm seaside pier | `public/assets/together/` |
-| DREAM | A night of shared stargazing and travel | `public/assets/dream/` |
-| WISH | Birthday celebration with cake and gifts | `public/assets/wish/` |
+`AGENTS.md` 是书本几何约束的权威来源；[本轮目标与验收边界](docs/product-direction.md) 定义来信优先的成品方向。Notion 顶部记录最新状态，旧报告只是历史证据。
 
-Each interior spread uses **six independent original SVG image planes**
-(30 source files total): background, midground, lettering, characters,
-foreground and effects, all in a common 1200×700 coordinate system.
-The renderer cuts the full-spread illustration into two physically
-independent page halves at the binding without flattening source art.
+## 主线与工作方式
 
-Across **all five chapters**, the original combined `characters.svg`
-stays intact, while stationary book pages render **14 independently
-registered transparent character/prop SVG sprites** (rabbit, fox and
-scene-specific objects) with restrained, story-specific choreography. Motion pauses during page turns and for reduced-motion
-users. See `docs/character-acting.md`; this is early character acting, not
-finished limb animation.
+`main` 只接收已验证的产品改动。当前整合候选为 [PR #39](https://github.com/why152/storybook-3d/pull/39)，已包含封面修正、真实笔迹和闲置纹理清理；不是把所有历史实验分支依次合并。
 
+用户在 2026-11-02 确认进行有边界的重做，允许大幅重构。当前开发分支 `codex/letter-first-redesign-20261102` 从 `fded90c` 出发，先交付 HELLO 可翻动样章和手机书内放大阅读。PR #39 作为技术基线保留，尚不合并部署。项目根目录是唯一开发入口，历史实验与产物已归档。
 
-## Development
+截图录像用于判断书本效果，CI 用于发现行为回归。发布只检查页面、素材可加载和实际翻页，不把逐文件哈希作为发布关卡。原稿提取时的源像素验证保留，用于避免切错笔画。
 
-Node.js 22+.
+## 代码职责
 
-```bash
-npm install
+| 文件 | 职责 |
+|---|---|
+| `src/data/story.ts` | 五章模型与路由 |
+| `src/components/Book.tsx` | 书脊、静止页、翻动页、输入锁和动画 |
+| `src/components/paperGeometry.ts` | 柔性纸面几何 |
+| `src/components/paperPrint.ts` | 保留角色姿态的印刷快照 |
+| `src/components/SceneArt.tsx` | 原画图层、封面与页面合成 |
+| `src/components/Handwriting.tsx` | 同一物理页上的真实笔迹与手机阅读 |
+| `src/App.tsx` | 导航和定制 |
+
+只有一个书本渲染实现。本轮重做首章的笔迹/插画编排和手机阅读，完成真实浏览器对照后再推广五章。headless WebKit 有慢帧，真实 iPhone Safari 尚未验收；实测若表明底层阻碍目标，可替换相关实现，不为保留旧代码持续打补丁。
+
+## 本地运行与检查
+
+Node 22；使用已提交的锁文件：
+
+```sh
+npm ci
 npm run dev
-npm run test:assets
-npm run test:actors
 npm run lint
 npm run typecheck
 npm run build
-npx playwright install chromium
+npm run test:assets
+npm run test:actors
+npx playwright install chromium webkit
 npm run test:e2e
+STORYBOOK_TEST_BROWSER=webkit npm run test:e2e
 ```
 
-Vite normally serves at http://localhost:5173.
+- 手写信绘本：`/?story=letter`
+- 已有生日绘本：`/`
+- 指定章节：`/?story=letter&scene=grow`
+- 翻页姿态：`/?story=letter&from=grow&pose=0.5`
 
-Keyboard Left/Right, hand-drawn arrows, page progress dots and
-touch swipes flip the book. Selecting a distant chapter turns through
-each intervening leaf. CUSTOMIZE edits the final page's name and wish. The CUSTOMIZE drawer also creates a
-shareable #gift= link: names and greetings survive refresh and reopening,
-including non-ASCII text, without an account or backend. Recipients begin at
-the portrait cover. A link encodes readable content, not encrypted/private
-storage; anyone with it can decode the greeting. Share links rely on keeping
-the hosting URL alive; they are not persistent database records.
-See [docs/shareable-links.md](docs/shareable-links.md).
+原五章保留 30 个 SVG 图层和 14 个可复现的角色精灵。原视频、完整源帧和私有裁切映射在公开仓库外；公开代码只包含用户获准发布的 12 个片段。
 
-## Inspect
+## 记录
 
-- Closed cover: `/`
-- Open chapter: `/?scene=hello`, `/?scene=grow`,
-  `/?scene=together`, `/?scene=dream`, `/?scene=wish`
-- Physical turn keyframes: `/?pose=0&from=grow`,
-  `/?pose=0.25&from=grow`, `/?pose=0.5&from=grow`,
-  `/?pose=0.75&from=grow`, `/?pose=1&from=grow`
-- Independent layer inspector:
-  `/art-inspector.html?scene=hello` (works for all chapters)
-
-Playwright uploads browser screenshots and the real recorded
-cover/page-turn WebM to the GitHub Actions artifact, if tests pass.
-Passing CI is not proof of artistic equivalence.
-
-## Source
-
-- `AGENTS.md`: **authoritative book-first goal and AI-first full-rewrite policy**
-- `src/data/story.ts`: chapter data and routing
-- `src/components/Book.tsx`: bound book and GSAP leaf mechanics
-- `src/components/SceneArt.tsx`: original artwork, cover, page half
-- `src/App.tsx`: accessible input and customization
-- `src/styles.css`: open book and paper stage styling
-- `docs/architecture.md`: physical page order explained
-- `docs/reference-gap-analysis.md`: official source-backed craft comparison and ordered improvements
-
-## Known limitations
-
-Leaf is rigid paper with cover/pages and shadows, not a smoothly
-deformable page curl. Illustration is original and still needs
-professional art refinement, scene-specific character acting and
-performance profiling. No back end, payments, accounts or customer
-file uploads. **PR #9 was owner-approved and merged on 2026-10-25; artistic polish and future deployments still require separate validation.**
-
-## Local clone, QA and cost-controlled Codex handoff
-
-**Start with [docs/LOCAL_CLONE_AND_CODEX.md](docs/LOCAL_CLONE_AND_CODEX.md).**
-It covers an exact local walkthrough, official book geometry, experimental
-Shader Lab branches, evidence paths and strict user-approved premium-model
-escalation rules.
-
-```bash
-nvm use 22
-npm install --no-audit --no-fund
-npm run qa:browser:setup
-npm run qa:local
-```
-
-After the full check, open `test-results/review.html` locally. This is an
-offline, searchable index of actual Playwright screenshots and WebM recordings.
-The additional `test-results/qa-readiness.json` and `.md` capture aligned
-five-scene image decode, book-spine registration, overflow and **software
-Chromium** animation-frame observations across desktop and mobile viewports.
-Those values are *not* proof of real-phone GPU FPS or battery life.
-
-To save time while iterating, `npm run qa:baseline` refreshes this
-two-viewport/five-chapter audit and `npm run qa:gallery` rebuilds the review
-index. New browser tests use Chrome's actual touch input, not just simulated
-keyboard navigation. The expensive Codex model should only tackle a
-reproducible high-impact issue after two truly attempted lower-cost fixes.
-
-**Reproducibility note:** npm dependencies are currently semver-range pinned
-in `package.json` but there is no committed `package-lock.json`.
-For bit-for-bit repeatability, generate and commit a lockfile in a separate
-normal engineering pass before comparing environments. This is NOT a
-problem that requires expensive Codex reasoning.
-
-## AI-first engineering and project tracking
-
-This is an AI-led implementation. **Large refactors, wholesale replacement of
-bad ideas and deletion of obsolete assets are explicitly welcome.** We favor
-high-iteration experimentation and final visual quality over minimizing changed
-lines. Each chosen version still needs test evidence and a reversible Git PR.
-See `AGENTS.md` (authoritative).
-
-Project plan and status: [Notion — Storybook 3D](https://app.notion.com/p/403d0befadbd81cbaba2e9061105d171), with a dedicated task database.
-Mobile readers can read the full chapter text in a legible caption below the
-small physical book; the double-page geometry remains unchanged.
-
-### Bulk SVG actor maintenance (no premium model required)
-
-The original `public/assets/*/characters.svg` remains the canonical
-hand-authored artwork; the 14 separately registered actors are deliberately
-reproducible extracts, not alternative copies of copyrighted images.
-
-```bash
-npm run test:actors   # CI: verify every actor preserves original SVG geometry
-npm run art:actors    # explicit regeneration after canonical character edits
-```
-
-Only run the second command when you intend to **replace** all generated actor
-sources from their canonical chapter art. Future custom limb art should first
-update the authoring source or create a separate intentional motion layer.
-The validator checks all five chapters, including the GROW props group.
+- [架构](docs/architecture.md)
+- [当前路线](docs/roadmap.md)
+- [真实笔迹验证](docs/validation/authentic-ink/README.md)
+- [封面对照历史证据](https://github.com/why152/storybook-3d/tree/18c343d3a68bdc7820b5191771ef925cd78adead/docs/validation/cover-local)
+- [Notion 当前状态](https://app.notion.com/p/403d0befadbd81cbaba2e9061105d171)
