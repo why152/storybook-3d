@@ -126,11 +126,11 @@ reproducible high-impact issue after two truly attempted lower-cost fixes.
 
 **Reproducibility:** `package-lock.json` is committed. Use `npm ci` with Node 22.
 
-The current private authentic-handwriting release candidate preserves all five
-illustrations and prints the original source crops on the same curved surfaces.
-See [integration and validation](docs/validation/authentic-ink/README.md).
-Private assets are not included in this checkout; public use is pending owner
-approval of the actual selected fragments and presentation.
+The owner-authorized authentic-handwriting edition preserves all five
+illustrations and prints 12 reviewed source-pixel crops on the same curved
+surfaces. Open `?story=letter`; the birthday edition and gift links remain
+available. Only the approved crops are public; the source video, complete
+frame and provenance map remain private. See [integration and validation](docs/validation/authentic-ink/README.md) and [release record](docs/RELEASE_20261102.md).
 
 ## AI-first engineering and project tracking
 
