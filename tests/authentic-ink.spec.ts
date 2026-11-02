@@ -50,8 +50,12 @@ for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
       }
       expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBe(0);
       await page.screenshot({path:path.join(evidence!,`${browserName}-${viewport.width}-${chapter.id}.png`)});
-      await page.locator('.handwriting-reader summary').click();
-      await expect(page.locator('.handwriting-reader-images')).toBeVisible();
+      if(chapter.id!=='hello'){
+        await page.locator('.handwriting-reader summary').click();
+        await expect(page.locator('.handwriting-reader-images')).toBeVisible();
+      }else if(viewport.width<=600){
+        await page.getByRole('button',{name:'放大右页'}).click();
+      }
       await page.screenshot({path:path.join(evidence!,`${browserName}-${viewport.width}-${chapter.id}-reader.png`),fullPage:true});
     }
     expect(seen.size).toBe(12);

@@ -20,6 +20,7 @@ HELLO, GROW, TOGETHER, DREAM and WISH.
 | `src/components/paperGeometry.ts` | Joined constant-length interior curve, strip layout and camera projection |
 | `src/components/paperPrint.ts` | Cached lower/upper art bands with frozen poses; original vector lettering and HTML text remain native |
 | `src/components/Handwriting.tsx` | Native original-ink images on physical page surfaces and optional readable expansions |
+| `src/components/BookReadingStage.tsx` | Mobile aperture around the same Book instance; left/right page magnification without a second renderer |
 | `src/data/handwriting.ts` | Select reviewed private or owner-approved published ink layout for a build |
 | `src/App.tsx` | Navigation and sequential bookmarks, keyboard / touch, lightweight editable name and wish |
 | `src/styles.css` | Actual book cover, spine, page thickness, paper faces, gallery lighting, responsive styles |
@@ -65,6 +66,15 @@ animates toward the full landscape open spread, without card flipping.
   remains unchanged. SceneArt uses its existing composition slot, native HTML
   text and paper finish for both printed and stationary leaves.
 - Authentic ink uses the same native page surface on static pages, flat endpoints and curved front/back strips; original crop images remain independent from the cached art bands. Private sources/builds stay outside Git until publication is approved. Temporary print textures are released immediately after landing.
+- The current HELLO letter sample reserves the upper paper for original ink,
+  with the original layered illustration below it. Masking is confined to
+  `spread-composition`, a flat image plane; it is identical on settled and
+  curved pages. Browser-only tonal correction neutralizes photographed paper
+  color; the source PNGs and stroke geometry are not regenerated or edited.
+- Phone reading enlarges the same two-page Book in an outer scroll aperture.
+  Its perspective viewport and preserve-3d shell remain intact. Magnified
+  reading disables page-grab input; navigation restores the full spread before
+  a turn. Escape and leaving the phone breakpoint restore the full view.
 - Stationary open book retains per-plane pointer parallax and ambient
   decoration movement within each physical page.
 - No ancestor filter or isolation may flatten the turning-leaf backface
@@ -92,6 +102,6 @@ animates toward the full landscape open spread, without card flipping.
 
 ## Out of scope
 
-Back-end, payments, accounts, uploaded files, public sharing, AI-generated
+Back-end, payments, accounts, uploaded files, AI-generated
 customer image pipeline, actual page-curl shaders. The local flexible candidate
 uses CSS projection of a developable curve; no WebGL mesh rewrite is included.

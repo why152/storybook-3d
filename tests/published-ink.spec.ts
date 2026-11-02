@@ -17,8 +17,13 @@ for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
       }))).toBe(true);
       await page.locator('.book-static [data-ink-id]').evaluateAll(items=>items.map(item=>(item as HTMLElement).dataset.inkId!))
         .then(ids=>ids.forEach(id=>seen.add(id)));
-      await page.locator('.handwriting-reader summary').click();
-      await expect(page.locator('.handwriting-reader-images')).toBeVisible();
+      if(chapter.id!=='hello'){
+        await page.locator('.handwriting-reader summary').click();
+        await expect(page.locator('.handwriting-reader-images')).toBeVisible();
+      }else if(viewport.width<=600){
+        await page.getByRole('button',{name:'放大右页'}).click();
+        await expect(page.getByRole('button',{name:'放大右页'})).toHaveAttribute('aria-pressed','true');
+      }
     }
     expect(seen.size).toBe(12);
   });

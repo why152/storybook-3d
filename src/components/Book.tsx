@@ -26,6 +26,7 @@ type Props={
   reducedMotion:boolean;
   debugPose:number|null;
   debugFrom:number;
+  reading?:boolean;
 };
 
 function Half({position,side,name,wish,storyMode,inkOnly=false,printed}:{
@@ -35,7 +36,7 @@ function Half({position,side,name,wish,storyMode,inkOnly=false,printed}:{
   return <PageHalf chapter={getChapter(position,storyMode)} side={side} name={name} wish={wish} storyMode={storyMode} inkOnly={inkOnly} printed={printed}/>;
 }
 
-export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMode,reducedMotion,debugPose,debugFrom}:Props){
+export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMode,reducedMotion,debugPose,debugFrom,reading=false}:Props){
   // The grip owns the gesture until pointerup/cancel; React never owns its
   // frame-by-frame progress. Moving a pointer backward is a physical reversal
   // of the SAME mounted sheet, not a second page-turn command.
@@ -332,7 +333,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     grip.settle?.(); // If textures aren't ready, readiness will settle later.
   };
   const handleGripStart=(event:PointerEvent<HTMLDivElement>)=>{
-    if(turning||gripRef.current||debugPose!==null||!event.isPrimary||
+    if(reading||turning||gripRef.current||debugPose!==null||!event.isPrimary||
        (event.pointerType==='mouse'&&event.button!==0))return;
     const host=event.currentTarget;
     const bounds=host.getBoundingClientRect();
@@ -422,7 +423,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     :active;
 
   const stageShift=debugPose!==null&&showingTurn?.from===0?(-25+25*debugPose):undefined;
-  return <div className="book-viewport" data-grab-enabled={debugPose===null?"true":"false"}
+  return <div className="book-viewport" data-grab-enabled={debugPose===null&&!reading?"true":"false"}
     onPointerDown={handleGripStart} onPointerMove={handlePointer}
     onPointerUp={event=>finishGrip(event)} onPointerCancel={event=>finishGrip(event,true)}
     onPointerLeave={clearPointer}>
