@@ -21,10 +21,20 @@ test('4569 ordinary blessing occupies ten real book leaves, left and right, with
   await expect(page.locator('.v2-letter-edition')).toHaveCount(1);
   await expect(page.locator('.v2-cover .cover-edition')).toHaveText('WORDS FROM A FRIEND');
   await expect(page.locator('.v2-cover .cover-main-title')).toContainText('letter');
+  const originalInk=await page.locator('.has-authentic-handwriting').count()>0;
   for(let i=0;i<ids.length;i++){
     await page.goto('/?story=letter&scene='+ids[i]);
     const leaves=page.locator('.book-static .page-surface[data-chapter="'+ids[i]+'"]');
     await expect(leaves).toHaveCount(2);
+    if(originalInk){
+      await expect(leaves.locator('.letter-leaf')).toHaveCount(0);
+      expect(await leaves.locator('.handwriting-image').count()).toBeGreaterThanOrEqual(2);
+      await expect.poll(()=>leaves.locator('.handwriting-image').evaluateAll(images=>images.every(image=>{
+        const ink=image as HTMLImageElement;return ink.complete&&ink.naturalWidth>0;
+      }))).toBe(true);
+      await expect(leaves.locator('.plane-lettering')).toHaveCount(2);
+      continue;
+    }
     const l=leaves.filter({has:page.locator('.letter-leaf[data-letter-side="left"]')}).locator('.letter-leaf-line');
     const r=leaves.filter({has:page.locator('.letter-leaf[data-letter-side="right"]')}).locator('.letter-leaf-line');
     await expect(l).toHaveText(left[i]);
@@ -61,6 +71,13 @@ test('letter turns from physical right print to next left print with text moving
   const leaf=page.locator('.book-turn-leaf');
   await expect(leaf).toHaveCount(1);
   await expect(leaf.locator('.paper-source-pair')).toHaveCount(0); // separate source, not inside leaf
+  if(await page.locator('.has-authentic-handwriting').count()){
+    await expect(leaf).toHaveAttribute('data-texture-ready','true');
+    expect(await page.locator('.paper-source[data-print="front"] .handwriting-image').count()).toBeGreaterThan(0);
+    expect(await page.locator('.paper-source[data-print="back"] .handwriting-image').count()).toBeGreaterThan(0);
+    await expect(leaf).toHaveCount(0,{timeout:20000});
+    return;
+  }
   await expect(page.locator('.paper-source[data-print="front"] .letter-leaf')).toContainText('当你读到这封信的时候');
   await expect(page.locator('.paper-source[data-print="back"] .letter-leaf')).toContainText('最近过得好吗');
   await expect(leaf).toHaveCount(0,{timeout:20000});

@@ -4,7 +4,7 @@ import { chapters } from '../src/data/story';
 // Freeze a deliberately non-neutral printed pose: resetting to registration
 // coordinates must fail, even if all page-count/navigation tests still pass.
 for(const chapter of chapters.slice(0,-1)){
-  test(`${chapter.word} keeps the printed pose through forward and reverse handoffs`,async ({page})=>{
+  test(`${chapter.word} keeps the printed pose through forward and reverse handoffs`,async ({page},testInfo)=>{
     await page.goto('/?scene='+chapter.id);
     await page.evaluate(async()=>{
       await Promise.all([...document.images].map(image=>image.decode()));
@@ -41,6 +41,11 @@ for(const chapter of chapters.slice(0,-1)){
       planes.map(el=>getComputedStyle(el).transform));
     expect(await page.locator('.paper-source[data-print=back] .scene-plane').evaluateAll(planes=>
       planes.map(el=>(el as HTMLElement).style.transform))).toEqual(arrival);
+    // At exactly flat endpoints the segmented print is display:none in favor
+    // of the native face. Chromium then has no used pixel dimensions for its
+    // descendants: cloning that hidden print can sample the LEFT art half.
+    // Inspect an actual moving strip, preserving the strict bitmap threshold.
+    await expect(leaf).toHaveAttribute('data-paper-endpoint','none');
     // Paint the actual shared composition at the same viewport coordinates. Resizing
     // an element screenshot into a canvas changes its fractional pixel phase.
     await page.evaluate(async box=>{
@@ -69,6 +74,10 @@ for(const chapter of chapters.slice(0,-1)){
         const i=(y*canvas.width+x)*4;for(let c=0;c<3;c++){sum+=Math.abs(a[i+c]-b[i+c]);n++;}
       }return sum/n;
     },{native:nativePrint.toString('base64'),proof:printedProof.toString('base64'),box:printBox});
+    if(bitmapError>=2.5){
+      await testInfo.attach('native-print',{body:nativePrint,contentType:'image/png'});
+      await testInfo.attach('captured-print-proof',{body:printedProof,contentType:'image/png'});
+    }
     expect(bitmapError,'shared print must preserve the actual frozen artwork, not just source metadata').toBeLessThan(2.5);
     await expect(leaf).toHaveCount(0);
     // WebKit may finish the React commit before sampling the resumed CSS

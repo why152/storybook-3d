@@ -14,6 +14,7 @@ import { capturePaperPrint, releasePaperPrint, type PaperPrint, type PrintedSurf
 import { PAPER_SEGMENTS, layoutPaper, posePaper, segmentCountForTolerance } from './paperGeometry';
 
 export type PageTurn = Readonly<{from:number;to:number;direction:-1|1;interactive?:true}>;
+
 type Props={
   active:number;
   turning:PageTurn|null;
@@ -87,6 +88,15 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
 
   useLayoutEffect(()=>()=>{if(print)releasePaperPrint(print);},[print]);
 
+  // Native pages own the settled spread. Release the previous turn's four
+  // temporary texture URLs now, rather than retaining them until another
+  // turn (or component unmount), including while the cover is closed.
+  useLayoutEffect(()=>{
+    if(showingTurn)return;
+    if(print)setPrint(null);
+    if(decodedPrint)setDecodedPrint(null);
+  },[showingTurn,print,decodedPrint]);
+
   useLayoutEffect(()=>{
     if(!flexible||!printAvailable||!print)return;
     let cancelled=false;
@@ -105,7 +115,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
   useLayoutEffect(()=>{
     if(!turning||debugPose!==null)return;
     let cancelled=false;
-    const images=[...shellRef.current!.querySelectorAll<HTMLImageElement>('.scene-plane')];
+    const images=[...shellRef.current!.querySelectorAll<HTMLImageElement>('.scene-plane,.handwriting-image')];
     void Promise.all(images.map(image=>image.decode().catch(()=>undefined))).then(()=>{
       if(!cancelled)setPreparedTurn(turning);
     });
@@ -194,7 +204,6 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     let finished=false;
     const fromShift=turning.from===0?-25:0;
     const toShift=turning.to===0?-25:0;
-    const stageStack=shell.querySelector<HTMLElement>('.book-depth');
     const paint=(value:number)=>{
       const p=Math.max(0,Math.min(1,value));
       grip.progress=p;
@@ -207,7 +216,6 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
       if(fromShift!==toShift){
         const completed=turning.direction===1?p:1-p;
         gsap.set(shell,{xPercent:fromShift+(toShift-fromShift)*completed});
-        if(stageStack)stageStack.style.clipPath='inset(0 0 0 '+(turning.from===0?50*(1-completed):50*completed)+'%)';
       }
     };
     const settle=()=>{
@@ -237,7 +245,6 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
       leaf.style.removeProperty('--leaf-shade');
       gsap.set(leaf,{clearProps:'transform'});
       gsap.set(shell,{clearProps:'transform'});
-      if(stageStack)gsap.set(stageStack,{clearProps:'clipPath'});
     };
   },[turning,waiting,debugPose,reducedMotion,flexible,onTurnFinished]);
 
@@ -277,15 +284,6 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
       const moveDuration=reducedMotion ? 0.025 : 1.28;
       timeline.fromTo(shell,{xPercent:fromShift},
         {xPercent:toShift,duration:moveDuration,ease:'power2.inOut'},0);
-      // A closed cover must not reveal the full-width pale page block before
-      // its spine opens. Unfold the physical paper stack with the cover.
-      const paperStack=shell.querySelector<HTMLElement>('.book-depth');
-      if(paperStack)timeline.fromTo(paperStack,{
-        clipPath:turning.from===0?'inset(0 0 0 50%)':'inset(0 0 0 0%)'
-      },{
-        clipPath:turning.to===0?'inset(0 0 0 50%)':'inset(0 0 0 0%)',
-        duration:moveDuration,ease:'power2.inOut'
-      },0);
     }
     // Readiness is already established before this effect:
     // capturePaperPrint waits for the source artwork and printReady waits for
@@ -300,8 +298,6 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
       leaf.style.removeProperty('--leaf-shade');
       gsap.set(leaf,{clearProps:'transform'});
       gsap.set(shell,{clearProps:'transform'});
-      const stack=shell.querySelector<HTMLElement>('.book-depth');
-      if(stack)gsap.set(stack,{clearProps:'clipPath'});
     };
   },[turning,debugPose,reducedMotion,onTurnFinished,waiting,flexible]);
 
@@ -404,8 +400,16 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
   // Two fixed pages sit under a *single* movable half-width leaf. During a
   // forward turn its front is today's right page, its reverse tomorrow's LEFT
   // page. Backward turning traverses the exact same physical path in reverse.
+  // During a cover transition the left-hand chapter must already be mounted
+  // behind the turning hardcover. Rendering position 0 here used to insert
+  // a blank leaf until the final React commit, creating an obvious visual pop.
+  // Only the hardcover back paints the left illustration during the turn.
+  // Its stationary twin stays mounted for pose matching, but hidden until
+  // landing. A progress-based wipe exposed a second, unbound copy of HELLO.
+  const coverTransition=!!showingTurn&&(showingTurn.from===0||showingTurn.to===0);
   const leftUnder=showingTurn&&!waiting
-    ?(showingTurn.direction===1?showingTurn.from:showingTurn.to)
+    ?(coverTransition?Math.max(showingTurn.from,showingTurn.to)
+      :(showingTurn.direction===1?showingTurn.from:showingTurn.to))
     :active;
   const rightUnder=showingTurn&&!waiting
     ?(showingTurn.direction===1?showingTurn.to:showingTurn.from)
@@ -425,9 +429,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     <div className={`book-shell ${closed?'is-closed':'is-open'} ${showingTurn?'is-turning':''} ${!waiting&&showingTurn?.from===0?'is-opening':''} ${!waiting&&showingTurn?.to===0?'is-closing':''}`}
       ref={shellRef} data-book-mode={closed?'closed':'open'}
       style={stageShift===undefined?undefined:{transform:`translateX(${stageShift}%)`}}>
-      <div className="book-depth" aria-hidden="true"
-        style={debugPose!==null&&showingTurn?.from===0?
-          {clipPath:`inset(0 0 0 ${50*(1-debugPose)}%)`}:undefined}/>
+      <div className="book-depth" aria-hidden="true"/>
       {!closed&&<>
         <div key={`static-left-${leftUnder}`} className="book-static book-left" data-page-role="left-under">
           <Half position={leftUnder} side="left" name={name} wish={wish} storyMode={storyMode}/>

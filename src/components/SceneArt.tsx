@@ -1,6 +1,8 @@
 import type { Chapter, ChapterId, StoryMode } from '../data/story';
 import { letterSpreadFor } from '../data/letterStory';
 import type { PrintedSurface } from './paperPrint';
+import { hasHandwriting } from '../data/handwriting';
+import { HandwritingOnPage } from './Handwriting';
 
 const planes=['background','midground','lettering','characters','foreground','effects'] as const;
 
@@ -48,7 +50,9 @@ export function PageHalf({chapter,side,name,wish,storyMode='birthday',inkOnly=fa
         )}
       </div>}
       <div className="page-print-grain" aria-hidden="true"/>
-      {storyMode==='letter'?<LetterLeafText id={chapter.id} side={side}/>:<>
+      {storyMode==='letter'?(hasHandwriting
+        ?<HandwritingOnPage chapter={chapter.id} side={side}/>
+        :<LetterLeafText id={chapter.id} side={side}/>):<>
       {side==='right'&&<>
         <div className="page-chapter">{chapter.label} <span aria-hidden="true">✳</span></div>
         <div className="page-quote">
