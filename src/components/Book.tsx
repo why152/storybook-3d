@@ -88,6 +88,15 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
 
   useLayoutEffect(()=>()=>{if(print)releasePaperPrint(print);},[print]);
 
+  // Native pages own the settled spread. Release the previous turn's four
+  // temporary texture URLs now, rather than retaining them until another
+  // turn (or component unmount), including while the cover is closed.
+  useLayoutEffect(()=>{
+    if(showingTurn)return;
+    if(print)setPrint(null);
+    if(decodedPrint)setDecodedPrint(null);
+  },[showingTurn,print,decodedPrint]);
+
   useLayoutEffect(()=>{
     if(!flexible||!printAvailable||!print)return;
     let cancelled=false;
@@ -106,7 +115,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
   useLayoutEffect(()=>{
     if(!turning||debugPose!==null)return;
     let cancelled=false;
-    const images=[...shellRef.current!.querySelectorAll<HTMLImageElement>('.scene-plane')];
+    const images=[...shellRef.current!.querySelectorAll<HTMLImageElement>('.scene-plane,.handwriting-image')];
     void Promise.all(images.map(image=>image.decode().catch(()=>undefined))).then(()=>{
       if(!cancelled)setPreparedTurn(turning);
     });

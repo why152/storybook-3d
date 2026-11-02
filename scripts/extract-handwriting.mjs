@@ -65,7 +65,9 @@ async function main(){
     const out=path.join(output,s.id+'.png');
     if(existsSync(out))throw new Error('Refusing to overwrite existing crop: '+s.id);
     const c=s.crop;
-    const filter='crop='+c.width+':'+c.height+':'+c.x+':'+c.y;
+    // Convert the complete frame before cropping. YUV420 crop defaults round
+    // odd coordinates/sizes to chroma blocks and can shift or trim real ink.
+    const filter='format=rgb24,crop='+c.width+':'+c.height+':'+c.x+':'+c.y+':exact=1';
     const result=spawnSync('ffmpeg',[
       '-hide_banner','-loglevel','error','-nostdin','-n',
       '-ss',String(s.timestampSeconds),'-i',source,

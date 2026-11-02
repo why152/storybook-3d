@@ -20,9 +20,7 @@ The previous whole-card 3D rotation prototype is retired. Read
 - Recipient and wish editor affects last page without redoing engine.
 
 ### Stage 4 — evidence and polish
-- Current local work: flexible interior paper in Draft PR #20, not accepted or
-  deployed. Resolve its real rendering and continuity failures, inspect matched
-  screenshots and footage, then obtain local visual feedback before deployment.
+- Current work: the main renderer already has flexible paper and physical dragging. PR #38 fixes the cover; its browser CI passed. The next private candidate integrates 12 real source-faithful handwriting fragments into the five illustrated spreads. Inspect its real motion and approve the selected public-use scope before publication; see `docs/validation/authentic-ink/README.md`.
 - CI: lint, typecheck, Vite build, Playwright behavior.
 - Authentic screenshots at 0/25/50/75/100% of a book leaf, all 5
   illustrated spreads, mobile cover and open book.

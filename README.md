@@ -41,14 +41,14 @@ finished limb animation.
 Node.js 22+.
 
 ```bash
-npm install
+npm ci
 npm run dev
 npm run test:assets
 npm run test:actors
 npm run lint
 npm run typecheck
 npm run build
-npx playwright install chromium
+npx playwright install chromium webkit
 npm run test:e2e
 ```
 
@@ -92,8 +92,7 @@ Passing CI is not proof of artistic equivalence.
 
 ## Known limitations
 
-Leaf is rigid paper with cover/pages and shadows, not a smoothly
-deformable page curl. Illustration is original and still needs
+Interior leaves use a segmented, spine-bound flexible paper surface; the hardcover keeps its rigid hinge. Actual iPhone Safari performance and owner visual acceptance remain outstanding. Illustration is original and still needs
 professional art refinement, scene-specific character acting and
 performance profiling. No back end, payments, accounts or customer
 file uploads. **PR #9 was owner-approved and merged on 2026-10-25; artistic polish and future deployments still require separate validation.**
@@ -107,7 +106,7 @@ escalation rules.
 
 ```bash
 nvm use 22
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund
 npm run qa:browser:setup
 npm run qa:local
 ```
@@ -125,11 +124,13 @@ index. New browser tests use Chrome's actual touch input, not just simulated
 keyboard navigation. The expensive Codex model should only tackle a
 reproducible high-impact issue after two truly attempted lower-cost fixes.
 
-**Reproducibility note:** npm dependencies are currently semver-range pinned
-in `package.json` but there is no committed `package-lock.json`.
-For bit-for-bit repeatability, generate and commit a lockfile in a separate
-normal engineering pass before comparing environments. This is NOT a
-problem that requires expensive Codex reasoning.
+**Reproducibility:** `package-lock.json` is committed. Use `npm ci` with Node 22.
+
+The current private authentic-handwriting release candidate preserves all five
+illustrations and prints the original source crops on the same curved surfaces.
+See [integration and validation](docs/validation/authentic-ink/README.md).
+Private assets are not included in this checkout; public use is pending owner
+approval of the actual selected fragments and presentation.
 
 ## AI-first engineering and project tracking
 
