@@ -25,8 +25,9 @@ type PageHalfProps={chapter:Chapter;side:PageSide;name:string;wish:string;storyM
 export function PageHalf({chapter,side,name,wish,storyMode='birthday',inkOnly=false,printed}:PageHalfProps){
   const title=chapter.title.replace('{name}',name.trim()||'你');
   const description=chapter.description.replace('{wish}',wish.trim()||'愿所有美好都在下一页等你。');
-  const letterOpening=storyMode==='letter'&&hasHandwriting&&chapter.id==='hello';
-  return <div className={`page-surface theme-${chapter.id} page-${side} ${letterOpening?'letter-opening':''}`} data-chapter={chapter.id} data-side={side}>
+  const letterPage=storyMode==='letter'&&hasHandwriting;
+  const letterOpening=letterPage&&chapter.id==='hello';
+  return <div className={`page-surface theme-${chapter.id} page-${side} ${letterPage?'letter-page':''} ${letterOpening?'letter-opening':''}`} data-chapter={chapter.id} data-side={side}>
     <div className="page-window">
       {(!inkOnly||printed)&&<div className="spread-composition" aria-hidden="true">
         {printed?<>

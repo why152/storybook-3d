@@ -9,15 +9,3 @@ export function HandwritingOnPage({chapter,side}:{chapter:ChapterId;side:'left'|
     </div>)}
   </div>;
 }
-
-/** Small physical pages keep the illustration. This optional reader gives
- * phone users the same original pixels at a legible width without retyping. */
-export function HandwritingReader({chapter}:{chapter:ChapterId}){
-  return <details className="handwriting-reader" key={chapter}>
-    <summary>放大看这一页的手写原迹 <span aria-hidden="true">↗</span></summary>
-    <div className="handwriting-reader-images">
-      {handwritingFor(chapter).map(fragment=><img key={fragment.id} src={fragment.src}
-        alt={fragment.alt} draggable={false} data-compact={fragment.width<35?'true':undefined}/>)}
-    </div>
-  </details>;
-}

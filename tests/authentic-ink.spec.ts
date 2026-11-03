@@ -50,11 +50,25 @@ for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
       }
       expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBe(0);
       await page.screenshot({path:path.join(evidence!,`${browserName}-${viewport.width}-${chapter.id}.png`)});
-      if(chapter.id!=='hello'){
-        await page.locator('.handwriting-reader summary').click();
-        await expect(page.locator('.handwriting-reader-images')).toBeVisible();
-      }else if(viewport.width<=600){
-        await page.getByRole('button',{name:'放大右页'}).click();
+      await expect(page.locator('.handwriting-reader')).toHaveCount(0);
+      await expect(page.locator('.book-reading-hint')).toContainText('放大左页');
+      if(viewport.width<=600){
+        await expect(page.locator('.book-reading-hint')).toBeVisible();
+        for(const side of ['left','right'] as const){
+          const zoom=page.getByRole('button',{name:side==='left'?'放大左页':'放大右页'});
+          await zoom.click();await expect(zoom).toHaveAttribute('aria-pressed','true');
+          await expect(page.locator('.book-reading-stage')).toHaveAttribute('data-reading-side',side);
+          const visibleInk=page.locator(`.book-${side} .handwriting-image`);
+          await expect(visibleInk).not.toHaveCount(0);
+          const contained=await visibleInk.evaluateAll(items=>{
+            const stage=document.querySelector('.book-reading-stage')!.getBoundingClientRect();
+            return items.every(item=>{const box=item.getBoundingClientRect();
+              return box.left>=stage.left-1&&box.right<=stage.right+1&&box.top>=stage.top-1&&box.bottom<=stage.bottom+1;});
+          });
+          expect(contained).toBe(true);
+          expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBe(0);
+          await page.screenshot({path:path.join(evidence!,`${browserName}-${viewport.width}-${chapter.id}-${side}-reader.png`),fullPage:true});
+        }
       }
       await page.screenshot({path:path.join(evidence!,`${browserName}-${viewport.width}-${chapter.id}-reader.png`),fullPage:true});
     }

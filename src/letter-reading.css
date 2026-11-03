@@ -1,19 +1,47 @@
-/* First review sample: HELLO. The other four compositions remain the
-   previous candidate until the owner reviews this direction. */
+/* Letter pages keep the source illustration on the physical paper while
+   reserving a quiet, scene-specific field for the original handwritten ink. */
+.letter-page .spread-composition{
+ opacity:1;filter:none;
+}
+.letter-page .plane-lettering{opacity:.1}
+.letter-page .handwriting-on-page{mix-blend-mode:multiply}
+/* Neutralize the photographed paper cast at paint time. The reviewed PNGs
+   and the writer's original stroke geometry remain unchanged. */
+.letter-page .handwriting-image{filter:grayscale(1) brightness(1.3) contrast(1.1)}
+.letter-page .page-print-grain{opacity:.06!important}
+
+/* HELLO: upper page is quiet; the original street scene returns beneath it. */
 .book-reading-stage{display:contents}
 .book-reading-controls{display:none}
-.letter-opening .spread-composition{
+.letter-page.theme-hello .spread-composition{
  mask-image:linear-gradient(transparent 0 42%,#000 64%);
+ -webkit-mask-image:linear-gradient(transparent 0 42%,#000 64%);
 }
-.letter-opening .plane-lettering{opacity:.12}
-.letter-opening .handwriting-fragment{
- padding:0;background:none;border:0;border-radius:0;box-shadow:none;
+/* GROW: ink ends above the canopy. Complete the fade before the climbing
+   rabbit's animated head enters it, so the face remains present in motion. */
+.letter-page.theme-grow .spread-composition{
+ mask-image:linear-gradient(180deg,transparent 0 25%,#000 38%);
+ -webkit-mask-image:linear-gradient(180deg,transparent 0 25%,#000 38%);
 }
-.letter-opening .handwriting-on-page{mix-blend-mode:multiply}
-/* Neutralize the photographed paper's warm cast at paint time. Keep the
-   original files and stroke geometry; do not redraw or synthesize ink. */
-.letter-opening .handwriting-image{filter:grayscale(1) brightness(1.3) contrast(1.1)}
-.letter-opening .page-print-grain{opacity:.06!important}
+/* TOGETHER: keep the center of the upper spread quiet for the two ink
+   passages, while the edge foliage and lower characters stay in color. */
+.letter-page.theme-together .spread-composition{
+ mask-image:linear-gradient(180deg,transparent 0 38%,#000 71%);
+ -webkit-mask-image:linear-gradient(180deg,transparent 0 38%,#000 71%);
+}
+/* DREAM: a broad, clean sky for the two-part wish; reveal the moonlit
+   landscape and original lettering toward the bottom of each leaf. */
+.letter-page.theme-dream .spread-composition{
+ mask-image:linear-gradient(180deg,transparent 0 36%,#000 70%);
+ -webkit-mask-image:linear-gradient(180deg,transparent 0 36%,#000 70%);
+}
+/* WISH: a soft diagonal opening echoes the closing note's offset signature
+   and keeps the warm scene visible at the page edges. */
+.letter-page.theme-wish .spread-composition{
+ mask-image:radial-gradient(ellipse at 44% 22%,transparent 0 30%,#000 83%);
+ -webkit-mask-image:radial-gradient(ellipse at 44% 22%,transparent 0 30%,#000 83%);
+}
+.letter-page.theme-hello .plane-lettering{opacity:.12}
 .letter-running-head{
  position:absolute;top:7%;left:12%;right:12%;display:flex;justify-content:space-between;
  padding-bottom:3%;border-bottom:1px solid #826b4940;

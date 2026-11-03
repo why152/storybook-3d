@@ -4,7 +4,6 @@ import { getChapter, initialPosition, previewFrom, previewPose, totalPositions, 
 import { DEFAULT_GREETING, greetingFromHash, makeShareLink } from './data/share';
 import { letterSpreads } from './data/letterStory';
 import { hasHandwriting } from './data/handwriting';
-import { HandwritingReader } from './components/Handwriting';
 import {BookReadingStage, type ReadingSide} from './components/BookReadingStage';
 import './styles.css';
 import './styles.v2.css';
@@ -159,7 +158,7 @@ export default function App(){
         ? <>
           <div className="reader-meta">{shownChapter.label} · {shownChapter.word}</div>
           <h2>{storyMode==='letter'&&hasHandwriting?'朋友的来信':readableTitle}</h2>
-          {authenticLetter&&shownChapter.id==='hello'?<p className="book-reading-hint">{readingSide?'正在读原来的书页 · 点「双页全貌」返回':'拖动书角翻页，或放大书页细读。'}</p>:authenticLetter?<HandwritingReader chapter={shownChapter.id}/>:storyMode==='letter'?<div className="reader-letter-transcript" aria-label="本跨页的完整信件文字">
+          {authenticLetter?<p className="book-reading-hint">{readingSide?'正在放大原来的书页 · 点「双页全貌」返回':'手机上点「放大左页」或「放大右页」，细读同一张书页。'}</p>:storyMode==='letter'?<div className="reader-letter-transcript" aria-label="本跨页的完整信件文字">
             {letterSpreads[currentIndex-1].left.lines.slice(1).map((line,i)=><p key={`left-${i}`}>{line}</p>)}
             {letterSpreads[currentIndex-1].right.lines.map((line,i)=><p key={`right-${i}`}>{line}</p>)}
             {letterSpreads[currentIndex-1].right.signature&&<p>— {letterSpreads[currentIndex-1].right.signature}</p>}
