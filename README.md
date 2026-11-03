@@ -16,9 +16,9 @@
 
 ## 主线与工作方式
 
-`main` 只接收已验证的产品改动。当前整合候选为 [PR #39](https://github.com/why152/storybook-3d/pull/39)，已包含封面修正、真实笔迹和闲置纹理清理；不是把所有历史实验分支依次合并。
+`main` 已发布 [PR #40](https://github.com/why152/storybook-3d/pull/40)（`9e5fb60`）：封面修正、12 个获准公开的原迹、HELLO 排版与书内放大阅读。在线地址：[朋友的来信](https://why152.github.io/storybook-3d/?story=letter)。
 
-用户在 2026-11-02 确认进行有边界的重做，允许大幅重构。当前开发分支 `codex/letter-first-redesign-20261102` 从 `fded90c` 出发，先交付 HELLO 可翻动样章和手机书内放大阅读。PR #39 作为技术基线保留，尚不合并部署。项目根目录是唯一开发入口，历史实验与产物已归档。
+当前收尾分支 `codex/complete-letter-book-20261103` 在已发布版本上统一另外四章、移除独立图片列表阅读，并修复曲页裁切细缝。历史实验不批量合并；原版可通过 Git 回退。项目根目录是唯一开发入口。
 
 截图录像用于判断书本效果，CI 用于发现行为回归。发布只检查页面、素材可加载和实际翻页，不把逐文件哈希作为发布关卡。原稿提取时的源像素验证保留，用于避免切错笔画。
 
@@ -31,10 +31,10 @@
 | `src/components/paperGeometry.ts` | 柔性纸面几何 |
 | `src/components/paperPrint.ts` | 保留角色姿态的印刷快照 |
 | `src/components/SceneArt.tsx` | 原画图层、封面与页面合成 |
-| `src/components/Handwriting.tsx` | 同一物理页上的真实笔迹与手机阅读 |
+| `src/components/Handwriting.tsx` | 同一物理页上的真实笔迹 |
 | `src/App.tsx` | 导航和定制 |
 
-只有一个书本渲染实现。本轮重做首章的笔迹/插画编排和手机阅读，完成真实浏览器对照后再推广五章。headless WebKit 有慢帧，真实 iPhone Safari 尚未验收；实测若表明底层阻碍目标，可替换相关实现，不为保留旧代码持续打补丁。
+只有一个书本渲染实现。五章共享物理书页与手机阅读方式，各章按原画安排笔迹与留白。headless WebKit 不代表真实 iPhone Safari；真机手感与用户最终视觉验收仍须明确记录。
 
 ## 本地运行与检查
 

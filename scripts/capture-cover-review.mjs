@@ -14,14 +14,14 @@ for(const [engine,type] of [['chromium',chromium],['webkit',webkit]]){
  for(const [device,viewport] of [['desktop',{width:1440,height:900}],['mobile',{width:390,height:844}]]){
   const context=await browser.newContext({viewport,reducedMotion:'reduce'});
   const page=await context.newPage();
-  if(story==='letter'){
-   await page.goto(`${baseURL}/?story=letter&scene=hello`);
+  if(story==='letter')for(const chapter of ['hello','grow','together','dream','wish']){
+   await page.goto(`${baseURL}/?story=letter&scene=${chapter}`);
    await page.waitForFunction(()=>[...document.images].every(i=>i.complete&&i.naturalWidth>0));
-   await page.screenshot({path:path.join(output,`${engine}-${device}-hello.png`)});
+   await page.screenshot({path:path.join(output,`${engine}-${device}-${chapter}.png`)});
    if(device==='mobile'&&await page.getByRole('button',{name:'放大左页'}).count()){
     for(const side of ['左','右']){
      await page.getByRole('button',{name:`放大${side}页`}).click();
-     await page.screenshot({path:path.join(output,`${engine}-${device}-read-${side==='左'?'left':'right'}.png`),fullPage:true});
+     await page.screenshot({path:path.join(output,`${engine}-${device}-${chapter}-read-${side==='左'?'left':'right'}.png`),fullPage:true});
     }
    }
   }
@@ -40,15 +40,16 @@ for(const [engine,type] of [['chromium',chromium],['webkit',webkit]]){
   await live.goto(`${baseURL}/?story=${story}`);
   await live.waitForFunction(()=>[...document.images].every(i=>i.complete&&i.naturalWidth>0));
   await live.waitForTimeout(300);
-  for(const direction of ['下一页','下一页','上一页','上一页']){
+  const forwardCount=story==='letter'?5:2;
+  const directions=[...Array(forwardCount).fill('下一页'),...Array(forwardCount).fill('上一页')];
+  for(const [step,direction] of directions.entries()){
    const start=Date.now();
    await live.getByRole('button',{name:direction}).click();
    await live.waitForFunction(()=>!document.querySelector('.book-shell.is-turning'));
    metrics.push({engine,device,direction,totalMs:Date.now()-start});
    await live.waitForTimeout(250);
-   // Record reading on the actual first spread before continuing the same
-   // bound-book forward/backward sequence. No second renderer or montage.
-   if(story==='letter'&&device==='mobile'&&metrics.filter(m=>m.engine===engine&&m.device===device&&m.direction).length===1
+   // Record each actual spread's reading mode inside the same bound book.
+   if(story==='letter'&&device==='mobile'&&step<forwardCount
       &&await live.getByRole('button',{name:'放大左页'}).count()){
     for(const name of ['放大左页','放大右页','双页全貌']){
      await live.getByRole('button',{name}).click();await live.waitForTimeout(700);
@@ -57,6 +58,7 @@ for(const [engine,type] of [['chromium',chromium],['webkit',webkit]]){
   }
   const video=live.video();await moving.close();
   await video.saveAs(path.join(output,`${engine}-${device}-open-forward-back-close.webm`));
+  await video.delete();
   metrics.push({engine,device,errors});
  }
  await browser.close();

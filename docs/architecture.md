@@ -66,11 +66,15 @@ animates toward the full landscape open spread, without card flipping.
   remains unchanged. SceneArt uses its existing composition slot, native HTML
   text and paper finish for both printed and stationary leaves.
 - Authentic ink uses the same native page surface on static pages, flat endpoints and curved front/back strips; original crop images remain independent from the cached art bands. Private sources/builds stay outside Git until publication is approved. Temporary print textures are released immediately after landing.
-- The current HELLO letter sample reserves the upper paper for original ink,
+- All five letter spreads reserve a scene-specific quiet field for original ink,
   with the original layered illustration below it. Masking is confined to
   `spread-composition`, a flat image plane; it is identical on settled and
   curved pages. Browser-only tonal correction neutralizes photographed paper
   color; the source PNGs and stroke geometry are not regenerated or edited.
+- Curved strip faces use `clip-path: inset(0)` rather than an overflow clip.
+  This composites nested ink/art together and removes the observed WebKit
+  dark vertical seams. Lighting bleeds 2px past that clip to avoid bright
+  reverse-face edges; only individual printed surfaces are clipped.
 - Phone reading enlarges the same two-page Book in an outer scroll aperture.
   Its perspective viewport and preserve-3d shell remain intact. Magnified
   reading disables page-grab input; navigation restores the full spread before
