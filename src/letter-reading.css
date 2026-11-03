@@ -17,11 +17,11 @@
  mask-image:linear-gradient(transparent 0 42%,#000 64%);
  -webkit-mask-image:linear-gradient(transparent 0 42%,#000 64%);
 }
-/* GROW: leave the handwritten greeting above the woodland canopy and rabbit;
-   a longer fade keeps the large original word from colliding with the ink. */
+/* GROW: ink ends above the canopy. Complete the fade before the climbing
+   rabbit's animated head enters it, so the face remains present in motion. */
 .letter-page.theme-grow .spread-composition{
- mask-image:linear-gradient(180deg,transparent 0 35%,#000 58%);
- -webkit-mask-image:linear-gradient(180deg,transparent 0 35%,#000 58%);
+ mask-image:linear-gradient(180deg,transparent 0 25%,#000 38%);
+ -webkit-mask-image:linear-gradient(180deg,transparent 0 25%,#000 38%);
 }
 /* TOGETHER: keep the center of the upper spread quiet for the two ink
    passages, while the edge foliage and lower characters stay in color. */
