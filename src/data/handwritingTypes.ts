@@ -5,6 +5,7 @@ export type HandwritingFragment=Readonly<{
   chapter:ChapterId;
   side:'left'|'right';
   src:string;
+  transparent?:true;
   left:number;
   top:number;
   width:number;

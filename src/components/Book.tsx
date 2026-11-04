@@ -29,11 +29,11 @@ type Props={
   reading?:boolean;
 };
 
-function Half({position,side,name,wish,storyMode,inkOnly=false,printed}:{
-  position:number;side:'left'|'right';name:string;wish:string;storyMode:StoryMode;inkOnly?:boolean;printed?:PrintedSurface;
+function Half({position,side,name,wish,storyMode,printed}:{
+  position:number;side:'left'|'right';name:string;wish:string;storyMode:StoryMode;printed?:PrintedSurface;
 }){
   if(position===0)return side==='right'?<FrontCover storyMode={storyMode}/>:<BlankPage/>;
-  return <PageHalf chapter={getChapter(position,storyMode)} side={side} name={name} wish={wish} storyMode={storyMode} inkOnly={inkOnly} printed={printed}/>;
+  return <PageHalf chapter={getChapter(position,storyMode)} side={side} name={name} wish={wish} storyMode={storyMode} printed={printed}/>;
 }
 
 export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMode,reducedMotion,debugPose,debugFrom,reading=false}:Props){
@@ -111,17 +111,17 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     return()=>{cancelled=true;};
   },[flexible,printAvailable,print,paperSegments]);
 
-  // Keep the entire outgoing spread painted while the new leaf's own image
-  // elements decode. Cached URLs do not imply a newly mounted image is ready.
+  // The cover has no print capture. Keep the outgoing spread visible while
+  // its incoming artwork decodes. Curved leaves have their own readiness gate.
   useLayoutEffect(()=>{
-    if(!turning||debugPose!==null)return;
+    if(!turning||debugPose!==null||flexible)return;
     let cancelled=false;
     const images=[...shellRef.current!.querySelectorAll<HTMLImageElement>('.scene-plane,.handwriting-image')];
     void Promise.all(images.map(image=>image.decode().catch(()=>undefined))).then(()=>{
       if(!cancelled)setPreparedTurn(turning);
     });
     return()=>{cancelled=true;};
-  },[turning,debugPose]);
+  },[turning,debugPose,flexible]);
 
   // Match retained and newly mounted halves before paint. CSS pauses the
   // original animation instead of removing it; the physical leaf receives
@@ -208,9 +208,9 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     const paint=(value:number)=>{
       const p=Math.max(0,Math.min(1,value));
       grip.progress=p;
-      leaf.style.setProperty('--leaf-shade',String(Math.sin(Math.PI*p)*.34));
       if(flexible)posePaper(leaf,p);
       else {
+        leaf.style.setProperty('--leaf-shade',String(Math.sin(Math.PI*p)*.34));
         gsap.set(leaf,{rotateY:-180*p});
         leaf.dataset.visibleFace=p<.5?'front':'back';
       }
@@ -266,9 +266,11 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     if(!flexible)gsap.set(leaf,{rotateY:initialAngle});
     const printProgress={value:forward?0:1};
     const update=(progress:number)=>{
-      leaf.style.setProperty('--leaf-shade',String(Math.sin(Math.PI*progress)*.34));
       if(flexible)posePaper(leaf,progress);
-      else leaf.dataset.visibleFace=progress<.5?'front':'back';
+      else {
+        leaf.style.setProperty('--leaf-shade',String(Math.sin(Math.PI*progress)*.34));
+        leaf.dataset.visibleFace=progress<.5?'front':'back';
+      }
     };
     if(flexible){
       // Project the joined curve as individual print surfaces; the hinge
@@ -457,14 +459,14 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
         data-visible-face={debugPose!==null?(debugPose<.5?'front':'back'):
           showingTurn.direction===1?'front':'back'}
         style={flexible||debugPose===null?undefined:{transform:`rotateY(${-180*debugPose}deg)`}}>
-        {flexible?Array.from({length:paperSegments},(_,index)=><div className="paper-segment" key={index}>
+        {flexible?(printAvailable&&Array.from({length:paperSegments},(_,index)=><div className="paper-segment" key={index}>
           <div className="paper-segment-face paper-front" data-face="front">
-            <div className="paper-print"><Half position={leafFront} side="right" name={name} wish={wish} storyMode={storyMode} inkOnly printed={print?.front}/></div>
+            <div className="paper-print"><Half position={leafFront} side="right" name={name} wish={wish} storyMode={storyMode} printed={print.front}/></div>
           </div>
           <div className="paper-segment-face paper-back" data-face="back">
-            <div className="paper-print"><Half position={leafBack} side="left" name={name} wish={wish} storyMode={storyMode} inkOnly printed={print?.back}/></div>
+            <div className="paper-print"><Half position={leafBack} side="left" name={name} wish={wish} storyMode={storyMode} printed={print.back}/></div>
           </div>
-        </div>):<><div className="book-leaf-face book-leaf-front" data-face="front">
+        </div>)):<><div className="book-leaf-face book-leaf-front" data-face="front">
           <Half position={leafFront} side="right" name={name} wish={wish} storyMode={storyMode}/>
           <span className="leaf-light" aria-hidden="true"/>
         </div>

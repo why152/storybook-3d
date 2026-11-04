@@ -20,17 +20,17 @@ const actingScenes: Readonly<Record<ChapterId,readonly string[]>>={
 
 
 export type PageSide='left'|'right';
-type PageHalfProps={chapter:Chapter;side:PageSide;name:string;wish:string;storyMode?:StoryMode;inkOnly?:boolean;printed?:PrintedSurface};
+type PageHalfProps={chapter:Chapter;side:PageSide;name:string;wish:string;storyMode?:StoryMode;printed?:PrintedSurface};
 
-export function PageHalf({chapter,side,name,wish,storyMode='birthday',inkOnly=false,printed}:PageHalfProps){
+export function PageHalf({chapter,side,name,wish,storyMode='birthday',printed}:PageHalfProps){
   const title=chapter.title.replace('{name}',name.trim()||'你');
   const description=chapter.description.replace('{wish}',wish.trim()||'愿所有美好都在下一页等你。');
   const letterPage=storyMode==='letter'&&hasHandwriting;
   const letterOpening=letterPage&&chapter.id==='hello';
   return <div className={`page-surface theme-${chapter.id} page-${side} ${letterPage?'letter-page':''} ${letterOpening?'letter-opening':''}`} data-chapter={chapter.id} data-side={side}>
     <div className="page-window">
-      {(!inkOnly||printed)&&<div className="spread-composition" aria-hidden="true">
-        {printed?<>
+      <div className={`spread-composition ${printed?.kind==='letter'?'is-printed':''}`} aria-hidden="true">
+        {printed?.kind==='letter'?<img className="paper-art" src={printed.composition} alt="" draggable={false}/>:printed?<>
           <img className="paper-art" src={printed.below} alt="" draggable={false}/>
           <img className="scene-plane plane-lettering" src={`${import.meta.env.BASE_URL}assets/${chapter.id}/lettering.svg`} alt="" draggable={false}
             style={{transform:printed.letteringTransform,transformOrigin:printed.letteringOrigin,transition:'none'}}/>
@@ -50,7 +50,7 @@ export function PageHalf({chapter,side,name,wish,storyMode='birthday',inkOnly=fa
                 data-depth={index} alt="" draggable={false}
               />
         )}
-      </div>}
+      </div>
       <div className="page-print-grain" aria-hidden="true"/>
       {letterOpening&&<div className="letter-running-head" aria-hidden="true">
         <span>{side==='left'?'一封来信':'展信舒颜'}</span><span>{side==='left'?'01':'02'}</span>

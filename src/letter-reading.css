@@ -2,45 +2,45 @@
    reserving a quiet, scene-specific field for the original handwritten ink. */
 .letter-page .spread-composition{
  opacity:1;filter:none;
+ --letter-fade-start:.42;--letter-fade-end:.64;
+ mask-image:linear-gradient(transparent calc(var(--letter-fade-start)*100%),#000 calc(var(--letter-fade-end)*100%));
+ -webkit-mask-image:linear-gradient(transparent calc(var(--letter-fade-start)*100%),#000 calc(var(--letter-fade-end)*100%));
 }
 .letter-page .plane-lettering{opacity:.1}
-.letter-page .handwriting-on-page{mix-blend-mode:multiply}
-/* Neutralize the photographed paper cast at paint time. The reviewed PNGs
-   and the writer's original stroke geometry remain unchanged. */
-.letter-page .handwriting-image{filter:grayscale(1) brightness(1.3) contrast(1.1)}
+/* Published ink carries transparency in the pixels themselves. Safari need
+   not blend/filter a rectangular photo through a transformed paper face. */
+.letter-page .handwriting-on-page.is-photograph{mix-blend-mode:multiply}
+.letter-page .is-photograph .handwriting-image{filter:grayscale(1) brightness(1.3) contrast(1.1)}
 .letter-page .page-print-grain{opacity:.06!important}
 
 /* HELLO: upper page is quiet; the original street scene returns beneath it. */
 .book-reading-stage{display:contents}
 .book-reading-controls{display:none}
-.letter-page.theme-hello .spread-composition{
- mask-image:linear-gradient(transparent 0 42%,#000 64%);
- -webkit-mask-image:linear-gradient(transparent 0 42%,#000 64%);
-}
 /* GROW: ink ends above the canopy. Complete the fade before the climbing
    rabbit's animated head enters it, so the face remains present in motion. */
 .letter-page.theme-grow .spread-composition{
- mask-image:linear-gradient(180deg,transparent 0 25%,#000 38%);
- -webkit-mask-image:linear-gradient(180deg,transparent 0 25%,#000 38%);
+ --letter-fade-start:.25;--letter-fade-end:.38;
 }
 /* TOGETHER: keep the center of the upper spread quiet for the two ink
    passages, while the edge foliage and lower characters stay in color. */
 .letter-page.theme-together .spread-composition{
- mask-image:linear-gradient(180deg,transparent 0 38%,#000 71%);
- -webkit-mask-image:linear-gradient(180deg,transparent 0 38%,#000 71%);
+ --letter-fade-start:.38;--letter-fade-end:.71;
 }
 /* DREAM: a broad, clean sky for the two-part wish; reveal the moonlit
    landscape and original lettering toward the bottom of each leaf. */
 .letter-page.theme-dream .spread-composition{
- mask-image:linear-gradient(180deg,transparent 0 36%,#000 70%);
- -webkit-mask-image:linear-gradient(180deg,transparent 0 36%,#000 70%);
+ --letter-fade-start:.36;--letter-fade-end:.70;
 }
 /* WISH: a soft diagonal opening echoes the closing note's offset signature
    and keeps the warm scene visible at the page edges. */
 .letter-page.theme-wish .spread-composition{
- mask-image:radial-gradient(ellipse at 44% 22%,transparent 0 30%,#000 83%);
- -webkit-mask-image:radial-gradient(ellipse at 44% 22%,transparent 0 30%,#000 83%);
+ --letter-fade-start:.30;--letter-fade-end:.83;
+ --letter-mask-shape:ellipse;--letter-mask-x:.44;--letter-mask-y:.22;
+ mask-image:radial-gradient(ellipse at calc(var(--letter-mask-x)*100%) calc(var(--letter-mask-y)*100%),transparent calc(var(--letter-fade-start)*100%),#000 calc(var(--letter-fade-end)*100%));
+ -webkit-mask-image:radial-gradient(ellipse at calc(var(--letter-mask-x)*100%) calc(var(--letter-mask-y)*100%),transparent calc(var(--letter-fade-start)*100%),#000 calc(var(--letter-fade-end)*100%));
 }
+/* The print already carries the same fade in its pixels, sampled once. */
+.letter-page .spread-composition.is-printed{mask-image:none;-webkit-mask-image:none}
 .letter-page.theme-hello .plane-lettering{opacity:.12}
 .letter-running-head{
  position:absolute;top:7%;left:12%;right:12%;display:flex;justify-content:space-between;
