@@ -111,6 +111,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
    Cull only the away-facing surface, using the same angle as the hinge.
    Both faces retain their own artwork/identity; the leaf still rotates in 3D. */
 .book-turn-leaf[data-loading="true"]:not([data-print-available="true"]){visibility:hidden}
+.book-turn-leaf[data-loading="true"][data-paper-kind="letter"]{visibility:hidden}
 .book-turn-leaf[data-visible-face="front"] .book-leaf-back,
 .book-turn-leaf[data-visible-face="back"] .book-leaf-front{display:none}
 /* The front matches the stationary cover plane and keeps its cast shadow.
@@ -165,6 +166,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
    cannot leave bright lines across the reverse face at oblique angles. */
 .paper-segment-face::after{content:"";position:absolute;inset:-2px;z-index:2;background:linear-gradient(90deg,rgb(40 33 44 / var(--shade-start,0)),rgb(40 33 44 / var(--shade-end,0)));pointer-events:none}
 .paper-back::after{background:linear-gradient(90deg,rgb(40 33 44 / var(--shade-end,0)),rgb(40 33 44 / var(--shade-start,0)))}
+/* Paint the opaque letter print on the strip itself, without nested
+   clipped art, ink or promoted image layers. */
+.paper-segment-face.is-letter-print{clip-path:none;isolation:auto;background-color:#f3dfc4;background-repeat:no-repeat}
+.paper-segment-face.is-letter-print::after{inset:0;border-radius:inherit}
 .paper-segment .page-surface{backface-visibility:visible;-webkit-backface-visibility:visible}
 .paper-segment .page-chapter-left{text-shadow:0 1px 3px #3d303790}
 
@@ -293,8 +298,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .acting-hello.actor-rabbit{transform-origin:28% 72%}
 .acting-hello.actor-fox{transform-origin:78% 75%}
 .acting-grow.actor-rabbit{transform-origin:30% 49%}
-.acting-grow.actor-fox{transform-origin:74% 75%}
-.acting-grow.actor-props{transform-origin:88% 82%}
+.acting-grow:is(.actor-fox,.actor-props){transform-origin:74% 75%}
 .acting-hello.actor-rabbit{
  animation:hello-rabbit-greeting 4.8s ease-in-out infinite;
 }
@@ -304,11 +308,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .acting-grow.actor-rabbit{
  animation:grow-rabbit-reaching 4.3s ease-in-out infinite;
 }
-.acting-grow.actor-fox{
+.acting-grow:is(.actor-fox,.actor-props){
  animation:grow-fox-watering 5.0s ease-in-out -1.1s infinite;
-}
-.acting-grow.actor-props{
- animation:grow-watering-props 5.0s ease-in-out -1.1s infinite;
 }
 
 @keyframes hello-rabbit-greeting{
@@ -335,11 +336,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
   28%,50%{transform:translate3d(calc(var(--mx,0px) + 1px),calc(var(--my,0px) + 2px),0) rotate(2.4deg)}
   64%{transform:translate3d(calc(var(--mx,0px) - 1px),calc(var(--my,0px) - 1px),0) rotate(-.8deg)}
   83%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
-}
-@keyframes grow-watering-props{
-  0%,18%,100%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
-  32%,50%{transform:translate3d(calc(var(--mx,0px) + 1px),calc(var(--my,0px) + 2px),0) rotate(-2.5deg)}
-  70%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
 }
 .book-leaf-face .scene-actor{animation:none!important}
 /* Keep each static animation at its actual pose while paper is moving.

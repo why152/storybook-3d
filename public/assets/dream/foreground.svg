@@ -6,8 +6,8 @@
 <path d="M167 623q289-65 598 9q171 27 269-1" fill="none" stroke="#D3D6D7" stroke-width="8" opacity=".33"/>
 <g transform="translate(363 567)">
  <path d="m-27 0 273-65 306 83-272 108z" fill="#EAD2BF" stroke="#8491A5" stroke-width="8"/>
- <path d="M247-66v-115M247-181 104-67l146 10" fill="#F3DABD" stroke="#828BA8" stroke-width="8"/>
- <path d="M250-183v122M250-172l179 146-179-30" fill="#D2C5CC" stroke="#8689A5" stroke-width="7"/>
+ <path d="M247-66v-70M247-136 165-66l85 9" fill="#F3DABD" stroke="#828BA8" stroke-width="8"/>
+ <path d="M250-139v78M250-133l105 108-105-30" fill="#D2C5CC" stroke="#8689A5" stroke-width="7"/>
  <path d="M-27 2q158 116 307 124Q444 125 552 17" fill="none" stroke="#A3A2B5" stroke-width="10"/>
 </g>
 <g fill="#FFF0D1" opacity=".5"><path d="M65 581q43-16 89 0m883-31q59-17 96-6"/></g>

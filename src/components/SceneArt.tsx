@@ -1,6 +1,6 @@
 import type { Chapter, ChapterId, StoryMode } from '../data/story';
 import { letterSpreadFor } from '../data/letterStory';
-import type { PrintedSurface } from './paperPrint';
+import type { LayeredPrint } from './paperPrint';
 import { hasHandwriting } from '../data/handwriting';
 import { HandwritingOnPage } from './Handwriting';
 
@@ -20,7 +20,7 @@ const actingScenes: Readonly<Record<ChapterId,readonly string[]>>={
 
 
 export type PageSide='left'|'right';
-type PageHalfProps={chapter:Chapter;side:PageSide;name:string;wish:string;storyMode?:StoryMode;printed?:PrintedSurface};
+type PageHalfProps={chapter:Chapter;side:PageSide;name:string;wish:string;storyMode?:StoryMode;printed?:LayeredPrint};
 
 export function PageHalf({chapter,side,name,wish,storyMode='birthday',printed}:PageHalfProps){
   const title=chapter.title.replace('{name}',name.trim()||'你');
@@ -29,8 +29,8 @@ export function PageHalf({chapter,side,name,wish,storyMode='birthday',printed}:P
   const letterOpening=letterPage&&chapter.id==='hello';
   return <div className={`page-surface theme-${chapter.id} page-${side} ${letterPage?'letter-page':''} ${letterOpening?'letter-opening':''}`} data-chapter={chapter.id} data-side={side}>
     <div className="page-window">
-      <div className={`spread-composition ${printed?.kind==='letter'?'is-printed':''}`} aria-hidden="true">
-        {printed?.kind==='letter'?<img className="paper-art" src={printed.composition} alt="" draggable={false}/>:printed?<>
+      <div className="spread-composition" aria-hidden="true">
+        {printed?<>
           <img className="paper-art" src={printed.below} alt="" draggable={false}/>
           <img className="scene-plane plane-lettering" src={`${import.meta.env.BASE_URL}assets/${chapter.id}/lettering.svg`} alt="" draggable={false}
             style={{transform:printed.letteringTransform,transformOrigin:printed.letteringOrigin,transition:'none'}}/>

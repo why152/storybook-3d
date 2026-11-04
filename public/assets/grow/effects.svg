@@ -12,7 +12,7 @@
 </g>
 <g fill="#E9C786" stroke="#A27F5B" stroke-width="2">
 <path d="M514 97q-12-28-29-14q-7 18 22 29q-30 12-10 31q22 3 23-29q22-19 6-32q-16-6-12 15Z"/>
-<path d="M872 387q-28-21-36 3q2 24 35 14q-16 31 13 35q20-16-3-35q17-27-9-30Z"/>
+<path d="M872 387q-28-21-36 3q2 24 35 14q-16 31 13 35q20-16-3-35q17-27-9-30Z" transform="translate(-92 -78)"/>
 </g>
 <g fill="#FCE9BE" opacity=".75"><circle cx="470" cy="129" r="4"/><circle cx="487" cy="160" r="3"/><circle cx="1010" cy="237" r="3"/><circle cx="1040" cy="224" r="4"/><circle cx="778" cy="77" r="5"/></g>
 

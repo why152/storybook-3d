@@ -10,7 +10,7 @@ import { gsap } from 'gsap';
 gsap.ticker.lagSmoothing(0);
 import { getChapter, type StoryMode } from '../data/story';
 import { BlankPage, FrontCover, PageHalf } from './SceneArt';
-import { capturePaperPrint, releasePaperPrint, type PaperPrint, type PrintedSurface } from './paperPrint';
+import { capturePaperPrint, releasePaperPrint, type LayeredPrint, type PaperPrint, type PrintedSurface } from './paperPrint';
 import { PAPER_SEGMENTS, layoutPaper, posePaper, segmentCountForTolerance } from './paperGeometry';
 
 export type PageTurn = Readonly<{from:number;to:number;direction:-1|1;interactive?:true}>;
@@ -30,7 +30,7 @@ type Props={
 };
 
 function Half({position,side,name,wish,storyMode,printed}:{
-  position:number;side:'left'|'right';name:string;wish:string;storyMode:StoryMode;printed?:PrintedSurface;
+  position:number;side:'left'|'right';name:string;wish:string;storyMode:StoryMode;printed?:LayeredPrint;
 }){
   if(position===0)return side==='right'?<FrontCover storyMode={storyMode}/>:<BlankPage/>;
   return <PageHalf chapter={getChapter(position,storyMode)} side={side} name={name} wish={wish} storyMode={storyMode} printed={printed}/>;
@@ -95,7 +95,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
 
   useLayoutEffect(()=>()=>{if(print)releasePaperPrint(print);},[print]);
 
-  // Native pages own the settled spread. Release the previous turn's four
+  // Native pages own the settled spread. Release the previous turn's
   // temporary texture URLs now, rather than retaining them until another
   // turn (or component unmount), including while the cover is closed.
   useLayoutEffect(()=>{
@@ -445,6 +445,13 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     transform:`translateX(${-25+25*debugPose}%)`,
     '--cover-unfold':coverUnfold(debugPose),
   } as CSSProperties:undefined;
+  const stripFace=(face:'front'|'back',position:number,side:'left'|'right',texture:PrintedSurface)=>
+    <div className={`paper-segment-face paper-${face}${texture.kind==='letter'?' is-letter-print':''}`} data-face={face}
+      style={texture.kind==='letter'?{backgroundImage:`url(${texture.composition})`}:undefined}>
+      {texture.kind==='layered'&&<div className="paper-print">
+        <Half position={position} side={side} name={name} wish={wish} storyMode={storyMode} printed={texture}/>
+      </div>}
+    </div>;
   return <div className="book-viewport" data-grab-enabled={debugPose===null&&!reading?"true":"false"}
     onPointerDown={handleGripStart} onPointerMove={handlePointer}
     onPointerLeave={clearPointer}>
@@ -474,17 +481,15 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
         aria-hidden="true"
         data-texture-ready={flexible?String(printReady):undefined}
         data-print-available={flexible?String(printAvailable):undefined}
+        data-paper-kind={printAvailable?print.front.kind:undefined}
         data-loading={waiting?'true':undefined}
+        data-turn-direction={showingTurn.direction}
         data-visible-face={debugPose!==null?(debugPose<.5?'front':'back'):
           showingTurn.direction===1?'front':'back'}
         style={flexible||debugPose===null?undefined:{transform:`rotateY(${-180*debugPose}deg)`}}>
         {flexible?(printAvailable&&Array.from({length:paperSegments},(_,index)=><div className="paper-segment" key={index}>
-          <div className="paper-segment-face paper-front" data-face="front">
-            <div className="paper-print"><Half position={leafFront} side="right" name={name} wish={wish} storyMode={storyMode} printed={print.front}/></div>
-          </div>
-          <div className="paper-segment-face paper-back" data-face="back">
-            <div className="paper-print"><Half position={leafBack} side="left" name={name} wish={wish} storyMode={storyMode} printed={print.back}/></div>
-          </div>
+          {stripFace('front',leafFront,'right',print.front)}
+          {stripFace('back',leafBack,'left',print.back)}
         </div>)):<><div className="book-leaf-face book-leaf-front" data-face="front">
           <Half position={leafFront} side="right" name={name} wish={wish} storyMode={storyMode}/>
           <span className="leaf-light" aria-hidden="true"/>

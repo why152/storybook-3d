@@ -19,7 +19,7 @@
 /* GROW: ink ends above the canopy. Complete the fade before the climbing
    rabbit's animated head enters it, so the face remains present in motion. */
 .letter-page.theme-grow .spread-composition{
- --letter-fade-start:.25;--letter-fade-end:.38;
+ --letter-fade-start:.23;--letter-fade-end:.27;
 }
 /* TOGETHER: keep the center of the upper spread quiet for the two ink
    passages, while the edge foliage and lower characters stay in color. */
@@ -39,8 +39,6 @@
  mask-image:radial-gradient(ellipse at calc(var(--letter-mask-x)*100%) calc(var(--letter-mask-y)*100%),transparent calc(var(--letter-fade-start)*100%),#000 calc(var(--letter-fade-end)*100%));
  -webkit-mask-image:radial-gradient(ellipse at calc(var(--letter-mask-x)*100%) calc(var(--letter-mask-y)*100%),transparent calc(var(--letter-fade-start)*100%),#000 calc(var(--letter-fade-end)*100%));
 }
-/* The print already carries the same fade in its pixels, sampled once. */
-.letter-page .spread-composition.is-printed{mask-image:none;-webkit-mask-image:none}
 .letter-page.theme-hello .plane-lettering{opacity:.12}
 .letter-running-head{
  position:absolute;top:7%;left:12%;right:12%;display:flex;justify-content:space-between;

@@ -1,5 +1,6 @@
+export type LayeredPrint={kind:'layered';below:string;above:string;letteringTransform:string;letteringOrigin:string};
 export type PrintedSurface=
-  |{kind:'layered';below:string;above:string;letteringTransform:string;letteringOrigin:string}
+  |LayeredPrint
   |{kind:'letter';composition:string};
 export type PaperPrint={front:PrintedSurface;back:PrintedSurface};
 
@@ -10,8 +11,8 @@ export function releasePaperPrint(print:PaperPrint){
 }
 
 /** Freeze the existing printed pose once per turn. Birthday pages retain
- * native vector lettering between two bands; letter pages bake their faint
- * lettering and fade into one band to avoid live masks on every strip. */
+ * native vector lettering between two bands. Letter pages use one opaque
+ * bitmap per face so each projected strip paints its artwork and ink together. */
 export async function capturePaperPrint(pair:HTMLElement):Promise<PaperPrint>{
   await Promise.all([...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')]
     .filter(link=>new URL(link.href).origin===location.origin)
@@ -35,7 +36,10 @@ export async function capturePaperPrint(pair:HTMLElement):Promise<PaperPrint>{
           image.addEventListener('load',()=>resolve(),{once:true});
           image.addEventListener('error',()=>reject(new Error('Original page artwork failed to load')),{once:true});
         })));
-      const {height}=surface.getBoundingClientRect();
+      const handwriting=[...surface.querySelectorAll<HTMLImageElement>('.handwriting-image')];
+      await Promise.all(handwriting.map(image=>image.decode()));
+      const bounds=surface.getBoundingClientRect();
+      const {height}=bounds;
       const artWidth=surface.querySelector('.spread-composition')!.getBoundingClientRect().width;
       if(!(artWidth>0&&height>0))throw new Error('Paper source has no styled layout');
       const pixelWidth=Math.max(images[0].naturalWidth,Math.ceil(artWidth*window.devicePixelRatio));
@@ -47,7 +51,8 @@ export async function capturePaperPrint(pair:HTMLElement):Promise<PaperPrint>{
       };
       const letter=surface.classList.contains('letter-page');
       const below=make(),above=letter?below:make();
-      below.ctx.fillStyle=getComputedStyle(surface).backgroundColor;below.ctx.fillRect(0,0,artWidth,height);
+      const paper=getComputedStyle(surface).backgroundColor;
+      below.ctx.fillStyle=paper;below.ctx.fillRect(0,0,artWidth,height);
       let ctx=below.ctx,letteringTransform='none',letteringOrigin='50% 50%';
       for(const image of images){
         const ink=getComputedStyle(image);
@@ -69,18 +74,49 @@ export async function capturePaperPrint(pair:HTMLElement):Promise<PaperPrint>{
         const value=(name:string)=>parseFloat(style.getPropertyValue('--letter-'+name));
         ctx=below.ctx;ctx.save();ctx.globalCompositeOperation='destination-in';
         let fade:CanvasGradient;
-        let bounds:[number,number,number,number]=[0,0,artWidth,height];
+        let fadeBounds:[number,number,number,number]=[0,0,artWidth,height];
         if(style.getPropertyValue('--letter-mask-shape').trim()==='ellipse'){
           const x=value('mask-x')*artWidth,y=value('mask-y')*height;
           const rx=Math.max(x,artWidth-x)*Math.SQRT2,ry=Math.max(y,height-y)*Math.SQRT2;
           ctx.translate(x,y);ctx.scale(rx,ry);
           fade=ctx.createRadialGradient(0,0,0,0,0,1);
-          bounds=[-x/rx,-y/ry,artWidth/rx,height/ry];
+          fadeBounds=[-x/rx,-y/ry,artWidth/rx,height/ry];
         }else fade=ctx.createLinearGradient(0,0,0,height);
         fade.addColorStop(value('fade-start'),'transparent');fade.addColorStop(value('fade-end'),'#000');
         ctx.fillStyle=fade;
-        ctx.fillRect(...bounds);ctx.restore();
-        return {kind:'letter',composition:await encode(below.canvas)};
+        ctx.fillRect(...fadeBounds);ctx.restore();
+        const page=document.createElement('canvas');
+        page.width=Math.round(pixelWidth/2);page.height=pixelHeight;
+        const print=page.getContext('2d',{alpha:false})!;
+        print.fillStyle=paper;print.fillRect(0,0,page.width,page.height);
+        print.drawImage(below.canvas,surface.dataset.side==='right'?pixelWidth/2:0,0,pixelWidth/2,pixelHeight,
+          0,0,page.width,page.height);
+        print.scale(page.width/bounds.width,page.height/bounds.height);
+
+        const runningHead=surface.querySelector('.letter-running-head');
+        if(runningHead){
+          const box=runningHead.getBoundingClientRect(),style=getComputedStyle(runningHead);
+          const border=parseFloat(style.borderBottomWidth);
+          print.fillStyle=style.borderBottomColor;
+          print.fillRect(box.left-bounds.left,box.bottom-bounds.top-border,box.width,border);
+          for(const span of runningHead.children){
+            const textBox=span.getBoundingClientRect(),font=getComputedStyle(span);
+            print.font=`${font.fontWeight} ${font.fontSize} ${font.fontFamily}`;
+            print.fillStyle=font.color;print.textBaseline='middle';
+            if('letterSpacing' in print)print.letterSpacing=font.letterSpacing;
+            print.fillText(span.textContent??'',textBox.left-bounds.left,textBox.top-bounds.top+textBox.height/2);
+          }
+        }
+        for(const image of handwriting){
+          const rect=image.getBoundingClientRect();
+          print.save();
+          if(image.closest('.is-photograph')){
+            print.filter=getComputedStyle(image).filter;print.globalCompositeOperation='multiply';
+          }
+          print.drawImage(image,rect.left-bounds.left,rect.top-bounds.top,rect.width,rect.height);
+          print.restore();
+        }
+        return {kind:'letter',composition:await encode(page)};
       }
       // Wait for both encoders before cleanup even if one of them fails.
       const encoded=await Promise.allSettled([encode(below.canvas),encode(above.canvas)]);

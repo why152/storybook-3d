@@ -37,27 +37,46 @@ test('retina phone uses transparent original ink without live photo filters or b
 
 // Compare the rendered cached art to the actual native page, including the
 // WISH ellipse. Endpoint-only tests would bypass this cache and miss errors.
-test('cached letter illustrations match native paint and have no repeated live masks',async({page},testInfo)=>{
+test('opaque letter prints match native artwork and ink',async({page},testInfo)=>{
   await page.emulateMedia({reducedMotion:'reduce'});
   for(const chapter of chapters){
     const last=chapter.id==='wish';
     await page.goto(`/?story=letter&from=${last?'dream':chapter.id}&pose=.5`);
     await expect(page.locator('.book-turn-leaf')).toHaveAttribute('data-texture-ready','true');
     const native=`.paper-source[data-print="${last?'back':'front'}"] .page-surface`;
-    const printed=`.paper-${last?'back':'front'} .page-surface`;
-    expect(await page.locator(printed+' .paper-art').first().evaluate(el=>getComputedStyle(el.parentElement!).maskImage)).toBe('none');
+    const printed=`.paper-${last?'back':'front'}.is-letter-print`;
+    const faces=await page.locator(printed).evaluateAll(items=>items.map(item=>({
+      children:item.childElementCount,background:getComputedStyle(item).backgroundImage,
+    })));
+    expect(faces.length).toBeGreaterThan(1);
+    for(const face of faces){
+      expect(face.children).toBe(0);
+      expect(face.background).toMatch(/^url\("blob:/);
+      expect(face.background).toBe(faces[0].background);
+    }
     const images:Buffer[]=[];
-    for(const selector of [native,printed]){
-      await page.evaluate(selector=>{
-        const source=document.querySelector<HTMLElement>(selector)!;
-        const reference=document.querySelector<HTMLElement>('.paper-source .page-surface')!;
+    for(const background of ['',faces[0].background]){
+      await page.evaluate(async({native,background})=>{
+        const reference=document.querySelector<HTMLElement>(native)!;
         const style=getComputedStyle(reference);
         const proof=document.createElement('div');proof.dataset.letterPrintProof='';
         Object.assign(proof.style,{position:'fixed',left:'0',top:'0',width:style.width,height:style.height,zIndex:'2147483647'});
-        const copy=source.cloneNode(true) as HTMLElement;
-        copy.querySelectorAll('.handwriting-on-page,.page-print-grain,.letter-running-head,.paper-bevel').forEach(el=>el.remove());
-        proof.append(copy);document.body.append(proof);
-      },selector);
+        if(background){
+          const image=new Image();image.src=background.slice(5,-2);await image.decode();
+          const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
+          const context=canvas.getContext('2d')!;context.drawImage(image,0,0);
+          const rgba=context.getImageData(0,0,canvas.width,canvas.height).data;
+          for(let i=3;i<rgba.length;i+=4)if(rgba[i]!==255)throw new Error('Turning page print is transparent');
+          Object.assign(image.style,{display:'block',width:'100%',height:'100%'});proof.append(image);
+        }else{
+          const copy=reference.cloneNode(true) as HTMLElement;
+          // Edge and gutter lighting belong to the book, not the page bitmap.
+          Object.assign(copy.style,{boxShadow:'none',borderRadius:'0'});
+          copy.querySelectorAll('.page-print-grain,.paper-bevel').forEach(el=>el.remove());
+          proof.append(copy);
+        }
+        document.body.append(proof);
+      },{native,background});
       const proof=page.locator('[data-letter-print-proof]');
       await proof.evaluate(el=>Promise.all([...el.querySelectorAll('img')].map(image=>image.decode())));
       images.push(await proof.screenshot());await proof.evaluate(el=>el.remove());

@@ -82,8 +82,10 @@ for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
       const leaf=page.locator('.book-turn-leaf.is-flexible');
       await expect(leaf).toHaveAttribute('data-texture-ready','true');await ready(page);
       await expect(leaf).toHaveCount(1);
-      expect(await leaf.locator('.paper-front .handwriting-image').count()).toBeGreaterThan(0);
-      expect(await leaf.locator('.paper-back .handwriting-image').count()).toBeGreaterThan(0);
+      for(const face of ['front','back']){
+        expect(await page.locator(`.paper-source[data-print="${face}"] .handwriting-image`).count()).toBeGreaterThan(0);
+        await expect(leaf.locator(`.paper-${face}.is-letter-print`).first()).toHaveCSS('background-image',/^url\("blob:/);
+      }
       expect(await leaf.locator('.letter-leaf').count()).toBe(0);
       const dimensions=await leaf.evaluate(el=>({leaf:el.getBoundingClientRect().width,shell:el.closest('.book-shell')!.getBoundingClientRect().width}));
       expect(dimensions.leaf/dimensions.shell).toBeCloseTo(.5,2);
