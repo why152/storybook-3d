@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import type { PointerEvent } from 'react';
+import type { CSSProperties, PointerEvent } from 'react';
 import { gsap } from 'gsap';
 
 // WebKit can spend >500ms painting/screenshotting one curved multi-layer leaf.
@@ -41,6 +41,10 @@ type Grip={
   released:boolean; commit:boolean; direction:-1|1;
   paint?:(progress:number)=>void; settle?:()=>void;
 };
+
+// Only the back of the hardcover can support a left-hand footprint. Its
+// horizontal projection grows from zero at 90° to one half at 180°.
+const coverUnfold=(progress:number)=>Math.max(0,-Math.cos(Math.PI*progress));
 
 export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMode,reducedMotion,debugPose,debugFrom,reading=false}:Props){
   // The grip owns the gesture until pointerup/cancel; React never owns its
@@ -217,6 +221,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
         leaf.dataset.visibleFace=p<.5?'front':'back';
       }
       if(fromShift!==toShift){
+        shell.style.setProperty('--cover-unfold',String(coverUnfold(p)));
         const completed=turning.direction===1?p:1-p;
         gsap.set(shell,{xPercent:fromShift+(toShift-fromShift)*completed});
       }
@@ -246,6 +251,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
       grip.paint=undefined;
       grip.settle=undefined;
       leaf.style.removeProperty('--leaf-shade');
+      shell.style.removeProperty('--cover-unfold');
       gsap.set(leaf,{clearProps:'transform'});
       gsap.set(shell,{clearProps:'transform'});
     };
@@ -266,12 +272,14 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     // Mounting a reverse turn must start at its left endpoint even while
     // incoming images decode. Never expose an empty or wrong-facing leaf.
     if(!flexible)gsap.set(leaf,{rotateY:initialAngle});
+    if(fromShift!==toShift)shell.style.setProperty('--cover-unfold',String(coverUnfold(forward?0:1)));
     const printProgress={value:forward?0:1};
     const update=(progress:number)=>{
       if(flexible)posePaper(leaf,progress);
       else {
         leaf.style.setProperty('--leaf-shade',String(Math.sin(Math.PI*progress)*.34));
         leaf.dataset.visibleFace=progress<.5?'front':'back';
+        if(fromShift!==toShift)shell.style.setProperty('--cover-unfold',String(coverUnfold(progress)));
       }
     };
     if(flexible){
@@ -301,6 +309,7 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     return()=>{
       timeline.kill();
       leaf.style.removeProperty('--leaf-shade');
+      shell.style.removeProperty('--cover-unfold');
       gsap.set(leaf,{clearProps:'transform'});
       gsap.set(shell,{clearProps:'transform'});
     };
@@ -432,13 +441,16 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     ?(showingTurn.direction===1?showingTurn.to:showingTurn.from)
     :active;
 
-  const stageShift=debugPose!==null&&showingTurn?.from===0?(-25+25*debugPose):undefined;
+  const coverPreview=debugPose!==null&&showingTurn?.from===0?{
+    transform:`translateX(${-25+25*debugPose}%)`,
+    '--cover-unfold':coverUnfold(debugPose),
+  } as CSSProperties:undefined;
   return <div className="book-viewport" data-grab-enabled={debugPose===null&&!reading?"true":"false"}
     onPointerDown={handleGripStart} onPointerMove={handlePointer}
     onPointerLeave={clearPointer}>
     <div className={`book-shell ${closed?'is-closed':'is-open'} ${showingTurn?'is-turning':''} ${!waiting&&showingTurn?.from===0?'is-opening':''} ${!waiting&&showingTurn?.to===0?'is-closing':''}`}
       ref={shellRef} data-book-mode={closed?'closed':'open'}
-      style={stageShift===undefined?undefined:{transform:`translateX(${stageShift}%)`}}>
+      style={coverPreview}>
       <div className="book-depth" aria-hidden="true"/>
       {!closed&&<>
         <div key={`static-left-${leftUnder}`} className="book-static book-left" data-page-role="left-under">
