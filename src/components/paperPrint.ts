@@ -69,17 +69,17 @@ export async function capturePaperPrint(pair:HTMLElement):Promise<PaperPrint>{
         const value=(name:string)=>parseFloat(style.getPropertyValue('--letter-'+name));
         ctx=below.ctx;ctx.save();ctx.globalCompositeOperation='destination-in';
         let fade:CanvasGradient;
+        let bounds:[number,number,number,number]=[0,0,artWidth,height];
         if(style.getPropertyValue('--letter-mask-shape').trim()==='ellipse'){
           const x=value('mask-x')*artWidth,y=value('mask-y')*height;
           const rx=Math.max(x,artWidth-x)*Math.SQRT2,ry=Math.max(y,height-y)*Math.SQRT2;
           ctx.translate(x,y);ctx.scale(rx,ry);
           fade=ctx.createRadialGradient(0,0,0,0,0,1);
+          bounds=[-x/rx,-y/ry,artWidth/rx,height/ry];
         }else fade=ctx.createLinearGradient(0,0,0,height);
         fade.addColorStop(value('fade-start'),'transparent');fade.addColorStop(value('fade-end'),'#000');
         ctx.fillStyle=fade;
-        // Fill in artboard coordinates even when the gradient uses an ellipse.
-        ctx.setTransform(below.canvas.width/artWidth,0,0,below.canvas.height/height,0,0);
-        ctx.fillRect(0,0,artWidth,height);ctx.restore();
+        ctx.fillRect(...bounds);ctx.restore();
         return {kind:'letter',composition:await encode(below.canvas)};
       }
       // Wait for both encoders before cleanup even if one of them fails.
