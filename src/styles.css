@@ -26,7 +26,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 
 /* BOOK: one full-width landscape spread is bound at its midpoint.
    This is fundamentally different from the removed whole-card rotation. */
-.book-viewport{width:min(100%,1100px,calc((100dvh - 230px)*12/7));aspect-ratio:12/7;position:relative;
+.book-viewport{--cover-outline:3px 15px 15px 3px;width:min(100%,1100px,calc((100dvh - 230px)*12/7));aspect-ratio:12/7;position:relative;
  margin:auto;perspective:2300px;touch-action:pan-y}
 .book-shell{height:100%;width:100%;position:relative;transform-style:preserve-3d;
  filter:none}
@@ -39,14 +39,18 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .book-right{left:50%}
 /* The first left illustration belongs to the moving hardcover back until
    it lands. Keep its static twin mounted for pose handoff without painting a
-   duplicate. The paper stack stays under the RIGHT pages: expanding it left
-   during opening exposed the pale rectangular slab reported in #31. */
+   duplicate. The support under the cover expands only after its back face
+   starts to project left. Its footprint and shadow meet the settled spread. */
 .book-shell.is-opening .book-left,
 .book-shell.is-closing .book-left{visibility:hidden}
 .book-shell.is-opening .book-depth,
-.book-shell.is-closing .book-depth,
+.book-shell.is-closing .book-depth{
+ left:calc(50% - 49.55% * var(--cover-unfold,0));
+ border-top-left-radius:calc(4px + 10px * var(--cover-unfold,0));
+ border-bottom-left-radius:calc(4px + 10px * var(--cover-unfold,0));
+}
 .book-shell.is-opening .book-edge-shadow,
-.book-shell.is-closing .book-edge-shadow{clip-path:inset(0 0 0 50%)}
+.book-shell.is-closing .book-edge-shadow{left:calc(50% - 50% * var(--cover-unfold,0))}
 .book-shell.is-closed .book-depth{left:50%;border-radius:4px 14px 14px 4px}
 .book-static.book-closed-cover{z-index:6}
 .book-binding{position:absolute;z-index:11;top:.2%;bottom:.25%;left:calc(50% - 6px);width:12px;pointer-events:none;
@@ -109,9 +113,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .book-turn-leaf[data-loading="true"]:not([data-print-available="true"]){visibility:hidden}
 .book-turn-leaf[data-visible-face="front"] .book-leaf-back,
 .book-turn-leaf[data-visible-face="back"] .book-leaf-front{display:none}
-.book-leaf-front{transform:rotateY(0deg) translateZ(.6px)}
+/* The front matches the stationary cover plane and keeps its cast shadow.
+   The away-facing side is already culled by data-visible-face. */
+.book-leaf-front{transform:rotateY(0deg);overflow:visible}
 .book-leaf-back{transform:rotateY(180deg) translateZ(.6px)}
-.book-leaf-face .page-surface,.book-leaf-face .book-front-cover{border-radius:0 12px 12px 0}
+.book-leaf-face .page-surface{border-radius:0 12px 12px 0}
+.book-leaf-front .leaf-light{border-radius:var(--cover-outline)}
 .book-leaf-back .page-surface{border-radius:12px 0 0 12px}
 .book-leaf-face .scene-plane{transition:none}
 .leaf-light{position:absolute;inset:0;z-index:12;opacity:var(--leaf-shade,0);pointer-events:none;
@@ -162,7 +169,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .paper-segment .page-chapter-left{text-shadow:0 1px 3px #3d303790}
 
 /* Navy fabric cover: the closed state is a real portrait front leaf. */
-.book-front-cover{border-radius:3px 15px 15px 3px;color:#f6e4c8;
+.book-front-cover{border-radius:var(--cover-outline);color:#f6e4c8;
  background:radial-gradient(ellipse at 58% 25%,#303343 0,#191d2c 53%,#111522 100%);
  box-shadow:inset 12px 0 4px #39324390,inset 19px 0 8px #ab927545,inset -4px 0 7px #0a0e17}
 .cover-border{position:absolute;inset:4.5%;border:1px solid #e3c6a34f;border-radius:6px;pointer-events:none}
@@ -228,14 +235,13 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
  .site-head{grid-template-columns:1fr 1fr;height:86px}.site-title{display:none}
  .exhibition{grid-template-columns:24px minmax(0,1fr) 24px}
  .turn-button{height:78px}.hand-arrow{width:27px}
- .book-viewport{width:100%}
+ .book-viewport{width:100%;--cover-outline:3px 9px 9px 3px}
  .book-depth{box-shadow:1px 5px 0 #958e8a,1px 8px 3px #55484c,2px 16px 32px #0008}
  .book-binding{width:6px;left:calc(50% - 3px)}
  .page-quote{bottom:3%;right:3%;max-width:94%;padding:2px 3px}
  .page-quote h2{font-size:9px;margin:0 0 1px}.page-quote p{font-size:7px;line-height:1.2}
  .page-chapter{font-size:7px;letter-spacing:1px}
  .page-chapter-left{font-size:8px}
- .book-front-cover{border-radius:3px 9px 9px 3px}
  .cover-main-title{font-size:clamp(23px,7vw,35px)}
  .cover-moon{font-size:34px}.cover-edition,.cover-meta{font-size:6px}
  .cover-separator{font-size:12px}
