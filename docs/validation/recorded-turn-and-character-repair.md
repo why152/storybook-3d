@@ -83,3 +83,23 @@ grab geometry remains outside this revision.
 Matched screenshots and continuous browser videos are in
 `test-results/spine-and-grip/`, including `before-after.png`,
 `gesture-before-after.mp4` and `touch-candidate.mp4`.
+
+## Recessed gutter follow-up
+
+The owner supplied a held GROW → TOGETHER frame where the curl spans
+both sides of the binding and a raised strip obscures the print.
+The former mitigation lowered a separate binding element during a curved
+turn and sampled only one side of one pose. Replace that decorative element
+with the left and right page bevels. Each inner edge now paints its own
+recessed shade. The hardcover retains its attached hinge.
+
+Three treatments were compared at matched scale: the raised strip, the
+original bevel alone, and a narrower recessed bevel. Keep the last.
+A matched frame near 61% captures the sheet crossing both sides of the
+center. The original raised strip is visible in the `233c20f` baseline.
+Desktop and phone-sized captures and the actual cover/forward/backward
+motion recordings are in `test-results/recessed-gutter/`.
+The browser tests confirm that the open pages still meet at the center,
+the exposed edge is shaded and the lifted paper is unaffected by
+toggling the underlying page bevels. Held forward and backward turns
+also check that no separate raised binding is mounted.

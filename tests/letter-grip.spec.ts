@@ -33,6 +33,7 @@ for(const phone of [false,true]){
           await expect.poll(async()=>Number(await leaf.getAttribute('data-progress'))).toBeCloseTo(sign<0?p:1-p,1);
           await expect(leaf).toHaveCount(1);
           await expect(page.locator('.book-static .page-surface')).toHaveCount(2);
+          await expect(page.locator('.book-binding')).toHaveCount(0);
           if(p>0&&p<1){
             expect(await leaf.locator('.paper-segment').evaluateAll(strips=>strips.every(strip=>
               [...strip.children].filter(face=>getComputedStyle(face).display!=='none').length===1))).toBe(true);
@@ -72,10 +73,11 @@ test('the curved letter hides the artwork beneath both faces',async({page})=>{
   }
 });
 
-test('the moving paper covers the binding without removing the visible gutter',async({page})=>{
+test('the gutter shades the exposed page edge and cannot tint the lifted paper',async({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.goto('/?story=letter&from=grow&pose=.5');
   await expect(page.locator('.book-turn-leaf')).toHaveAttribute('data-texture-ready','true');
+  await expect(page.locator('.book-binding')).toHaveCount(0);
   const shell=(await page.locator('.book-shell').boundingBox())!;
   const center=Math.round(shell.x+shell.width/2);
   const y=Math.round(shell.y+shell.height*.25),height=Math.round(shell.height*.5);
@@ -85,7 +87,7 @@ test('the moving paper covers the binding without removing the visible gutter',a
   const covered={x:center+3,y,width:3,height};
   const before=await page.screenshot({clip:covered});
   const gutter=await page.screenshot({clip:exposed});
-  await page.addStyleTag({content:'.book-binding{visibility:hidden!important}'});
+  await page.addStyleTag({content:'.book-static .paper-bevel{visibility:hidden!important}'});
   expect((await page.screenshot({clip:covered})).equals(before)).toBe(true);
   expect((await page.screenshot({clip:exposed})).equals(gutter)).toBe(false);
 });

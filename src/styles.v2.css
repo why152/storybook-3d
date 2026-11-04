@@ -33,9 +33,6 @@
 /* Never filter the book viewport: a filtered ancestor forces WebKit to
    rasterize/flatten the entire nested 3D sheet and its animated SVG layers.
    The existing .book-depth shadow supplies stage depth without this cost. */
-.v2-showroom .book-binding {
- background:linear-gradient(90deg,#26222bb9 0%,#746775c9 18%,#ddc4aa 45%,#655867d9 74%,#292530a9 100%);
-}
 .v2-showroom .page-navigation {font-size:12px}
 .v2-showroom .page-dot {border-color:#f7e3ca8f}
 .v2-showroom .page-dot:focus-visible {outline-offset:5px}

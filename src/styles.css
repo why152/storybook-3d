@@ -53,15 +53,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .book-shell.is-closing .book-edge-shadow{left:calc(50% - 50% * var(--cover-unfold,0))}
 .book-shell.is-closed .book-depth{left:50%;border-radius:4px 14px 14px 4px}
 .book-static.book-closed-cover{z-index:6}
-.book-binding{position:absolute;z-index:11;top:.2%;bottom:.25%;left:calc(50% - 6px);width:12px;pointer-events:none;
- background:linear-gradient(90deg,#423539c9 0,#8d7163af 16%,#d0b79b8f 41%,#6f5f62bc 65%,#302d3290 100%);
- box-shadow:-7px 0 10px #3b33394d,7px 0 11px #41393673;border-radius:9px;transform:translateZ(2px)}
-.book-shell.is-closed .book-binding{left:calc(50% - 3px);width:6px}
-/* The curved strips are already projected into the spread plane. Place
-   the gutter under them while preserving the exposed part at the hinge. */
-.book-shell:has(>.is-flexible[data-texture-ready="true"][data-paper-endpoint="none"])>.book-binding{
- z-index:2;transform:none;
-}
 .book-edge-shadow{position:absolute;inset:0;z-index:2;pointer-events:none;
  box-shadow:0 27px 38px #0004;transform:translateZ(-2px)}
 .book-shell.is-closed .book-edge-shadow{left:50%}
@@ -102,8 +93,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .page-quote p{font-size:clamp(8px,.84vw,13px);line-height:1.45;margin:0}
 .paper-bevel{position:absolute;inset:0;pointer-events:none;z-index:10;border:1px solid #fff8de7d;border-radius:inherit;
  box-shadow:inset 0 0 14px #684e4e35}
-.page-left .paper-bevel{box-shadow:inset -22px 0 26px #4c383a43}
-.page-right .paper-bevel{box-shadow:inset 22px 0 26px #4c383a43}
+/* The gutter is the two shaded inner edges. Each shadow belongs to its
+   own page and cannot be composited above a lifted leaf. */
+.page-left .paper-bevel{border-right-color:#604c3d36;box-shadow:inset -3px 0 4px #46302d48,inset -15px 0 23px #4c383a43}
+.page-right .paper-bevel{border-left-color:#604c3d36;box-shadow:inset 3px 0 4px #46302d48,inset 15px 0 23px #4c383a43}
 .page-blank{background:linear-gradient(120deg,#f6e8d3,#e8d4b7)}
 .page-blank .page-window{background:repeating-linear-gradient(0deg,transparent 0 23px,#7562500a 24px 25px)}
 
@@ -247,7 +240,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
  .turn-button{height:78px}.hand-arrow{width:27px}
  .book-viewport{width:100%;--cover-outline:3px 9px 9px 3px}
  .book-depth{box-shadow:1px 5px 0 #958e8a,1px 8px 3px #55484c,2px 16px 32px #0008}
- .book-binding{width:6px;left:calc(50% - 3px)}
  .page-quote{bottom:3%;right:3%;max-width:94%;padding:2px 3px}
  .page-quote h2{font-size:9px;margin:0 0 1px}.page-quote p{font-size:7px;line-height:1.2}
  .page-chapter{font-size:7px;letter-spacing:1px}

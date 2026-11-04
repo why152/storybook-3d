@@ -22,12 +22,13 @@ test('closed portrait cover opens into two bound physical pages, then turns and 
   await page.goto('/');
   await expect(page.locator('.book-shell.is-closed')).toHaveCount(1);
   await expect(page.locator('.book-closed-cover .book-front-cover')).toBeVisible();
+  await expect(page.locator('.book-closed-cover .cover-hinge')).toBeVisible();
   await expect(page.getByRole('button',{name:'上一页'})).toBeDisabled();
   await page.screenshot({path:'test-results/00-closed-cover.png',...screenshot});
   await page.getByRole('button',{name:'下一页'}).click();
   await expect(page.locator('.book-shell.is-open:not(.is-turning)')).toHaveCount(1);
   await waitForChapterAssets(page,'hello');
-  await expect(page.locator('.book-binding')).toBeVisible();
+  await expect(page.locator('.book-static .paper-bevel')).toHaveCount(2);
   // A clean 2-page spread must remain after the cover has fully opened.
   await expect(page.locator('.book-turn-leaf')).toHaveCount(0);
   await expect(page.locator('.book-static .page-surface[data-chapter="hello"]')).toHaveCount(2);

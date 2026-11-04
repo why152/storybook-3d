@@ -510,7 +510,6 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
         <div className="paper-source" data-print="front"><Half position={leafFront} side="right" name={name} wish={wish} storyMode={storyMode}/></div>
         <div className="paper-source" data-print="back"><Half position={leafBack} side="left" name={name} wish={wish} storyMode={storyMode}/></div>
       </div>}
-      <div className="book-binding" aria-hidden="true"/>
       {showingTurn&&<div
         key={`leaf-${showingTurn.from}-${showingTurn.to}`}
         className={`book-turn-leaf ${flexible?'is-flexible':''}`} data-page-role="turning-leaf" ref={leafRef}
