@@ -35,11 +35,11 @@ with a held midpoint and rapid reversal in desktop WebKit and Chromium
 phone touch input. All 16 land on the intended spread. No phone hardware
 was used for this comparison.
 
-WISH has three separate still previews on the same art. The recommended
-middle treatment reveals the cake and characters earlier and keeps the
-curtain. The strongest treatment lightens the entire upper part and loses
-part of the framing. These stills are art review only. The working candidate
-preserves the current WISH layout.
+WISH was compared in three still previews on the same art. The owner
+selected the middle treatment, which reveals the cake and characters earlier
+and keeps the curtain. The stronger treatment loses part of the framing.
+The selected ellipse is used for both the native spread and the cached
+turning face. The ink placement and original SVGs stay the same.
 
 Run the comparison with `node scripts/compare-cover-support.mjs <output>`.
 The default URL is the AWS baseline. To verify the built candidate alone,

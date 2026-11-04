@@ -31,11 +31,11 @@
 .letter-page.theme-dream .spread-composition{
  --letter-fade-start:.36;--letter-fade-end:.70;
 }
-/* WISH: a soft diagonal opening echoes the closing note's offset signature
-   and keeps the warm scene visible at the page edges. */
+/* WISH: keep the signature in a quiet field while bringing the cake and
+   characters forward and retaining the curtain along the upper edges. */
 .letter-page.theme-wish .spread-composition{
- --letter-fade-start:.30;--letter-fade-end:.83;
- --letter-mask-shape:ellipse;--letter-mask-x:.44;--letter-mask-y:.22;
+ --letter-fade-start:.30;--letter-fade-end:.68;
+ --letter-mask-shape:ellipse;--letter-mask-x:.44;--letter-mask-y:.19;
  mask-image:radial-gradient(ellipse at calc(var(--letter-mask-x)*100%) calc(var(--letter-mask-y)*100%),transparent calc(var(--letter-fade-start)*100%),#000 calc(var(--letter-fade-end)*100%));
  -webkit-mask-image:radial-gradient(ellipse at calc(var(--letter-mask-x)*100%) calc(var(--letter-mask-y)*100%),transparent calc(var(--letter-fade-start)*100%),#000 calc(var(--letter-fade-end)*100%));
 }
