@@ -57,6 +57,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
  background:linear-gradient(90deg,#423539c9 0,#8d7163af 16%,#d0b79b8f 41%,#6f5f62bc 65%,#302d3290 100%);
  box-shadow:-7px 0 10px #3b33394d,7px 0 11px #41393673;border-radius:9px;transform:translateZ(2px)}
 .book-shell.is-closed .book-binding{left:calc(50% - 3px);width:6px}
+/* The curved strips are already projected into the spread plane. Place
+   the gutter under them while preserving the exposed part at the hinge. */
+.book-shell:has(>.is-flexible[data-texture-ready="true"][data-paper-endpoint="none"])>.book-binding{
+ z-index:2;transform:none;
+}
 .book-edge-shadow{position:absolute;inset:0;z-index:2;pointer-events:none;
  box-shadow:0 27px 38px #0004;transform:translateZ(-2px)}
 .book-shell.is-closed .book-edge-shadow{left:50%}

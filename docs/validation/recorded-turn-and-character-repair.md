@@ -55,3 +55,31 @@ STORYBOOK_TEST_PRODUCTION=1 STORYBOOK_TEST_BROWSER=chromium npm run test:e2e
 The original desktop setup and physical iPhone Safari remain open for
 verification. Leave the candidate separate from the AWS release until the
 visual direction has been reviewed.
+
+## HELLO silhouette, gutter occlusion and reverse release
+
+Follow-up baseline: `233c20f`, the previous revision of PR #43. The HELLO
+rabbit's outer ear path extended below the cheek. Redraw the ear bases to
+terminate behind the head, remove the overlapping torso patch and align
+the raised paw and scarf. Retain the original character pose, scene layout,
+and SVG-to-actor registration.
+
+The gutter used a positive 3D depth and painted in front of the projected
+paper. Lower it beneath the paper only while an interior leaf is curved.
+At a matched 50% pose in local WebKit, toggling the gutter changed the
+covered five-pixel band by an average of 42.94 RGB levels before and 0.05
+after. The exposed band kept its shadow. Keep this stacking correction
+instead of hiding the whole gutter.
+
+Borrow Grabfold 0.1.0's distinction between a positional release and a
+velocity-driven release. This book measures the latest sustained direction
+so a prior push does not outweigh a quick return. With the same 74% → 58%
+movement and immediate release in each direction, the previous version
+completed the turn and this version returned to its source chapter.
+Pausing at 58% before release still completes the turn. Mouse, Chromium
+touch simulation and WebKit cover the same gesture paths. Precise vertical
+grab geometry remains outside this revision.
+
+Matched screenshots and continuous browser videos are in
+`test-results/spine-and-grip/`, including `before-after.png`,
+`gesture-before-after.mp4` and `touch-candidate.mp4`.

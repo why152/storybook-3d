@@ -72,6 +72,58 @@ test('the curved letter hides the artwork beneath both faces',async({page})=>{
   }
 });
 
+test('the moving paper covers the binding without removing the visible gutter',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/?story=letter&from=grow&pose=.5');
+  await expect(page.locator('.book-turn-leaf')).toHaveAttribute('data-texture-ready','true');
+  const shell=(await page.locator('.book-shell').boundingBox())!;
+  const center=Math.round(shell.x+shell.width/2);
+  const y=Math.round(shell.y+shell.height*.25),height=Math.round(shell.height*.5);
+  const exposed={x:center-6,y,width:5,height};
+  // Stay inside a printed strip. Subpixel antialiasing at strip edges can
+  // still reveal the background through a fraction of a pixel.
+  const covered={x:center+3,y,width:3,height};
+  const before=await page.screenshot({clip:covered});
+  const gutter=await page.screenshot({clip:exposed});
+  await page.addStyleTag({content:'.book-binding{visibility:hidden!important}'});
+  expect((await page.screenshot({clip:covered})).equals(before)).toBe(true);
+  expect((await page.screenshot({clip:exposed})).equals(gutter)).toBe(false);
+});
+
+test('a quick return just past halfway cancels in either direction, while a pause settles by position',async({page})=>{
+  for(const [scene,start,sign,next] of [['grow',.88,-1,'together'],['together',.12,1,'grow']] as const){
+    await page.goto('/?story=letter&scene='+scene);
+    const book=page.locator('.book-viewport');
+    const rect=(await book.boundingBox())!;
+    const xAt=(p:number)=>rect.x+rect.width*(start+sign*p/2);
+    const y=rect.y+rect.height*.28;
+    const leaf=page.locator('.book-turn-leaf.is-flexible');
+    for(const pause of [false,true]){
+      await page.mouse.move(xAt(0),y);await page.mouse.down();
+      await expect(leaf).toHaveAttribute('data-texture-ready','true');
+      await page.mouse.move(xAt(.74),y);
+      await expect.poll(async()=>Number(await leaf.getAttribute('data-progress'))).toBeCloseTo(sign<0?.74:.26,2);
+      if(pause){
+        await page.mouse.move(xAt(.58),y);
+        await page.waitForTimeout(180);
+        await page.mouse.up();
+      }else{
+        // Dispatch the final movement and release in one browser task, so
+        // runner load cannot add a pause between the two gesture samples.
+        await book.evaluate((element,{x,y})=>{
+          for(const type of ['pointermove','pointerup']){
+            element.dispatchEvent(new PointerEvent(type,{pointerId:1,pointerType:'mouse',isPrimary:true,
+              clientX:x,clientY:y,bubbles:true,cancelable:true}));
+          }
+        },{x:xAt(.58),y});
+        await page.mouse.up();
+      }
+      await expect(leaf).toHaveCount(0);
+      await expect(page.locator(`.book-static .page-surface[data-chapter="${pause?next:scene}"]`)).toHaveCount(2);
+    }
+  }
+});
+
 test('rapid drag input paints only its latest position before the next refresh',async({page})=>{
   await page.goto('/?story=letter&scene=grow');
   const rect=(await page.locator('.book-viewport').boundingBox())!;

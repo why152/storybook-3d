@@ -39,8 +39,13 @@ function Half({position,side,name,wish,storyMode,printed}:{
 type Grip={
   pointerId:number; startX:number; progress:number;
   released:boolean; commit:boolean; direction:-1|1;
+  releaseSpeed:number;
   paint?:(progress:number)=>void; settle?:()=>void;
 };
+
+const FLICK_WINDOW_MS=100;
+const FLICK_MIN_TRAVEL=.07;
+const FLICK_MIN_SPEED=.001;
 
 // Only the back of the hardcover can support a left-hand footprint. Its
 // horizontal projection grows from zero at 90° to one half at 180°.
@@ -239,7 +244,14 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
         paint(endpoint);done();return;
       }
       const transition={progress:grip.progress};
-      tween=gsap.to(transition,{progress:endpoint,duration:Math.max(.18,.46*Math.abs(endpoint-grip.progress)),
+      const distance=Math.abs(endpoint-grip.progress);
+      const stockDuration=Math.max(.18,.46*distance);
+      // A decisive flick carries its velocity into the first part of the
+      // cubic ease-out. A quiet release uses the usual settling duration.
+      const duration=grip.releaseSpeed
+        ?Math.min(stockDuration,Math.max(.12,3*distance/(1000*Math.abs(grip.releaseSpeed))))
+        :stockDuration;
+      tween=gsap.to(transition,{progress:endpoint,duration,
         ease:'power2.out',onUpdate:()=>paint(transition.progress),onComplete:done});
     };
     grip.paint=paint;
@@ -321,13 +333,15 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
   // when WebKit re-composites/mounts a curved page under the active pointer.
   // Window CAPTURE listeners are the authoritative gesture transport. They
   // continue to receive move/up/cancel if the original leaf DOM is replaced.
-  const releaseGrip=(pointerId:number,host:HTMLDivElement,cancelled=false)=>{
+  const releaseGrip=(pointerId:number,host:HTMLDivElement,cancelled=false,releaseSpeed=0)=>{
     const grip=gripRef.current;
     if(!grip||grip.released||grip.pointerId!==pointerId)return;
     grip.released=true;
-    // A reader can drag 80% over and back to 10% without releasing.
-    // The current pose determines the outcome, not maximum travel.
-    grip.commit=!cancelled&&(grip.direction===1?grip.progress>=.5:grip.progress<=.5);
+    const travel=grip.direction===1?grip.progress:1-grip.progress;
+    // Slow releases settle by position. A decisive recent pull back can
+    // return the sheet even when it is still just past the halfway point.
+    grip.commit=!cancelled&&(releaseSpeed?releaseSpeed>0:travel>=.5);
+    grip.releaseSpeed=cancelled?0:releaseSpeed;
     delete host.dataset.grabActive;
     gripListenerCleanupRef.current?.();
     gripListenerCleanupRef.current=null;
@@ -346,17 +360,39 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     if(!onGrabTurn(direction))return;
     const grip:Grip={
       pointerId:event.pointerId,startX:event.clientX,direction,
-      progress:direction===1?0:1,released:false,commit:false
+      progress:direction===1?0:1,released:false,commit:false,releaseSpeed:0
     };
     gripRef.current=grip;
     host.dataset.grabActive='true';
     // Freeze the coordinate scale at contact. Each refresh consumes the most
     // recent input, even when a device reports multiple reversals per frame.
     const halfWidth=Math.max(1,bounds.width/2);
+    const allowsFlick=active>0&&active+direction>0&&!reducedMotion;
+    const samples=[{time:event.timeStamp,travel:0}];
     let frame=0;
-    const updateProgress=(clientX:number)=>{
-      const traveled=(clientX-grip.startX)/halfWidth;
-      grip.progress=Math.max(0,Math.min(1,direction===1?-traveled:1-traveled));
+    const updateProgress=({clientX,timeStamp}:globalThis.PointerEvent)=>{
+      const travel=Math.max(0,Math.min(1,-direction*(clientX-grip.startX)/halfWidth));
+      grip.progress=direction===1?travel:1-travel;
+      if(!allowsFlick||Math.abs(travel-samples.at(-1)!.travel)<.004)return;
+      samples.push({time:timeStamp,travel});
+      while(samples.length>2&&timeStamp-samples[0].time>FLICK_WINDOW_MS)samples.shift();
+    };
+    const recentFlick=(time:number)=>{
+      const last=samples.at(-1)!;
+      if(time-last.time>FLICK_WINDOW_MS)return 0;
+      let first=last,sign=0;
+      for(let index=samples.length-2;index>=0;index--){
+        const sample=samples[index];
+        const step=Math.sign(first.travel-sample.travel);
+        if(sign&&step!==sign)break;
+        sign=step;first=sample;
+        // Retain the preceding position when the finger moves abruptly
+        // after a pause, even if it predates the velocity window.
+        if(time-sample.time>FLICK_WINDOW_MS)break;
+      }
+      const traveled=last.travel-first.travel;
+      const speed=traveled/Math.min(FLICK_WINDOW_MS,Math.max(16,time-first.time));
+      return Math.abs(traveled)>=FLICK_MIN_TRAVEL&&Math.abs(speed)>=FLICK_MIN_SPEED?speed:0;
     };
     const flushPaint=()=>{
       if(frame)cancelAnimationFrame(frame);
@@ -365,15 +401,15 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     };
     const onMove=(e:globalThis.PointerEvent)=>{
       if(grip.released||grip.pointerId!==e.pointerId)return;
-      updateProgress(e.clientX);
+      updateProgress(e);
       if(grip.paint&&!frame)frame=requestAnimationFrame(flushPaint);
       if(e.cancelable)e.preventDefault();
     };
     const onUp=(e:globalThis.PointerEvent)=>{
       if(grip.released||grip.pointerId!==e.pointerId)return;
-      updateProgress(e.clientX);
+      updateProgress(e);
       flushPaint();
-      releaseGrip(e.pointerId,host);
+      releaseGrip(e.pointerId,host,false,allowsFlick?recentFlick(e.timeStamp):0);
     };
     const onCancel=(e:globalThis.PointerEvent)=>{
       if(grip.released||grip.pointerId!==e.pointerId)return;

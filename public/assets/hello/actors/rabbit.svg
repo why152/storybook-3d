@@ -8,32 +8,30 @@
 <!-- Independently animated hello/rabbit art, extracted without altering original brushwork. -->
 <g transform="translate(206 326) rotate(-7 112 145)">
  <ellipse cx="125" cy="318" rx="76" ry="16" fill="#653F43" opacity=".24"/>
- <path d="M85 215Q32 168 42 96Q45 64 67 80Q91 102 114 178" fill="url(#bunnyfur)" stroke="#B78276" stroke-width="5"/>
- <path d="M97 198Q79 115 99 46Q108 19 133 43Q146 67 132 196" fill="url(#bunnyfur)" stroke="#B78276" stroke-width="5"/>
- <path d="M100 158Q93 105 108 64Q117 47 121 70L116 156" fill="#EAB1A4"/>
- <path d="M65 159Q51 111 57 92Q68 81 84 144" fill="#EAB1A4"/>
- <path d="M64 246Q51 302 84 319Q109 324 135 312Q181 321 196 295L187 238" fill="#F4D3B1" stroke="#B78376" stroke-width="5"/>
+ <path d="M83 137Q44 121 44 91Q44 66 65 80Q86 93 111 126Z" fill="url(#bunnyfur)" stroke="#B78276" stroke-width="5"/>
+ <path d="M103 115Q85 85 99 46Q108 19 133 43Q148 62 135 108Z" fill="url(#bunnyfur)" stroke="#B78276" stroke-width="5"/>
+ <path d="M109 108Q98 83 108 62Q118 49 124 69L121 105Z" fill="#EAB1A4"/>
+ <path d="M76 130Q54 110 57 91Q65 84 85 117L94 130Z" fill="#EAB1A4"/>
  <ellipse cx="139" cy="255" rx="72" ry="84" fill="#1F6070" stroke="#1B4955" stroke-width="5"/>
  <path d="M87 243Q140 218 190 247L191 272Q135 287 90 270Z" fill="#E4A66C"/>
  <path d="M96 267Q126 284 180 272" stroke="#F2D6B0" stroke-width="6" fill="none"/>
- <path d="M181 236Q212 209 214 173" stroke="url(#bunnyfur)" stroke-width="28" fill="none" stroke-linecap="round"/>
- <ellipse cx="213" cy="165" rx="15" ry="21" fill="#F7CFAC" transform="rotate(-25 213 165)"/>
- <path d="M210 152l-9-12m11 14 4-18m0 21 14-15" stroke="#B68472" stroke-width="3" stroke-linecap="round"/>
+ <path d="M181 236Q222 215 227 172" stroke="url(#bunnyfur)" stroke-width="26" fill="none" stroke-linecap="round"/>
+ <ellipse cx="229" cy="163" rx="15" ry="21" fill="#F7CFAC" transform="rotate(-18 229 163)"/>
+ <path d="M223 153l-4-10m11 11 2-12m4 15 7-9" stroke="#B68472" stroke-width="3" stroke-linecap="round"/>
  <ellipse cx="100" cy="264" rx="17" ry="23" fill="#F4D6B7"/>
  <ellipse cx="83" cy="316" rx="35" ry="18" fill="#F0D1AE" stroke="#C79883" stroke-width="3"/>
  <ellipse cx="183" cy="316" rx="33" ry="18" fill="#F0D1AE" stroke="#C79883" stroke-width="3"/>
  <ellipse cx="136" cy="147" rx="75" ry="65" fill="url(#bunnyfur)" stroke="#B78476" stroke-width="5"/>
- <path d="M76 147Q82 85 130 89" stroke="#FFF6E2" stroke-width="10" fill="none" opacity=".6"/>
+ <path d="M79 142Q88 102 122 94" stroke="#FFF6E2" stroke-width="8" stroke-linecap="round" fill="none" opacity=".6"/>
  <ellipse cx="113" cy="148" rx="5" ry="8" fill="#44373B"/>
  <ellipse cx="166" cy="146" rx="5" ry="8" fill="#44373B"/>
  <ellipse cx="97" cy="166" rx="18" ry="10" fill="#ECAD9D" opacity=".62"/>
  <ellipse cx="179" cy="164" rx="15" ry="9" fill="#ECAD9D" opacity=".62"/>
  <ellipse cx="139" cy="160" rx="10" ry="7" fill="#B97F79"/>
  <path d="M139 167q-9 17-24 4m24-4q8 18 23 2" stroke="#9B6462" stroke-width="3" stroke-linecap="round" fill="none"/>
- <path d="M89 218Q130 230 187 211" stroke="#C05E5D" stroke-width="18" stroke-linecap="round" fill="none"/>
+ <path d="M92 211Q133 226 187 209" stroke="#C05E5D" stroke-width="18" stroke-linecap="round" fill="none"/>
  <path d="M181 215q35 15 46 69q-23 12-44-2" fill="#B95254" stroke="#9C454D" stroke-width="3"/>
- <path d="M70 184l16 7M186 186l13-9" stroke="#A9756D" stroke-width="2.5" stroke-linecap="round"/>
  <path d="M81 243l3 41m106-39-2 41" stroke="#B8755E" stroke-width="2" opacity=".55"/>
- <ellipse cx="135" cy="154" rx="76" ry="64" fill="url(#furGrain)" opacity=".22"/>
+ <ellipse cx="136" cy="147" rx="72" ry="62" fill="url(#furGrain)" opacity=".22"/>
 </g>
 </svg>
