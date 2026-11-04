@@ -36,15 +36,17 @@ function Half({position,side,name,wish,storyMode,printed}:{
   return <PageHalf chapter={getChapter(position,storyMode)} side={side} name={name} wish={wish} storyMode={storyMode} printed={printed}/>;
 }
 
+type Grip={
+  pointerId:number; startX:number; progress:number;
+  released:boolean; commit:boolean; direction:-1|1;
+  paint?:(progress:number)=>void; settle?:()=>void;
+};
+
 export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMode,reducedMotion,debugPose,debugFrom,reading=false}:Props){
   // The grip owns the gesture until pointerup/cancel; React never owns its
   // frame-by-frame progress. Moving a pointer backward is a physical reversal
   // of the SAME mounted sheet, not a second page-turn command.
-  const gripRef=useRef<{
-    pointerId:number; startX:number; direction:-1|1; progress:number;
-    released:boolean; commit:boolean;
-    paint?:(progress:number)=>void; settle?:()=>void;
-  }|null>(null);
+  const gripRef=useRef<Grip|null>(null);
   const gripListenerCleanupRef=useRef<(()=>void)|null>(null);
   const leafRef=useRef<HTMLDivElement>(null);
   const shellRef=useRef<HTMLDivElement>(null);
@@ -310,16 +312,6 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
   // when WebKit re-composites/mounts a curved page under the active pointer.
   // Window CAPTURE listeners are the authoritative gesture transport. They
   // continue to receive move/up/cancel if the original leaf DOM is replaced.
-  const moveGrip=(pointerId:number,clientX:number,host:HTMLDivElement)=>{
-    const grip=gripRef.current;
-    if(!grip||grip.released||grip.pointerId!==pointerId)return false;
-    const halfWidth=Math.max(1,host.getBoundingClientRect().width/2);
-    const traveled=(clientX-grip.startX)/halfWidth;
-    const progress=Math.max(0,Math.min(1,grip.direction===1?-traveled:1-traveled));
-    grip.progress=progress;
-    grip.paint?.(progress);
-    return true;
-  };
   const releaseGrip=(pointerId:number,host:HTMLDivElement,cancelled=false)=>{
     const grip=gripRef.current;
     if(!grip||grip.released||grip.pointerId!==pointerId)return;
@@ -343,25 +335,52 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     const direction:1|-1=local>=bounds.width/2?1:-1;
     if((direction===1&&active>=5)||(direction===-1&&active<=0))return;
     if(!onGrabTurn(direction))return;
-    gripRef.current={
+    const grip:Grip={
       pointerId:event.pointerId,startX:event.clientX,direction,
       progress:direction===1?0:1,released:false,commit:false
     };
+    gripRef.current=grip;
     host.dataset.grabActive='true';
-    const onMove=(e:globalThis.PointerEvent)=>{
-      if(moveGrip(e.pointerId,e.clientX,host)&&e.cancelable)e.preventDefault();
+    // Freeze the coordinate scale at contact. Each refresh consumes the most
+    // recent input, even when a device reports multiple reversals per frame.
+    const halfWidth=Math.max(1,bounds.width/2);
+    let frame=0;
+    const updateProgress=(clientX:number)=>{
+      const traveled=(clientX-grip.startX)/halfWidth;
+      grip.progress=Math.max(0,Math.min(1,direction===1?-traveled:1-traveled));
     };
-    const onUp=(e:globalThis.PointerEvent)=>releaseGrip(e.pointerId,host,false);
-    const onCancel=(e:globalThis.PointerEvent)=>releaseGrip(e.pointerId,host,true);
+    const flushPaint=()=>{
+      if(frame)cancelAnimationFrame(frame);
+      frame=0;
+      grip.paint?.(grip.progress);
+    };
+    const onMove=(e:globalThis.PointerEvent)=>{
+      if(grip.released||grip.pointerId!==e.pointerId)return;
+      updateProgress(e.clientX);
+      if(grip.paint&&!frame)frame=requestAnimationFrame(flushPaint);
+      if(e.cancelable)e.preventDefault();
+    };
+    const onUp=(e:globalThis.PointerEvent)=>{
+      if(grip.released||grip.pointerId!==e.pointerId)return;
+      updateProgress(e.clientX);
+      flushPaint();
+      releaseGrip(e.pointerId,host);
+    };
+    const onCancel=(e:globalThis.PointerEvent)=>{
+      if(grip.released||grip.pointerId!==e.pointerId)return;
+      flushPaint();
+      releaseGrip(e.pointerId,host,true);
+    };
     const onBlur=()=>{
-      const grip=gripRef.current;
-      if(grip)releaseGrip(grip.pointerId,host,true);
+      flushPaint();
+      releaseGrip(grip.pointerId,host,true);
     };
     window.addEventListener('pointermove',onMove,{capture:true,passive:false});
     window.addEventListener('pointerup',onUp,true);
     window.addEventListener('pointercancel',onCancel,true);
     window.addEventListener('blur',onBlur);
     gripListenerCleanupRef.current=()=>{
+      if(frame)cancelAnimationFrame(frame);
       window.removeEventListener('pointermove',onMove,true);
       window.removeEventListener('pointerup',onUp,true);
       window.removeEventListener('pointercancel',onCancel,true);
@@ -370,19 +389,8 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     try{host.setPointerCapture(event.pointerId);}catch{/* synthetic QA input */}
     event.preventDefault();
   };
-  const handleGripMove=(event:PointerEvent<HTMLDivElement>)=>{
-    if(!moveGrip(event.pointerId,event.clientX,event.currentTarget))return false;
-    event.preventDefault();
-    return true;
-  };
-  const finishGrip=(event:PointerEvent<HTMLDivElement>,cancelled=false)=>{
-    const wasHolding=gripRef.current?.pointerId===event.pointerId;
-    releaseGrip(event.pointerId,event.currentTarget,cancelled);
-    if(wasHolding)event.preventDefault();
-  };
   const handlePointer=(event:PointerEvent<HTMLDivElement>)=>{
-    if(handleGripMove(event))return;
-    if(turning||debugPose!==null||reducedMotion||event.pointerType!=='mouse')return;
+    if(gripRef.current||turning||debugPose!==null||reducedMotion||event.pointerType!=='mouse')return;
     const bounds=event.currentTarget.getBoundingClientRect();
     const dx=((event.clientX-bounds.left)/bounds.width-.5)*2;
     const dy=((event.clientY-bounds.top)/bounds.height-.5)*2;
@@ -427,7 +435,6 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
   const stageShift=debugPose!==null&&showingTurn?.from===0?(-25+25*debugPose):undefined;
   return <div className="book-viewport" data-grab-enabled={debugPose===null&&!reading?"true":"false"}
     onPointerDown={handleGripStart} onPointerMove={handlePointer}
-    onPointerUp={event=>finishGrip(event)} onPointerCancel={event=>finishGrip(event,true)}
     onPointerLeave={clearPointer}>
     <div className={`book-shell ${closed?'is-closed':'is-open'} ${showingTurn?'is-turning':''} ${!waiting&&showingTurn?.from===0?'is-opening':''} ${!waiting&&showingTurn?.to===0?'is-closing':''}`}
       ref={shellRef} data-book-mode={closed?'closed':'open'}
