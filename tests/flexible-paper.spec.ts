@@ -2,19 +2,25 @@ import {expect,test} from '@playwright/test';
 import {paperGeometry,paperCuts,segmentCountForTolerance,curvatureErrorPx} from '../src/components/paperGeometry';
 
 test('paper stays joined, above the book and constant-length throughout both directions',()=>{
-  let lowest=0,maxGap=0,maxLengthError=0;
+  let lowest=0,maxGap=0,maxLengthError=0,maxMirrorError=0;
   for(let step=0;step<=1000;step++){
     const progress=step/1000,theta=Math.PI*progress;
-    const pieces=paperGeometry(progress);
+    const sin=Math.sin(theta),cos=Math.cos(theta);
+    const pieces=paperGeometry(progress,undefined,undefined,1);
+    const reverse=paperGeometry(1-progress,undefined,undefined,-1);
     let length=0;
     for(const [i,piece] of pieces.entries()){
       const endX=piece.x+Math.cos(piece.angle)*piece.length;
       const endZ=piece.z-Math.sin(piece.angle)*piece.length;
-      lowest=Math.min(lowest,Math.sin(theta)*piece.x+Math.cos(theta)*piece.z,Math.sin(theta)*endX+Math.cos(theta)*endZ);
+      const forwardX=cos*piece.x-sin*piece.z,forwardZ=sin*piece.x+cos*piece.z;
+      lowest=Math.min(lowest,forwardZ,sin*endX+cos*endZ);
       length+=Math.hypot(endX-piece.x,endZ-piece.z);
       if(i+1<pieces.length){
         maxGap=Math.max(maxGap,Math.hypot(endX-pieces[i+1].x,endZ-pieces[i+1].z));
       }
+      const other=reverse[i];
+      const reverseX=-cos*other.x-sin*other.z,reverseZ=sin*other.x-cos*other.z;
+      maxMirrorError=Math.max(maxMirrorError,Math.hypot(forwardX+reverseX,forwardZ-reverseZ));
     }
     maxLengthError=Math.max(maxLengthError,Math.abs(length-1));
     maxGap=Math.max(maxGap,Math.abs(pieces[0].x),Math.abs(pieces[0].z));
@@ -22,6 +28,7 @@ test('paper stays joined, above the book and constant-length throughout both dir
   expect(lowest).toBeGreaterThanOrEqual(-1e-12);
   expect(maxGap).toBeLessThan(1e-12);
   expect(maxLengthError).toBeLessThan(1e-12);
+  expect(maxMirrorError).toBeLessThan(1e-12);
 });
 
 

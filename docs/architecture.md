@@ -61,16 +61,20 @@ animates toward the full landscape open spread, without card flipping.
   the curve's local model error within 0.5 CSS px at the start of a turn. The
   count stays fixed during a turn and is recalculated afterwards if the viewport
   changed; a large mid-turn enlargement can temporarily exceed that model bound.
-  Two cached image bands per face retain actual frozen actor transforms;
-  the original SVG lettering stays between them so browser font/mask rendering
-  remains unchanged. SceneArt uses its existing composition slot, native HTML
-  text and paper finish for both printed and stationary leaves.
+  Birthday pages use two cached image bands around native SVG lettering.
+  Letter pages cache the frozen illustration, faint lettering and CSS-authored
+  fade together once per face, avoiding repeated live masks on the strips.
+  SceneArt uses its existing composition slot, native ink/HTML text and paper
+  finish for both printed and stationary leaves.
 - Authentic ink uses the same native page surface on static pages, flat endpoints and curved front/back strips; original crop images remain independent from the cached art bands. Private sources/builds stay outside Git until publication is approved. Temporary print textures are released immediately after landing.
 - All five letter spreads reserve a scene-specific quiet field for original ink,
   with the original layered illustration below it. Masking is confined to
   `spread-composition`, a flat image plane; it is identical on settled and
-  curved pages. Browser-only tonal correction neutralizes photographed paper
-  color; the source PNGs and stroke geometry are not regenerated or edited.
+  curved pages. Published PNGs carry transparent black ink at the original
+  pixel coordinates, reproducing the previous tonal correction without live
+  filters/blend groups. The approved RGB originals remain in Git at `6b08146`;
+  `scripts/prepare-transparent-ink.mjs` verifies/regenerates the exact conversion.
+  Private photo previews retain the original browser tonal correction.
 - Curved strip faces use `clip-path: inset(0)` rather than an overflow clip.
   This composites nested ink/art together and removes the observed WebKit
   dark vertical seams. Lighting bleeds 2px past that clip to avoid bright
