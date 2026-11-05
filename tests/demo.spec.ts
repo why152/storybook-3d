@@ -19,15 +19,16 @@ test('closed portrait cover opens into two bound physical pages, then turns and 
   const errors:string[]=[];
   page.on('pageerror',error=>errors.push(error.message));
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.goto('/');
+  await page.goto('/?story=birthday');
   await expect(page.locator('.book-shell.is-closed')).toHaveCount(1);
   await expect(page.locator('.book-closed-cover .book-front-cover')).toBeVisible();
+  await expect(page.locator('.book-closed-cover .cover-hinge')).toBeVisible();
   await expect(page.getByRole('button',{name:'上一页'})).toBeDisabled();
   await page.screenshot({path:'test-results/00-closed-cover.png',...screenshot});
   await page.getByRole('button',{name:'下一页'}).click();
   await expect(page.locator('.book-shell.is-open:not(.is-turning)')).toHaveCount(1);
   await waitForChapterAssets(page,'hello');
-  await expect(page.locator('.book-binding')).toBeVisible();
+  await expect(page.locator('.book-static .paper-bevel')).toHaveCount(2);
   // A clean 2-page spread must remain after the cover has fully opened.
   await expect(page.locator('.book-turn-leaf')).toHaveCount(0);
   await expect(page.locator('.book-static .page-surface[data-chapter="hello"]')).toHaveCount(2);
@@ -46,7 +47,7 @@ test('closed portrait cover opens into two bound physical pages, then turns and 
 for(const chapter of chapters){
   test(`renders original six-plane ${chapter} art on two real pages`,async ({page})=>{
     await page.emulateMedia({reducedMotion:'reduce'});
-    await page.goto('/?scene='+chapter);
+    await page.goto('/?story=birthday&scene='+chapter);
     await waitForChapterAssets(page,chapter);
     const sides=await page.locator('.book-static .page-surface').evaluateAll(elements=>
       elements.map(e=>e.getAttribute('data-side')));
@@ -58,7 +59,7 @@ for(const chapter of chapters){
 for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
   test(`cover opens by turning a bound right leaf at ${Math.round(Number(pose)*100)}%`,async ({page})=>{
     await page.emulateMedia({reducedMotion:'reduce'});
-    await page.goto('/?pose='+pose+'&from=cover');
+    await page.goto('/?story=birthday&pose='+pose+'&from=cover');
     const leaf=page.locator('.book-turn-leaf');
     await expect(leaf).toBeVisible();
     await expect(leaf.locator('.book-front-cover')).toHaveCount(1);
@@ -75,7 +76,7 @@ for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
 for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
   test(`physical book leaf at ${Math.round(Number(pose)*100)}% of turn`,async ({page})=>{
     await page.emulateMedia({reducedMotion:'reduce'});
-    await page.goto('/?pose='+pose+'&from=grow');
+    await page.goto('/?story=birthday&pose='+pose+'&from=grow');
     await expect(page.locator('[data-page-role="turning-leaf"]')).toBeVisible();
     await expect(page.locator('[data-page-role="turning-leaf"]')).toHaveAttribute('data-texture-ready','true');
     await expect(page.locator('.book-static')).toHaveCount(2);
@@ -101,8 +102,8 @@ for(const [step,pose] of ['0','0.25','0.5','0.75','1'].entries()){
 
 test('customized final chapter and nonadjacent bookmarks turn sequentially',async ({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.goto('/');
-  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
+  await page.goto('/?story=birthday');
+  await page.getByRole('button',{name:'定制祝福'}).click();
   await page.getByLabel('收礼人的名字').fill('小雨');
   await page.getByLabel('最后一页的祝福').fill('愿我们永远有新的故事。');
   await page.getByRole('button',{name:/看看最后一章/}).click();
@@ -119,7 +120,7 @@ test('customized final chapter and nonadjacent bookmarks turn sequentially',asyn
 test('keyboard and mobile touch keep book usable',async ({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.goto('/');
+  await page.goto('/?story=birthday');
   await expect(page.locator('.book-shell.is-closed')).toHaveCount(1);
   await page.screenshot({path:'test-results/mobile-closed-book.png',...screenshot});
   await page.keyboard.press('ArrowRight');
@@ -135,18 +136,18 @@ test('keyboard and mobile touch keep book usable',async ({page})=>{
   expect(overflow).toBeLessThanOrEqual(2);
   const book=page.locator('.book-viewport');
   await expect(book).toBeVisible();
-  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
+  await page.getByRole('button',{name:'定制祝福'}).click();
   await expect(page.getByLabel('收礼人的名字')).toBeVisible();
 });
 
 test('mobile final chapter remains readable after customization',async ({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.goto('/?scene=wish');
+  await page.goto('/?story=birthday&scene=wish');
   const reader=page.getByRole('region',{name:'故事朗读文字'});
   await expect(reader).toBeVisible();
   await expect(reader.getByText('生日快乐，你')).toBeVisible();
-  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
+  await page.getByRole('button',{name:'定制祝福'}).click();
   await page.getByLabel('收礼人的名字').fill('小雨');
   await page.getByLabel('最后一页的祝福').fill('愿一切美好都如约而至。');
   await page.getByRole('button',{name:'关闭定制面板'}).click();
@@ -171,7 +172,7 @@ test('layer inspector compares the six-plane original against transparent actor 
 });
 
 test('independent actors reproduce the original composite illustration at rest',async ({page})=>{
-  await page.goto('/?scene=hello');
+  await page.goto('/?story=birthday&scene=hello');
   for(const scene of ['hello','grow','together','dream','wish'] as const){
     const parts=scene==='hello'?['rabbit','fox']
       :['together','wish'].includes(scene)?['fox','rabbit','props']
@@ -216,7 +217,7 @@ test('independent actors reproduce the original composite illustration at rest',
 
 test('HELLO and GROW actors are independently registered, animated and still on turning paper',async ({page})=>{
   await page.setViewportSize({width:1280,height:720});
-  await page.goto('/?scene=hello');
+  await page.goto('/?story=birthday&scene=hello');
   await waitForChapterAssets(page,'hello');
   const rabbit=page.locator('.book-static.book-left .actor-rabbit').first();
   const fox=page.locator('.book-static.book-right .actor-fox').first();
@@ -243,7 +244,7 @@ test('HELLO and GROW actors are independently registered, animated and still on 
 test('actor performances respect reduced motion and remain aligned with the 2-page print',async ({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
   for(const chapter of ['hello','grow']){
-    await page.goto('/?scene='+chapter);
+    await page.goto('/?story=birthday&scene='+chapter);
     await waitForChapterAssets(page,chapter);
     await expect(page.locator('.book-static .actor-rabbit').first()).toHaveCSS('animation-name','none');
     await expect(page.locator('.book-static .actor-fox').first()).toHaveCSS('animation-name','none');
@@ -268,7 +269,7 @@ test('records distinct illustrated characters greeting and watering in real brow
   const page=await ctx.newPage();
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   try{
-    await page.goto('/?scene=hello');
+    await page.goto('/?story=birthday&scene=hello');
     await waitForChapterAssets(page,'hello');
     await page.waitForTimeout(4800);
     await page.getByRole('button',{name:'下一页'}).click();
@@ -286,7 +287,7 @@ test('all five chapters animate independent characters with different story-spec
     ['wish','story-wish-present','story-wish-cheer','story-wish-gift'],
   ] as const;
   for(const [scene,foxName,rabbitName,propsName] of cases){
-    await page.goto('/?scene='+scene);
+    await page.goto('/?story=birthday&scene='+scene);
     await waitForChapterAssets(page,scene);
     await expect(page.locator('.book-static .actor-fox').first()).toHaveCSS('animation-name',foxName);
     await expect(page.locator('.book-static .actor-rabbit').first()).toHaveCSS('animation-name',rabbitName);
@@ -304,7 +305,7 @@ test('five-chapter continuous real-browser recording includes distinct acting an
   const errors:string[]=[];
   page.on('pageerror',error=>errors.push(error.message));
   try{
-    await page.goto('/?scene=hello');
+    await page.goto('/?story=birthday&scene=hello');
     for(const scene of ['hello','grow','together','dream','wish']){
       await waitForChapterAssets(page,scene);
       await page.waitForTimeout(scene==='hello'?1600:2100);
@@ -327,7 +328,7 @@ test('records an actual cover opening and right-to-left/left-to-right book turno
   const errors:string[]=[];
   page.on('pageerror',error=>errors.push(error.message));
   try{
-    await page.goto('/');
+    await page.goto('/?story=birthday');
     await expect(page.locator('.book-closed-cover')).toBeVisible();
     await page.waitForTimeout(350);
     await page.getByRole('button',{name:'下一页'}).click();
@@ -349,7 +350,7 @@ test('records an actual cover opening and right-to-left/left-to-right book turno
 test('V2 first prototype uses an original cover and mobile book with real touch targets',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.goto('/');
+  await page.goto('/?story=birthday');
   const scene=page.locator('.v2-cover-scene');
   await expect(scene).toHaveAttribute('src',/assets\/v2\/cover-art\.svg$/);
   await expect.poll(()=>scene.evaluate((img:HTMLImageElement)=>img.complete&&img.naturalWidth>0)).toBe(true);
@@ -379,7 +380,7 @@ test('V2 remains self-contained when Google Fonts is unavailable',async({page})=
   page.on('request',request=>{
     if(/fonts\.(googleapis|gstatic)\.com/i.test(request.url()))thirdPartyFonts.push(request.url());
   });
-  await page.goto('/?scene=hello');
+  await page.goto('/?story=birthday&scene=hello');
   await expect(page.locator('.book-static .page-surface[data-chapter="hello"]')).toHaveCount(2);
   expect(thirdPartyFonts).toEqual([]);
 });
@@ -387,7 +388,7 @@ test('V2 remains self-contained when Google Fonts is unavailable',async({page})=
 test('landscape iPhone viewport does not shrink the 3D book into a tiny thumbnail',async({page})=>{
   await page.setViewportSize({width:844,height:390});
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.goto('/?scene=hello');
+  await page.goto('/?story=birthday&scene=hello');
   const book=page.locator('.book-viewport');
   const rect=await book.boundingBox();
   expect(rect).not.toBeNull();

@@ -2,19 +2,25 @@ import {expect,test} from '@playwright/test';
 import {paperGeometry,paperCuts,segmentCountForTolerance,curvatureErrorPx} from '../src/components/paperGeometry';
 
 test('paper stays joined, above the book and constant-length throughout both directions',()=>{
-  let lowest=0,maxGap=0,maxLengthError=0;
+  let lowest=0,maxGap=0,maxLengthError=0,maxMirrorError=0;
   for(let step=0;step<=1000;step++){
     const progress=step/1000,theta=Math.PI*progress;
-    const pieces=paperGeometry(progress);
+    const sin=Math.sin(theta),cos=Math.cos(theta);
+    const pieces=paperGeometry(progress,undefined,undefined,1);
+    const reverse=paperGeometry(1-progress,undefined,undefined,-1);
     let length=0;
     for(const [i,piece] of pieces.entries()){
       const endX=piece.x+Math.cos(piece.angle)*piece.length;
       const endZ=piece.z-Math.sin(piece.angle)*piece.length;
-      lowest=Math.min(lowest,Math.sin(theta)*piece.x+Math.cos(theta)*piece.z,Math.sin(theta)*endX+Math.cos(theta)*endZ);
+      const forwardX=cos*piece.x-sin*piece.z,forwardZ=sin*piece.x+cos*piece.z;
+      lowest=Math.min(lowest,forwardZ,sin*endX+cos*endZ);
       length+=Math.hypot(endX-piece.x,endZ-piece.z);
       if(i+1<pieces.length){
         maxGap=Math.max(maxGap,Math.hypot(endX-pieces[i+1].x,endZ-pieces[i+1].z));
       }
+      const other=reverse[i];
+      const reverseX=-cos*other.x-sin*other.z,reverseZ=sin*other.x-cos*other.z;
+      maxMirrorError=Math.max(maxMirrorError,Math.hypot(forwardX+reverseX,forwardZ-reverseZ));
     }
     maxLengthError=Math.max(maxLengthError,Math.abs(length-1));
     maxGap=Math.max(maxGap,Math.abs(pieces[0].x),Math.abs(pieces[0].z));
@@ -22,6 +28,7 @@ test('paper stays joined, above the book and constant-length throughout both dir
   expect(lowest).toBeGreaterThanOrEqual(-1e-12);
   expect(maxGap).toBeLessThan(1e-12);
   expect(maxLengthError).toBeLessThan(1e-12);
+  expect(maxMirrorError).toBeLessThan(1e-12);
 });
 
 
@@ -83,7 +90,7 @@ async function ready(page:import('@playwright/test').Page){
 
 test('a mobile leaf keeps its segments while turning and adapts after resizing',async({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await page.goto('/?scene=grow');
+  await page.goto('/?story=birthday&scene=grow');
   await page.evaluate(()=>Promise.all([...document.images].map(image=>image.decode())));
   await page.getByRole('button',{name:'下一页'}).click();
   const leaf=page.locator('.book-turn-leaf.is-flexible');
@@ -106,7 +113,7 @@ test('a mobile leaf keeps its segments while turning and adapts after resizing',
 test('exactly flat poses use native, single-piece printed paper',async({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
   for(const [pose,expected] of [['0','front'],['0.5','none'],['1','back']] as const){
-    await page.goto('/?pose='+pose+'&from=grow');
+    await page.goto('/?story=birthday&pose='+pose+'&from=grow');
     const leaf=page.locator('.book-turn-leaf.is-flexible');
     await expect(leaf).toHaveAttribute('data-texture-ready','true');
     await expect(leaf).toHaveAttribute('data-paper-endpoint',expected);
@@ -133,7 +140,7 @@ test('front and reverse endpoint print match the actual settled pages at desktop
    for(const viewport of viewports){
     await page.setViewportSize(viewport);
     for(const [pose,chapter] of [[0,'grow'],[1,'together']] as const){
-      await page.goto(`/?from=grow&pose=${pose}`);await ready(page);
+      await page.goto(`/?story=birthday&from=grow&pose=${pose}`);await ready(page);
       if(viewport.width===393){
         await page.setViewportSize({width:844,height:393});
         await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
@@ -141,7 +148,7 @@ test('front and reverse endpoint print match the actual settled pages at desktop
         await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
       }
       const turned=await page.locator('.book-shell').screenshot();
-      await page.goto('/?scene='+chapter);await ready(page);
+      await page.goto('/?story=birthday&scene='+chapter);await ready(page);
       const settled=await page.locator('.book-shell').screenshot();
       const diff=await page.evaluate(async([a,b])=>{
         const decode=async(src:string)=>{const i=new Image();i.src=src;await i.decode();return i;};
@@ -183,7 +190,7 @@ test('front and reverse endpoint print match the actual settled pages at desktop
 
 
 test('WebKit resumes real book time after a blocked paint frame',async({page})=>{
-  await page.goto('/?scene=grow');
+  await page.goto('/?story=birthday&scene=grow');
   await page.evaluate(async()=>Promise.all([...document.images].map(image=>image.decode())));
   await page.getByRole('button',{name:'下一页'}).click();
   const leaf=page.locator('.book-turn-leaf.is-flexible');

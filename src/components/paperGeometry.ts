@@ -30,10 +30,12 @@ export function paperCuts(width:number,count=PAPER_SEGMENTS,dpr=1){
   return Array.from({length:count+1},(_,i)=>i===count?1:Math.round(width*dpr*i/count)/(width*dpr));
 }
 
-export function paperGeometry(progress: number, count = PAPER_SEGMENTS,cuts?:readonly number[]) {
+export function paperGeometry(progress: number, count = PAPER_SEGMENTS,cuts?:readonly number[],direction:1|-1=1) {
   const p = Math.max(0, Math.min(1, progress));
   const theta = Math.PI * p;
-  const bend = MAX_BEND_RADIANS * Math.sin(theta);
+  // A leaf picked up from the left bends toward the reader from that side.
+  // The crease is mirrored, while the same physical endpoints are retained.
+  const bend = direction * MAX_BEND_RADIANS * Math.sin(theta);
   let x = 0;
   let z = 0;
   return Array.from({length: count}, (_, index) => {
@@ -77,6 +79,11 @@ export function layoutPaper(leaf:HTMLElement){
       print.style.width=`${width}px`;
       print.style.left=`${overlap-(side?1-cuts[index+1]:cuts[index])*width}px`;
     });
+    for(const face of strip.querySelectorAll<HTMLElement>('.is-letter-print')){
+      const offset=face.dataset.face==='back'?1-cuts[index+1]:cuts[index];
+      face.style.backgroundSize=`${width}px ${height}px`;
+      face.style.backgroundPosition=`${overlap-offset*width}px 0`;
+    }
     return {
       strip,
       front:strip.querySelector<HTMLElement>('.paper-front'),
@@ -105,14 +112,16 @@ export function posePaper(leaf:HTMLElement, progress:number){
   leaf.dataset.paperEndpoint=endpoint;
   if(sourcePair)sourcePair.dataset.paperEndpoint=endpoint;
   const theta=Math.PI*p;
-  const bend=MAX_BEND_RADIANS*Math.sin(theta);
-  const pieces=paperGeometry(p,count,cuts);
+  const direction=leaf.dataset.turnDirection==='-1'?-1:1;
+  const sin=Math.sin(theta),cos=Math.cos(theta);
+  const bend=direction*MAX_BEND_RADIANS*sin;
+  const pieces=paperGeometry(p,count,cuts,direction);
   for(let index=0;index<count;index++){
     const {strip,front,back}=segments[index];
     const {x,z,angle}=pieces[index];
 
-    const worldX=Math.cos(theta)*x-Math.sin(theta)*z;
-    const worldZ=Math.sin(theta)*x+Math.cos(theta)*z;
+    const worldX=cos*x-sin*z;
+    const worldZ=sin*x+cos*z;
     const rotation=angle-theta;
     const denominator=1-worldZ*width/camera;
     const perspectiveSlope=Math.sin(rotation)/camera;

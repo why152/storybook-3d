@@ -6,7 +6,7 @@
 <pattern id="flecks" width="17" height="22" patternUnits="userSpaceOnUse"><path d="m3 3 2 2m10 8-3 3" fill="none" stroke="#9B785F" stroke-width="1.5" opacity=".24"/></pattern>
 </defs>
 <!-- Independently animated grow/rabbit art, extracted without altering original brushwork. -->
-<g transform="translate(250 146) rotate(-11 108 190)">
+<g transform="translate(269 194) scale(.92) rotate(-11 108 190)">
 <path d="M104 243Q56 244 47 294M152 244q-4 34 28 44" stroke="#F0CDAB" stroke-width="34" stroke-linecap="round" fill="none"/>
 <ellipse cx="47" cy="302" rx="28" ry="16" fill="#F6DAB8" stroke="#C7A081" stroke-width="3"/>
 <ellipse cx="183" cy="293" rx="29" ry="17" fill="#F6DAB8" stroke="#C7A081" stroke-width="3"/>

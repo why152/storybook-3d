@@ -19,8 +19,8 @@ test('4569 ordinary blessing occupies ten real book leaves, left and right, with
   await page.setViewportSize({width:390,height:844});
   await page.goto('/?story=letter');
   await expect(page.locator('.v2-letter-edition')).toHaveCount(1);
-  await expect(page.locator('.v2-cover .cover-edition')).toHaveText('WORDS FROM A FRIEND');
-  await expect(page.locator('.v2-cover .cover-main-title')).toContainText('letter');
+  await expect(page.locator('.v2-cover .cover-edition')).toHaveText('给朋友的一本小书');
+  await expect(page.locator('.v2-cover .cover-main-title')).toHaveText('一封来信');
   const originalInk=await page.locator('.has-authentic-handwriting').count()>0;
   for(let i=0;i<ids.length;i++){
     await page.goto('/?story=letter&scene='+ids[i]);
@@ -60,7 +60,7 @@ test('4569 ordinary blessing occupies ten real book leaves, left and right, with
     }
     await page.screenshot({path:'test-results/letter-paper-'+ids[i]+'.png',animations:'disabled'});
   }
-  await page.goto('/?scene=wish');
+  await page.goto('/?story=birthday&scene=wish');
   await expect(page.locator('.book-static .letter-leaf')).toHaveCount(0);
   await expect(page.locator('.book-static .page-quote h2').first()).toContainText('生日快乐');
 });

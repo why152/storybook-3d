@@ -24,7 +24,11 @@ for(const mode of ['birthday','letter'] as const){
       await expect(shell.locator('.book-turn-leaf .page-surface[data-chapter="hello"]')).toHaveCount(1);
       expect(await left.evaluate(node=>getComputedStyle(node).visibility)).toBe('hidden');
       expect(await right.evaluate(node=>getComputedStyle(node).visibility)).toBe('visible');
-      expect(await shell.locator('.book-depth').evaluate(node=>getComputedStyle(node).clipPath)).toBe('inset(0px 0px 0px 50%)');
+      const supportLeft=await shell.locator('.book-depth').evaluate(node=>
+        parseFloat(getComputedStyle(node).left)/parseFloat(getComputedStyle(node.parentElement!).width));
+      // The support stays entirely under the right page until the hardcover
+      // passes edge-on, then opens into the left half with the cover.
+      expect(supportLeft).toBeCloseTo(.5-.4955*Math.max(0,-Math.cos(Math.PI*pose)),3);
       await expect(shell.locator('.page-blank')).toHaveCount(0);
       const artwork=left.locator('.scene-plane');
       await expect.poll(async()=>artwork.evaluateAll(images=>images.every(image=>{
@@ -43,7 +47,7 @@ for(const mode of ['birthday','letter'] as const){
 
 test('real cover opens and closes back to a single portrait without losing HELLO',async({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await page.goto('/');
+  await page.goto('/?story=birthday');
   await expect(page.locator('.book-static.book-closed-cover')).toBeVisible();
   for(let repeat=0;repeat<2;repeat++){
     await page.getByRole('button',{name:'下一页'}).click();
@@ -58,9 +62,37 @@ test('real cover opens and closes back to a single portrait without losing HELLO
 });
 
 for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
+  test(`${viewport.width}: the cover support matches both settled endpoints`,async({page})=>{
+    await page.setViewportSize(viewport);
+    await page.emulateMedia({reducedMotion:'reduce'});
+    for(const pose of [0,1]){
+      const shots:Buffer[]=[];
+      for(const query of [`&from=cover&pose=${pose}`,pose===1?'&scene=hello':'']){
+        await page.goto('/?story=letter'+query);
+        await page.evaluate(()=>Promise.all([...document.images].map(image=>image.decode())));
+        const box=(await page.locator('.book-viewport').boundingBox())!;
+        const clip={x:Math.floor(box.x+(pose===0?box.width/4:0)),y:Math.ceil(box.y+box.height+2),
+          width:Math.floor(box.width/(pose===0?2:1)),height:10};
+        shots.push(await page.screenshot({clip}));
+      }
+      const error=await page.evaluate(async sources=>{
+        const pixels=async(src:string)=>{
+          const image=new Image();image.src=src;await image.decode();
+          const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;
+          const ctx=canvas.getContext('2d')!;ctx.drawImage(image,0,0);
+          return ctx.getImageData(0,0,image.width,image.height).data;
+        };
+        const [a,b]=await Promise.all(sources.map(pixels));
+        let error=0;for(let i=0;i<a.length;i+=4)for(let c=0;c<3;c++)error+=Math.abs(a[i+c]-b[i+c]);
+        return error/(a.length/4*3);
+      },shots.map(image=>'data:image/png;base64,'+image.toString('base64')));
+      expect(error,`support handoff at cover pose ${pose}`).toBeLessThan(2);
+    }
+  });
+
   test(`${viewport.width}: cover drag reverses and cancellation restores both endpoints`,async({page},testInfo)=>{
     await page.setViewportSize(viewport);
-    await page.goto('/');
+    await page.goto('/?story=birthday');
     const book=page.locator('.book-viewport');
     const shell=page.locator('.book-shell');
     const leaf=page.locator('.book-turn-leaf');
@@ -71,7 +103,7 @@ for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
       await expect(leaf).toHaveCount(0);
       await expect(shell).toHaveAttribute('data-book-mode',mode);
       expect(await shell.evaluate(el=>(el as HTMLElement).style.transform)).toBe('');
-      expect(await shell.locator('.book-depth').evaluate(el=>(el as HTMLElement).style.clipPath)).toBe('');
+      expect(await shell.evaluate(el=>(el as HTMLElement).style.getPropertyValue('--cover-unfold'))).toBe('');
       await expect(book).not.toHaveAttribute('data-grab-active','true');
     };
     for(const direction of [1,-1]){
@@ -106,7 +138,7 @@ for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
   });
   test(`${viewport.width}: reduced motion cover transitions settle coherently`,async({page})=>{
     await page.setViewportSize(viewport);await page.emulateMedia({reducedMotion:'reduce'});
-    await page.goto('/');
+    await page.goto('/?story=birthday');
     for(const direction of ['下一页','上一页']){
       await page.getByRole('button',{name:direction}).click();
       await expect(page.locator('.book-turn-leaf')).toHaveCount(0);

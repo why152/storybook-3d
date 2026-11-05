@@ -16,9 +16,13 @@
 
 ## 主线与工作方式
 
+默认入口打开中文版《一封来信》。已分享的生日祝福仍可通过原来的 `#gift=` 链接打开，`?story=birthday` 可直接访问生日版。
+
+配乐为 Scott Buckley 的 [The Long Way Home](https://www.scottbuckley.com.au/library/the-long-way-home/)，按 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 署名使用。网页使用下调 8 dB 并重新编码的版本。打开时尝试自动播放，浏览器拦截时在首次点按或翻页后播放。章节插画的中文字轮廓取自 [Noto Serif SC](https://github.com/notofonts/noto-cjk/tree/985fa52c81c1d6692ccdd82bc3656e8fb932fd89)，采用 SIL Open Font License 1.1。
+
 `main` 已发布 [PR #40](https://github.com/why152/storybook-3d/pull/40)（`9e5fb60`）：封面修正、12 个获准公开的原迹、HELLO 排版与书内放大阅读。在线地址：[朋友的来信](https://why152.github.io/storybook-3d/?story=letter)。
 
-当前收尾分支 `codex/complete-letter-book-20261103` 在已发布版本上统一另外四章、移除独立图片列表阅读，并修复曲页裁切细缝。历史实验不批量合并；原版可通过 Git 回退。项目根目录是唯一开发入口。
+五章收尾已通过 PR #41 发布（`6b08146`）。当前修复分支 `codex/iphone-ink-turn-performance` 针对 iPhone Safari 翻页卡顿及手写字半透明底色，保持已确认的桌面排版；[验证记录](docs/validation/iphone-safari-ink-performance.md)。历史实验不批量合并；原版可通过 Git 回退。项目根目录是唯一开发入口。
 
 截图录像用于判断书本效果，CI 用于发现行为回归。发布只检查页面、素材可加载和实际翻页，不把逐文件哈希作为发布关卡。原稿提取时的源像素验证保留，用于避免切错笔画。
 

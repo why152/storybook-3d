@@ -5,7 +5,7 @@ import { chapters } from '../src/data/story';
 // coordinates must fail, even if all page-count/navigation tests still pass.
 for(const chapter of chapters.slice(0,-1)){
   test(`${chapter.word} keeps the printed pose through forward and reverse handoffs`,async ({page},testInfo)=>{
-    await page.goto('/?scene='+chapter.id);
+    await page.goto('/?story=birthday&scene='+chapter.id);
     await page.evaluate(async()=>{
       await Promise.all([...document.images].map(image=>image.decode()));
       for(const el of document.querySelectorAll('.book-static .scene-plane')){
@@ -114,7 +114,7 @@ test('cold incoming artwork is decoded before the paper starts moving',async ({p
   let release!:()=>void;
   const pending=new Promise<void>(resolve=>{release=resolve});
   await page.route('**/assets/grow/**',async route=>{await pending;await route.continue()});
-  await page.goto('/?scene=hello');
+  await page.goto('/?story=birthday&scene=hello');
   await page.evaluate(()=>Promise.all([...document.images].map(image=>image.decode())));
   await page.getByRole('button',{name:'下一页'}).click();
   const leaf=page.locator('.book-turn-leaf');
@@ -141,11 +141,11 @@ for(const width of [1280,390])for(const pose of [0,1]){
       await document.fonts.ready;
       await Promise.all([...document.images].map(image=>image.decode()));
     });
-    await page.goto('/?scene='+chapter.id);
+    await page.goto('/?story=birthday&scene='+chapter.id);
     await ready();
     const box=(await page.locator('.book-viewport').boundingBox())!;
     const settled=await page.screenshot();
-    await page.goto(`/?pose=${pose}&from=${chapters[1].id}`);
+    await page.goto(`/?story=birthday&pose=${pose}&from=${chapters[1].id}`);
     await ready();
     await expect(page.locator('.book-turn-leaf')).toBeVisible();
     await expect(page.locator('.book-turn-leaf')).toHaveAttribute('data-texture-ready','true');

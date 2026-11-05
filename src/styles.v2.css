@@ -16,13 +16,17 @@
 }
 .v2-showroom .site-head { align-items:center; }
 .v2-showroom .site-name { font-family:Georgia,'Times New Roman',serif; font-size:16px;letter-spacing:-.5px; }
-.v2-showroom .site-name span {color:#eac89d}
 .v2-showroom .site-title {font-size:13px;letter-spacing:2.4px;font-weight:600;color:#e7d2bf}
 .v2-showroom .customize-trigger {
   border:1px solid #eacda077; border-radius:50px; background:#d8b99710;
   font-size:11px;padding:12px 20px;min-height:44px;
 }
 .v2-showroom .customize-trigger:hover {background:#dbb9952d}
+.site-actions{display:flex;align-items:center;justify-self:end;gap:8px}
+.music-control{position:relative}
+.v2-showroom .music-trigger{display:flex;align-items:center;gap:6px;white-space:nowrap;padding-inline:14px}
+.music-trigger[aria-pressed="true"]{color:#fff0d4;background:#dbb9952d}
+.music-error{position:absolute;right:0;top:100%;white-space:nowrap;color:#f1cba5}
 .v2-showroom .exhibition {isolation:isolate}
 .v2-showroom .exhibition::before {
  content:"";position:absolute;left:15%;right:15%;top:14%;bottom:9%;
@@ -33,9 +37,6 @@
 /* Never filter the book viewport: a filtered ancestor forces WebKit to
    rasterize/flatten the entire nested 3D sheet and its animated SVG layers.
    The existing .book-depth shadow supplies stage depth without this cost. */
-.v2-showroom .book-binding {
- background:linear-gradient(90deg,#26222bb9 0%,#746775c9 18%,#ddc4aa 45%,#655867d9 74%,#292530a9 100%);
-}
 .v2-showroom .page-navigation {font-size:12px}
 .v2-showroom .page-dot {border-color:#f7e3ca8f}
 .v2-showroom .page-dot:focus-visible {outline-offset:5px}
@@ -54,16 +55,15 @@
 .v2-cover-frame {position:absolute;inset:4.5% 5% 4.5% 7%;z-index:3;border:1px solid #f5d9a680;border-radius:5px;pointer-events:none}
 .v2-cover-frame::after {content:"";position:absolute;inset:2%;border:1px solid #d8b58c49;border-radius:3px}
 .v2-cover .book-cover-copy {
- z-index:4;justify-content:flex-start;padding:18% 7% 10%;gap:12px;
+ z-index:4;justify-content:flex-start;padding:18% 7% 10%;gap:clamp(6px,1.1vw,12px);
  text-shadow:0 3px 18px #151626d9;
 }
 .v2-cover .cover-edition {font-family:Georgia,serif;font-size:clamp(8px,.8vw,13px);letter-spacing:.27em;margin:0;color:#f0dcb7}
-.v2-cover .cover-main-title {font-family:Georgia,'Times New Roman',serif;font-size:clamp(28px,4.15vw,60px);line-height:1.02;letter-spacing:-.065em}
-.v2-cover .cover-main-title i {font-family:'Caveat',Georgia,cursive;font-weight:700;font-size:1.5em;letter-spacing:0;line-height:.84;color:#f7cda2;transform:rotate(-6deg)}
-.v2-cover .cover-meta {letter-spacing:.12em;line-height:1.65;font-weight:600;color:#f1dcc8}
+.v2-cover .cover-main-title {font-family:'Songti SC','Noto Serif CJK SC',SimSun,serif;font-size:clamp(28px,4.15vw,60px);line-height:1.12;letter-spacing:.13em;text-indent:.13em}
+.v2-cover .cover-main-title i {font:inherit;font-size:1.28em;line-height:1;color:#f7cda2;transform:none}
 .v2-cover .cover-hinge {z-index:7;background:linear-gradient(90deg,#090e20,#5e5871a0 55%,transparent)}
 .v2-cover-flourish {font-size:21px;line-height:1;color:#e6c69f;letter-spacing:7px;opacity:.9}
-.v2-cover-bottom-note {position:absolute;z-index:4;bottom:9%;left:12%;right:9%;text-align:center;font:italic 13px Georgia,serif;color:#f8e3c7;text-shadow:0 3px 9px #172333}
+.v2-cover-bottom-note {position:absolute;z-index:4;bottom:9%;left:12%;right:9%;text-align:center;font:13px 'Songti SC',serif;color:#f8e3c7;text-shadow:0 3px 9px #172333}
 .v2-showroom .theme-hello .page-chapter-left {font-family:Georgia,serif;font-style:italic;font-size:clamp(10px,1vw,15px)}
 .v2-showroom .page-surface {--paper-corner:12px}
 .v2-showroom .page-quote {padding:10px 14px;background:linear-gradient(90deg,#24313b7a,#24313b16)}
@@ -113,7 +113,6 @@
   .v2-showroom .page-quote p {font-size:7px}
   .v2-cover .cover-main-title {font-size:clamp(25px,7.5vw,40px)}
   .v2-cover .cover-edition {font-size:8px}
-  .v2-cover .cover-meta {font-size:7px}
   .v2-cover-bottom-note {font-size:11px}
 }
 @media (max-height:640px) and (max-width:600px) {
@@ -132,9 +131,8 @@
 .v2-showroom .book-viewport[data-grab-active="true"] {cursor:grabbing;}
 .v2-showroom .book-viewport img {-webkit-user-drag:none;user-select:none;}
 
-/* The other, non-birthday letter is a distinct editorial edition. */
-.v2-showroom .letter-variant-trigger{display:grid;place-items:center;text-decoration:none;letter-spacing:.08em;}
-.v2-showroom .letter-edition-link{color:#e4c69f;text-decoration:underline;text-underline-offset:3px;}
+.music-credit a{color:#e8c9a6;text-underline-offset:2px}
+.music-edit{white-space:nowrap}
 .v2-showroom.v2-letter-edition .site-title{color:#ecd2ac;}
 .v2-showroom.v2-letter-edition .chapter-reader{background:linear-gradient(180deg,#edcda50f,transparent);}
 .v2-showroom.v2-letter-edition .page-quote{max-width:90%;background:linear-gradient(90deg,#1d2b3bd6,#1d2b3b73);}
@@ -145,16 +143,13 @@
  .v2-showroom.v2-letter-edition .page-quote{max-width:93%;padding:3px;}
  .v2-showroom.v2-letter-edition .page-quote h2{font-size:8px;}
  .v2-showroom.v2-letter-edition .page-quote p{font-size:7px;line-height:1.25;}
- .v2-showroom .letter-variant-trigger{font-size:9px;padding:7px;}
- .v2-showroom .letter-edition-link{font-size:9px;}
+ .v2-showroom .music-trigger{padding-inline:9px}
 }
 
-/* On phone the original footer hid its last cell; make the ordinary-letter
-   edition discoverable without obscuring the book or its graspable corners. */
 @media (max-width:600px){
-  .v2-showroom .site-foot span:nth-child(2){display:none}
-  .v2-showroom .site-foot span:last-child{display:block}
-  .v2-showroom .site-foot{justify-content:center;height:38px;}
+  .v2-showroom .site-foot>span:nth-child(2){display:none}
+  .v2-showroom .site-foot>.music-credit{display:block;text-align:center}
+  .v2-showroom .site-foot{justify-content:center;flex-wrap:wrap;gap:4px 12px;height:auto;min-height:38px;padding:6px 12px}
 }
 
 /* iPhone landscape reports a WIDE viewport even though available height is
@@ -162,6 +157,7 @@
    postage stamp. Keep the physical two-page geometry, but dedicate nearly
    the whole available vertical stage to it. */
 @media (orientation:landscape) and (max-height:520px) and (min-width:601px) and (max-width:1100px){
+ html,body,#root{min-height:100dvh}
  .v2-showroom{min-height:100dvh;}
  .v2-showroom .site-head{height:46px;padding:7px 22px;align-items:center}
  .v2-showroom .site-name{font-size:14px}

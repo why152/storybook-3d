@@ -55,7 +55,7 @@ test('capture reproducible book asset/layout/readability baselines before premiu
     for(const viewport of sizes){
       await page.setViewportSize({width:viewport.width,height:viewport.height});
       for(const chapter of chapters){
-        await page.goto('/?scene='+chapter,{waitUntil:'networkidle'});
+        await page.goto('/?story=birthday&scene='+chapter,{waitUntil:'networkidle'});
         const images=page.locator('.book-static .page-surface .scene-plane');
         await expect(images).toHaveCount(chapter==='hello'?14:16);
         await expect.poll(async()=>images.evaluateAll(list=>list.every(
@@ -67,9 +67,10 @@ test('capture reproducible book asset/layout/readability baselines before premiu
         await expect(page.locator('.book-static .page-surface[data-chapter="'+chapter+'"]')).toHaveCount(2);
         const sceneStats=await page.evaluate(()=>{
           const book=document.querySelector<HTMLElement>('.book-shell')!;
-          const binding=document.querySelector<HTMLElement>('.book-binding')!;
           const rect=book.getBoundingClientRect();
-          const bindingRect=binding.getBoundingClientRect();
+          const leftEdge=book.querySelector('.book-left .paper-bevel')!.getBoundingClientRect().right;
+          const rightEdge=book.querySelector('.book-right .paper-bevel')!.getBoundingClientRect().left;
+          const center=rect.left+rect.width/2;
           const images=[...document.querySelectorAll<HTMLImageElement>('.book-static .scene-plane')];
           const resources=performance.getEntriesByType('resource') as PerformanceResourceTiming[];
           const illustration=resources.filter(x=>x.name.includes('/assets/'));
@@ -79,7 +80,7 @@ test('capture reproducible book asset/layout/readability baselines before premiu
             docWidth:document.documentElement.scrollWidth,
             bookWidth:rect.width,
             bookHeight:rect.height,
-            gutterDelta:Math.abs(bindingRect.left+bindingRect.width/2-(rect.left+rect.width/2)),
+            gutterDelta:Math.max(Math.abs(leftEdge-center),Math.abs(rightEdge-center)),
             resources:illustration.length,
             transferBytes:illustration.reduce((sum,r)=>sum+(r.transferSize||0),0),
             decodedBytes:illustration.reduce((sum,r)=>sum+(r.decodedBodySize||0),0),

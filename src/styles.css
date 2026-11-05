@@ -26,7 +26,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 
 /* BOOK: one full-width landscape spread is bound at its midpoint.
    This is fundamentally different from the removed whole-card rotation. */
-.book-viewport{width:min(100%,1100px,calc((100dvh - 230px)*12/7));aspect-ratio:12/7;position:relative;
+.book-viewport{--cover-outline:3px 15px 15px 3px;width:min(100%,1100px,calc((100dvh - 230px)*12/7));aspect-ratio:12/7;position:relative;
  margin:auto;perspective:2300px;touch-action:pan-y}
 .book-shell{height:100%;width:100%;position:relative;transform-style:preserve-3d;
  filter:none}
@@ -39,20 +39,20 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .book-right{left:50%}
 /* The first left illustration belongs to the moving hardcover back until
    it lands. Keep its static twin mounted for pose handoff without painting a
-   duplicate. The paper stack stays under the RIGHT pages: expanding it left
-   during opening exposed the pale rectangular slab reported in #31. */
+   duplicate. The support under the cover expands only after its back face
+   starts to project left. Its footprint and shadow meet the settled spread. */
 .book-shell.is-opening .book-left,
 .book-shell.is-closing .book-left{visibility:hidden}
 .book-shell.is-opening .book-depth,
-.book-shell.is-closing .book-depth,
+.book-shell.is-closing .book-depth{
+ left:calc(50% - 49.55% * var(--cover-unfold,0));
+ border-top-left-radius:calc(4px + 10px * var(--cover-unfold,0));
+ border-bottom-left-radius:calc(4px + 10px * var(--cover-unfold,0));
+}
 .book-shell.is-opening .book-edge-shadow,
-.book-shell.is-closing .book-edge-shadow{clip-path:inset(0 0 0 50%)}
+.book-shell.is-closing .book-edge-shadow{left:calc(50% - 50% * var(--cover-unfold,0))}
 .book-shell.is-closed .book-depth{left:50%;border-radius:4px 14px 14px 4px}
 .book-static.book-closed-cover{z-index:6}
-.book-binding{position:absolute;z-index:11;top:.2%;bottom:.25%;left:calc(50% - 6px);width:12px;pointer-events:none;
- background:linear-gradient(90deg,#423539c9 0,#8d7163af 16%,#d0b79b8f 41%,#6f5f62bc 65%,#302d3290 100%);
- box-shadow:-7px 0 10px #3b33394d,7px 0 11px #41393673;border-radius:9px;transform:translateZ(2px)}
-.book-shell.is-closed .book-binding{left:calc(50% - 3px);width:6px}
 .book-edge-shadow{position:absolute;inset:0;z-index:2;pointer-events:none;
  box-shadow:0 27px 38px #0004;transform:translateZ(-2px)}
 .book-shell.is-closed .book-edge-shadow{left:50%}
@@ -93,8 +93,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .page-quote p{font-size:clamp(8px,.84vw,13px);line-height:1.45;margin:0}
 .paper-bevel{position:absolute;inset:0;pointer-events:none;z-index:10;border:1px solid #fff8de7d;border-radius:inherit;
  box-shadow:inset 0 0 14px #684e4e35}
-.page-left .paper-bevel{box-shadow:inset -22px 0 26px #4c383a43}
-.page-right .paper-bevel{box-shadow:inset 22px 0 26px #4c383a43}
+/* The gutter is the two shaded inner edges. Each shadow belongs to its
+   own page and cannot be composited above a lifted leaf. */
+.page-left .paper-bevel{border-right-color:#604c3d36;box-shadow:inset -3px 0 4px #46302d48,inset -15px 0 23px #4c383a43}
+.page-right .paper-bevel{border-left-color:#604c3d36;box-shadow:inset 3px 0 4px #46302d48,inset 15px 0 23px #4c383a43}
 .page-blank{background:linear-gradient(120deg,#f6e8d3,#e8d4b7)}
 .page-blank .page-window{background:repeating-linear-gradient(0deg,transparent 0 23px,#7562500a 24px 25px)}
 
@@ -107,11 +109,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
    Cull only the away-facing surface, using the same angle as the hinge.
    Both faces retain their own artwork/identity; the leaf still rotates in 3D. */
 .book-turn-leaf[data-loading="true"]:not([data-print-available="true"]){visibility:hidden}
+.book-turn-leaf[data-loading="true"][data-paper-kind="letter"]{visibility:hidden}
 .book-turn-leaf[data-visible-face="front"] .book-leaf-back,
 .book-turn-leaf[data-visible-face="back"] .book-leaf-front{display:none}
-.book-leaf-front{transform:rotateY(0deg) translateZ(.6px)}
+/* The front matches the stationary cover plane and keeps its cast shadow.
+   The away-facing side is already culled by data-visible-face. */
+.book-leaf-front{transform:rotateY(0deg);overflow:visible}
 .book-leaf-back{transform:rotateY(180deg) translateZ(.6px)}
-.book-leaf-face .page-surface,.book-leaf-face .book-front-cover{border-radius:0 12px 12px 0}
+.book-leaf-face .page-surface{border-radius:0 12px 12px 0}
+.book-leaf-front .leaf-light{border-radius:var(--cover-outline)}
 .book-leaf-back .page-surface{border-radius:12px 0 0 12px}
 .book-leaf-face .scene-plane{transition:none}
 .leaf-light{position:absolute;inset:0;z-index:12;opacity:var(--leaf-shade,0);pointer-events:none;
@@ -158,11 +164,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
    cannot leave bright lines across the reverse face at oblique angles. */
 .paper-segment-face::after{content:"";position:absolute;inset:-2px;z-index:2;background:linear-gradient(90deg,rgb(40 33 44 / var(--shade-start,0)),rgb(40 33 44 / var(--shade-end,0)));pointer-events:none}
 .paper-back::after{background:linear-gradient(90deg,rgb(40 33 44 / var(--shade-end,0)),rgb(40 33 44 / var(--shade-start,0)))}
+/* Paint the opaque letter print on the strip itself, without nested
+   clipped art, ink or promoted image layers. */
+.paper-segment-face.is-letter-print{clip-path:none;isolation:auto;background-color:#f3dfc4;background-repeat:no-repeat}
+.paper-segment-face.is-letter-print::after{inset:0;border-radius:inherit}
 .paper-segment .page-surface{backface-visibility:visible;-webkit-backface-visibility:visible}
 .paper-segment .page-chapter-left{text-shadow:0 1px 3px #3d303790}
 
 /* Navy fabric cover: the closed state is a real portrait front leaf. */
-.book-front-cover{border-radius:3px 15px 15px 3px;color:#f6e4c8;
+.book-front-cover{border-radius:var(--cover-outline);color:#f6e4c8;
  background:radial-gradient(ellipse at 58% 25%,#303343 0,#191d2c 53%,#111522 100%);
  box-shadow:inset 12px 0 4px #39324390,inset 19px 0 8px #ab927545,inset -4px 0 7px #0a0e17}
 .cover-border{position:absolute;inset:4.5%;border:1px solid #e3c6a34f;border-radius:6px;pointer-events:none}
@@ -178,7 +188,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .cover-main-title{font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(27px,4.7vw,73px);font-weight:900;line-height:.86;white-space:nowrap}
 .cover-main-title i{display:block;font-family:'Caveat',cursive;font-size:1.2em;line-height:1.08;font-weight:700;color:#ecc69f;transform:rotate(-7deg)}
 .cover-separator{font-size:20px;margin:2% 0}
-.cover-meta{font-size:clamp(7px,.72vw,12px);letter-spacing:.17em;line-height:1.8}
 .cover-hinge{position:absolute;left:0;top:0;bottom:0;width:15px;
  background:linear-gradient(90deg,#0e111b,#64606a66 58%,transparent);pointer-events:none}
 
@@ -196,7 +205,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .page-count{text-align:right;color:#c2b0a4;font-size:11px;font-variant-numeric:tabular-nums;letter-spacing:2px}
 .site-foot{flex:none;height:43px;display:flex;justify-content:space-between;align-items:center;
  padding:0 24px 7px;color:#817c82;letter-spacing:1px;font-size:9px;z-index:3}
-.site-foot span:nth-child(2){letter-spacing:2px;color:#a6a0a3}
+.site-foot>span:nth-child(2){letter-spacing:2px;color:#a6a0a3}
 
 .editor-backdrop{position:fixed;inset:0;z-index:30;background:#060609a6;display:flex;justify-content:flex-end}
 .editor-drawer{position:relative;width:min(450px,100vw);height:100%;overflow-y:auto;padding:68px 39px 35px;
@@ -228,23 +237,21 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
  .site-head{grid-template-columns:1fr 1fr;height:86px}.site-title{display:none}
  .exhibition{grid-template-columns:24px minmax(0,1fr) 24px}
  .turn-button{height:78px}.hand-arrow{width:27px}
- .book-viewport{width:100%}
+ .book-viewport{width:100%;--cover-outline:3px 9px 9px 3px}
  .book-depth{box-shadow:1px 5px 0 #958e8a,1px 8px 3px #55484c,2px 16px 32px #0008}
- .book-binding{width:6px;left:calc(50% - 3px)}
  .page-quote{bottom:3%;right:3%;max-width:94%;padding:2px 3px}
  .page-quote h2{font-size:9px;margin:0 0 1px}.page-quote p{font-size:7px;line-height:1.2}
  .page-chapter{font-size:7px;letter-spacing:1px}
  .page-chapter-left{font-size:8px}
- .book-front-cover{border-radius:3px 9px 9px 3px}
  .cover-main-title{font-size:clamp(23px,7vw,35px)}
- .cover-moon{font-size:34px}.cover-edition,.cover-meta{font-size:6px}
+ .cover-moon{font-size:34px}.cover-edition{font-size:6px}
  .cover-separator{font-size:12px}
  .page-navigation{height:75px;grid-template-columns:1fr 1fr;gap:4px;padding:0 15px}
  .page-navigation .chapter-current{display:none}.page-count{font-size:10px}
  .page-dots{justify-content:flex-start;gap:10px}
  .site-foot{height:42px;justify-content:center}
- .site-foot span:first-child,.site-foot span:last-child{display:none}
- .site-foot span:nth-child(2){text-align:center;font-size:8px}
+ .site-foot>span:first-child,.site-foot>span:last-child{display:none}
+ .site-foot>span:nth-child(2){text-align:center;font-size:8px}
  .editor-drawer{padding:64px 27px 28px}
 }
 @media(prefers-reduced-motion:reduce){
@@ -287,8 +294,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .acting-hello.actor-rabbit{transform-origin:28% 72%}
 .acting-hello.actor-fox{transform-origin:78% 75%}
 .acting-grow.actor-rabbit{transform-origin:30% 49%}
-.acting-grow.actor-fox{transform-origin:74% 75%}
-.acting-grow.actor-props{transform-origin:88% 82%}
+.acting-grow:is(.actor-fox,.actor-props){transform-origin:74% 75%}
 .acting-hello.actor-rabbit{
  animation:hello-rabbit-greeting 4.8s ease-in-out infinite;
 }
@@ -298,11 +304,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .acting-grow.actor-rabbit{
  animation:grow-rabbit-reaching 4.3s ease-in-out infinite;
 }
-.acting-grow.actor-fox{
+.acting-grow:is(.actor-fox,.actor-props){
  animation:grow-fox-watering 5.0s ease-in-out -1.1s infinite;
-}
-.acting-grow.actor-props{
- animation:grow-watering-props 5.0s ease-in-out -1.1s infinite;
 }
 
 @keyframes hello-rabbit-greeting{
@@ -329,11 +332,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
   28%,50%{transform:translate3d(calc(var(--mx,0px) + 1px),calc(var(--my,0px) + 2px),0) rotate(2.4deg)}
   64%{transform:translate3d(calc(var(--mx,0px) - 1px),calc(var(--my,0px) - 1px),0) rotate(-.8deg)}
   83%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
-}
-@keyframes grow-watering-props{
-  0%,18%,100%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
-  32%,50%{transform:translate3d(calc(var(--mx,0px) + 1px),calc(var(--my,0px) + 2px),0) rotate(-2.5deg)}
-  70%{transform:translate3d(var(--mx,0px),var(--my,0px),0) rotate(0deg)}
 }
 .book-leaf-face .scene-actor{animation:none!important}
 /* Keep each static animation at its actual pose while paper is moving.

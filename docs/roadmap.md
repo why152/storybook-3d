@@ -8,4 +8,4 @@
 
 完成后可以继续打磨专业插画、角色细节和更精细的场景动效，但不把无限追赶参考网站作为本次礼物的完成条件。参考是工艺标准，不复制内容，不重写成整卡旋转。
 
-约束与验收见 `AGENTS.md` 和 [product-direction.md](product-direction.md)。不新增后台、上传、商店、渲染引擎或逐文件哈希发布关卡；不部署 AWS。
+约束与验收见 `AGENTS.md` 和 [product-direction.md](product-direction.md)。不新增后台、上传、商店或渲染引擎。2026-11-04 用户授权更新现有 AWS 绘本入口，见 [AWS 发布方式](AWS_DEPLOYMENT.md)。
