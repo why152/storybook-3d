@@ -5,6 +5,7 @@ const root=process.argv[2];
 if(!root)throw new Error('Usage: node scripts/capture-safari-repair.mjs <evidence-directory>');
 const engine=process.env.STORYBOOK_TEST_BROWSER??'webkit';
 const base=process.env.STORYBOOK_TEST_BASE_URL??'http://127.0.0.1:5173';
+const sources=(process.env.STORYBOOK_CAPTURE_FROM??'cover,grow').split(',');
 await mkdir(root,{recursive:true});
 const browser=await ({chromium,webkit}[engine]).launch();
 const reports=[];
@@ -21,7 +22,7 @@ try{
     await page.screenshot({path:`${root}/${engine}-${device}-hello-zoom.png`});
    }
   }
-  for(const from of ['cover','grow'])for(const pose of [0,.25,.5,.75,1]){
+  for(const from of sources)for(const pose of [0,.25,.5,.75,1]){
    await page.goto(`${base}/?story=letter&from=${from}&pose=${pose}`);
    if(from!=='cover')await page.waitForSelector('[data-texture-ready="true"]',{state:'attached'});
    await page.evaluate(async()=>{await Promise.all([...document.images].map(i=>i.decode()));await document.fonts.ready;});

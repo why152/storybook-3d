@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Book, type PageTurn } from './components/Book';
 import { getChapter, initialPosition, previewFrom, previewPose, totalPositions, type StoryMode } from './data/story';
 import { DEFAULT_GREETING, greetingFromHash, makeShareLink } from './data/share';
-import { letterSpreads } from './data/letterStory';
+import {letterSpreads, LETTER_SOURCE} from './data/letterStory';
+import template from 'virtual:storybook-template';
 import { hasHandwriting } from './data/handwriting';
 import {BookReadingStage, type ReadingSide} from './components/BookReadingStage';
 import {MusicControl, MusicCredit} from './components/Music';
@@ -15,8 +16,8 @@ const debugPose=previewPose();
 const debugFrom=previewFrom();
 const sharedGreeting=greetingFromHash(window.location.hash);
 const requestedStory=new URLSearchParams(window.location.search).get('story');
-const storyMode:StoryMode=requestedStory==='birthday'||
-  (requestedStory!=='letter'&&window.location.hash.startsWith('#gift='))?'birthday':'letter';
+const storyMode:StoryMode=import.meta.env.MODE!=='template'&&(requestedStory==='birthday'||
+  (requestedStory!=='letter'&&window.location.hash.startsWith('#gift=')))?'birthday':'letter';
 
 function Arrow({back=false}:{back?:boolean}){
   return <svg aria-hidden="true" viewBox="0 0 115 52" className={`hand-arrow ${back?'is-back':''}`} fill="none">
@@ -37,6 +38,7 @@ export default function App(){
   const [reducedMotion,setReducedMotion]=useState(()=>
     window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   useEffect(()=>{
+    if(template)return;
     // Navigating to another #gift URL on the same path does not remount React.
     // Reload that document to restore the new greeting and restart at the cover.
     // Also handles unsupported/corrupt gift fragments with safe defaults.
@@ -114,7 +116,8 @@ export default function App(){
     '{wish}',wish.trim()||DEFAULT_GREETING.wish
   );
   const authenticLetter=storyMode==='letter'&&hasHandwriting;
-  const readingControls=authenticLetter&&currentIndex>0&&debugPose===null;
+  const readingEdition=authenticLetter||!!template;
+  const readingControls=readingEdition&&currentIndex>0&&debugPose===null;
   const shareLink=makeShareLink({name,wish},window.location);
   const copyShareLink=async()=>{
     try{
@@ -125,14 +128,14 @@ export default function App(){
     }
   };
 
-  return <div className={`showroom v2-showroom ${storyMode==='letter'?'v2-letter-edition':''} ${authenticLetter?'has-authentic-handwriting letter-reading-edition':''}`}>
+  return <div className={`showroom v2-showroom ${storyMode==='letter'?'v2-letter-edition':''} ${authenticLetter?'has-authentic-handwriting':''} ${readingEdition?'letter-reading-edition':''}`}>
     <header className="site-head">
-      <div className="site-name">{storyMode==='letter'?'一封来信':'生日绘本'}</div>
-      <div className="site-title">{storyMode==='letter'?'写在纸上的话，留在故事里。':'给特别的你'}</div>
+      <div className="site-name">{template?.title??(storyMode==='letter'?'一封来信':'生日绘本')}</div>
+      <div className="site-title">{template?.subtitle??(storyMode==='letter'?'写在纸上的话，留在故事里。':'给特别的你')}</div>
       <div className="site-actions">
         {storyMode==='birthday'&&<button ref={customizeTrigger} type="button" className="customize-trigger" disabled={!!turn}
           onClick={()=>setEditorOpen(true)}>定制祝福</button>}
-        <MusicControl/>
+        {template?.music!==null&&<MusicControl/>}
       </div>
     </header>
     <main className="exhibition">
@@ -160,8 +163,8 @@ export default function App(){
       {shownChapter
         ? <>
           <div className="reader-meta">{shownChapter.label} · {shownChapter.word}</div>
-          <h2>{storyMode==='letter'&&hasHandwriting?'朋友的来信':readableTitle}</h2>
-          {authenticLetter?<p className="book-reading-hint">{readingSide?'正在放大原来的书页 · 点「双页全貌」返回':'手机上点「放大左页」或「放大右页」，细读同一张书页。'}</p>:storyMode==='letter'?<div className="reader-letter-transcript" aria-label="本跨页的完整信件文字">
+          <h2>{template?shownChapter.word:authenticLetter?'朋友的来信':readableTitle}</h2>
+          {readingEdition?<p className="book-reading-hint">{readingSide?'正在放大原来的书页 · 点「双页全貌」返回':'手机上点「放大左页」或「放大右页」，细读同一张书页。'}</p>:storyMode==='letter'?<div className="reader-letter-transcript" aria-label="本跨页的完整信件文字">
             {letterSpreads[currentIndex-1].left.lines.slice(1).map((line,i)=><p key={`left-${i}`}>{line}</p>)}
             {letterSpreads[currentIndex-1].right.lines.map((line,i)=><p key={`right-${i}`}>{line}</p>)}
             {letterSpreads[currentIndex-1].right.signature&&<p>— {letterSpreads[currentIndex-1].right.signature}</p>}
@@ -169,7 +172,7 @@ export default function App(){
         </>
         : <>
           <div className="reader-meta">故事的开头</div>
-          <h2>{storyMode==='letter'?'有一封信，想慢慢读给你听':'一本为特别的你准备的小书'}</h2>
+          <h2>{template?.title??(storyMode==='letter'?'有一封信，想慢慢读给你听':'一本为特别的你准备的小书')}</h2>
           <p>用手指或鼠标按住纸页拖动，或点击右侧箭头翻开故事。</p>
         </>}
     </section>
@@ -194,9 +197,9 @@ export default function App(){
       <div className="page-count">{String(currentIndex).padStart(2,'0')} / {String(totalPositions-1).padStart(2,'0')}</div>
     </div>
     <footer className="site-foot">
-      <span>{storyMode==='letter'?'手写来信 · Tokirinn':'原创互动绘本'}</span>
+      <span>{template?`来信 · ${template.author}`:storyMode==='letter'?`手写来信 · ${LETTER_SOURCE.originalAuthor}`:'原创互动绘本'}</span>
       <span>← → &nbsp; 按住纸页拖动，松手落页</span>
-      <MusicCredit/>
+      {template?.music!==null&&<MusicCredit/>}
     </footer>
 
     {editorOpen&&storyMode==='birthday'&&<div className="editor-backdrop" role="presentation"

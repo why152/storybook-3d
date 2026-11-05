@@ -1,23 +1,10 @@
 import type { Chapter, ChapterId, StoryMode } from '../data/story';
-import { letterSpreadFor } from '../data/letterStory';
+import { demoRunningHead, letterSpreadFor } from '../data/letterStory';
 import type { LayeredPrint } from './paperPrint';
 import { hasHandwriting } from '../data/handwriting';
 import { HandwritingOnPage } from './Handwriting';
-
-const planes=['background','midground','lettering','characters','foreground','effects'] as const;
-
-/** Registered 1200×700 transparent sprites; same authored characters.svg
- * remains available for original six-plane Shader Labs and reproducible art.
- * Only HELLO/GROW use articulated actors in stationary book scenes.
- */
-const actingScenes: Readonly<Record<ChapterId,readonly string[]>>={
-  hello:['rabbit','fox'],
-  grow:['rabbit','fox','props'],
-  together:['fox','rabbit','props'],
-  dream:['rabbit','fox','props'],
-  wish:['fox','rabbit','props'],
-};
-
+import {actingScenes, coverArt, planes} from '../data/bookArt';
+import template from 'virtual:storybook-template';
 
 export type PageSide='left'|'right';
 type PageHalfProps={chapter:Chapter;side:PageSide;name:string;wish:string;storyMode?:StoryMode;printed?:LayeredPrint};
@@ -25,8 +12,8 @@ type PageHalfProps={chapter:Chapter;side:PageSide;name:string;wish:string;storyM
 export function PageHalf({chapter,side,name,wish,storyMode='birthday',printed}:PageHalfProps){
   const title=chapter.title.replace('{name}',name.trim()||'你');
   const description=chapter.description.replace('{wish}',wish.trim()||'愿所有美好都在下一页等你。');
-  const letterPage=storyMode==='letter'&&hasHandwriting;
-  const letterOpening=letterPage&&chapter.id==='hello';
+  const letterPage=storyMode==='letter'&&(hasHandwriting||!!template);
+  const letterOpening=letterPage&&!template&&chapter.id==='hello';
   return <div className={`page-surface theme-${chapter.id} page-${side} ${letterPage?'letter-page':''} ${letterOpening?'letter-opening':''}`} data-chapter={chapter.id} data-side={side}>
     <div className="page-window">
       <div className="spread-composition" aria-hidden="true">
@@ -53,9 +40,9 @@ export function PageHalf({chapter,side,name,wish,storyMode='birthday',printed}:P
       </div>
       <div className="page-print-grain" aria-hidden="true"/>
       {letterOpening&&<div className="letter-running-head" aria-hidden="true">
-        <span>{side==='left'?'一封来信':'展信舒颜'}</span><span>{side==='left'?'01':'02'}</span>
+        <span>{demoRunningHead[side]}</span><span>{side==='left'?'01':'02'}</span>
       </div>}
-      {storyMode==='letter'?(hasHandwriting
+      {storyMode==='letter'?(template?<TemplateLeaf id={chapter.id} side={side}/>:hasHandwriting
         ?<HandwritingOnPage chapter={chapter.id} side={side}/>
         :<LetterLeafText id={chapter.id} side={side}/>):<>
       {side==='right'&&<>
@@ -90,17 +77,29 @@ function LetterLeafText({id,side}:{id:ChapterId;side:PageSide}){
   </article>;
 }
 
+function TemplateLeaf({id,side}:{id:ChapterId;side:PageSide}){
+  const {kicker,lines,signature,photo}=letterSpreadFor(id)[side];
+  return <>
+    <article className="template-letter" aria-label={side==='left'?'左页信件':'右页信件'}>
+      <h3 data-print-text>{kicker}</h3>
+      {lines.map((line,index)=><p data-print-text key={index}>{line}</p>)}
+      {signature&&<p className="template-signature" data-print-text>— {signature}</p>}
+    </article>
+    {photo&&<img className="template-photo" src={photo.src} alt={photo.alt} draggable={false}/>}
+  </>;
+}
+
 export function FrontCover({storyMode='birthday'}:{storyMode?:StoryMode}){
   const letter=storyMode==='letter';
-  return <div className="book-front-cover v2-cover" aria-label={letter?'一封来信 · 封面':'生日绘本 · 封面'}>
-    <img className="v2-cover-scene" src={import.meta.env.BASE_URL+'assets/v2/cover-art.svg'} alt="" draggable={false}/>
+  return <div className={`book-front-cover v2-cover ${template?'template-cover':''}`} aria-label={template?`${template.title} · 封面`:letter?'一封来信 · 封面':'生日绘本 · 封面'}>
+    <img className="v2-cover-scene" src={import.meta.env.BASE_URL+(template?.cover??coverArt)} alt="" draggable={false}/>
     <div className="v2-cover-frame" aria-hidden="true"/>
     <div className="book-cover-copy">
-      <span className="cover-edition">{letter?'给朋友的一本小书':'一份亲手翻开的礼物'}</span>
-      <span className="cover-main-title">{letter?<>一封<i>来信</i></>:<>生日<i>绘本</i></>}</span>
+      <span className="cover-edition">{template?.subtitle??(letter?'给朋友的一本小书':'一份亲手翻开的礼物')}</span>
+      <span className="cover-main-title">{template?.title??(letter?<>一封<i>来信</i></>:<>生日<i>绘本</i></>)}</span>
       <span className="v2-cover-flourish" aria-hidden="true">✦ · ✧ · ✦</span>
     </div>
-    <div className="v2-cover-bottom-note">{letter?'有些话，值得留在纸上。':'有些故事，从一句你好开始。'}</div>
+    <div className="v2-cover-bottom-note">{template?template.author+' 著':letter?'有些话，值得留在纸上。':'有些故事，从一句你好开始。'}</div>
     <div className="cover-hinge" aria-hidden="true"/>
   </div>;
 }

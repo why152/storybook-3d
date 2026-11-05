@@ -71,3 +71,7 @@ STORYBOOK_TEST_BROWSER=webkit npm run test:e2e
 - [真实笔迹验证](docs/validation/authentic-ink/README.md)
 - [封面对照历史证据](https://github.com/why152/storybook-3d/tree/18c343d3a68bdc7820b5191771ef925cd78adead/docs/validation/cover-local)
 - [Notion 当前状态](https://app.notion.com/p/403d0befadbd81cbaba2e9061105d171)
+
+### 五跨页定制绘本
+
+使用同一套实体书渲染器，通过配置封面、署名、十页正文、照片和配乐，生成单本静态交付目录。两份虚构样册、配置规格及回退方法见 [定制绘本交付](docs/commercial-template.md)。

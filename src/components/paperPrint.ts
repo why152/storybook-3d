@@ -36,8 +36,8 @@ export async function capturePaperPrint(pair:HTMLElement):Promise<PaperPrint>{
           image.addEventListener('load',()=>resolve(),{once:true});
           image.addEventListener('error',()=>reject(new Error('Original page artwork failed to load')),{once:true});
         })));
-      const handwriting=[...surface.querySelectorAll<HTMLImageElement>('.handwriting-image')];
-      await Promise.all(handwriting.map(image=>image.decode()));
+      const inserts=[...surface.querySelectorAll<HTMLImageElement>('.handwriting-image, .template-photo')];
+      await Promise.all(inserts.map(image=>image.decode()));
       const bounds=surface.getBoundingClientRect();
       const {height}=bounds;
       const artWidth=surface.querySelector('.spread-composition')!.getBoundingClientRect().width;
@@ -93,21 +93,27 @@ export async function capturePaperPrint(pair:HTMLElement):Promise<PaperPrint>{
           0,0,page.width,page.height);
         print.scale(page.width/bounds.width,page.height/bounds.height);
 
+        const drawText=(node:Element,baseline:CanvasTextBaseline)=>{
+          const textBox=node.getBoundingClientRect(),font=getComputedStyle(node);
+          const value=node.textContent??'';
+          print.font=`${font.fontWeight} ${font.fontSize} ${font.fontFamily}`;
+          print.fillStyle=font.color;print.textBaseline=baseline;
+          if('letterSpacing' in print)print.letterSpacing=font.letterSpacing==='normal'?'0px':font.letterSpacing;
+          const metrics=print.measureText(value);
+          const offset=baseline==='alphabetic'
+            ?((metrics.fontBoundingBoxAscent??0)-(metrics.fontBoundingBoxDescent??0))/2:0;
+          print.fillText(value,textBox.left-bounds.left,textBox.top-bounds.top+textBox.height/2+offset);
+        };
         const runningHead=surface.querySelector('.letter-running-head');
         if(runningHead){
           const box=runningHead.getBoundingClientRect(),style=getComputedStyle(runningHead);
           const border=parseFloat(style.borderBottomWidth);
           print.fillStyle=style.borderBottomColor;
           print.fillRect(box.left-bounds.left,box.bottom-bounds.top-border,box.width,border);
-          for(const span of runningHead.children){
-            const textBox=span.getBoundingClientRect(),font=getComputedStyle(span);
-            print.font=`${font.fontWeight} ${font.fontSize} ${font.fontFamily}`;
-            print.fillStyle=font.color;print.textBaseline='middle';
-            if('letterSpacing' in print)print.letterSpacing=font.letterSpacing;
-            print.fillText(span.textContent??'',textBox.left-bounds.left,textBox.top-bounds.top+textBox.height/2);
-          }
+          for(const span of runningHead.children)drawText(span,'middle');
         }
-        for(const image of handwriting){
+        for(const node of surface.querySelectorAll('[data-print-text]'))drawText(node,'alphabetic');
+        for(const image of inserts){
           const rect=image.getBoundingClientRect();
           print.save();
           if(image.closest('.is-photograph')){

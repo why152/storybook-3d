@@ -86,3 +86,25 @@
  .letter-reading-edition .letter-running-head{font-size:8px}
  .letter-reading-edition .book-reading-stage:not([data-reading-side="spread"]) .letter-running-head{font-size:11px}
 }
+
+/* Custom copy and images share the paper's print coordinates during a turn. */
+.template-letter{
+ position:absolute;top:6%;left:10%;right:8%;z-index:2;
+ container-type:inline-size;color:#4b3529;font-family:'Songti SC','Noto Serif CJK SC',SimSun,serif;
+}
+.template-letter h3,.template-letter p{margin:0;white-space:nowrap;font-weight:400}
+.template-letter h3{margin-bottom:3%;color:#795738;font-size:clamp(6px,3.9cqw,14px);line-height:1.2}
+.template-letter p{font-size:clamp(8px,5.35cqw,23px);line-height:1.26}
+.template-letter .template-signature{color:#795738;font-size:clamp(7px,4.25cqw,16px)}
+.template-photo{
+ position:absolute;z-index:2;top:30%;right:10%;
+ width:auto;height:auto;max-width:39%;max-height:25%;pointer-events:none;
+}
+.v2-cover.template-cover .book-cover-copy{container-type:inline-size;padding-inline:8%}
+.v2-cover.template-cover .cover-main-title{font-size:clamp(15px,9.6cqw,50px);letter-spacing:.07em;text-indent:0}
+.v2-cover.template-cover .book-cover-copy{
+ background:linear-gradient(to bottom,#1514267a 0%,#15142642 29%,transparent 47%);
+}
+@media(max-width:600px){
+ .letter-reading-edition:has(.template-cover,.template-letter) .site-foot>span:first-child{display:block}
+}

@@ -178,7 +178,7 @@
    carries words through forwards and backwards drags. Art is a faint border
    motif, NOT a competing full-size title behind 8px type. */
 .v2-showroom.v2-letter-edition .page-surface{background:#f3dfc4}
-.v2-showroom.v2-letter-edition .spread-composition{opacity:.39;filter:saturate(.62)}
+.v2-showroom.v2-letter-edition .page-surface:not(.letter-page) .spread-composition{opacity:.39;filter:saturate(.62)}
 .v2-showroom.v2-letter-edition .page-print-grain{opacity:.1}
 .v2-showroom .letter-leaf{
  position:absolute;inset:6.5% 5.5% 5.5%;z-index:9;

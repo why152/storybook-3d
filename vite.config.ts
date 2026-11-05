@@ -1,10 +1,15 @@
-import { defineConfig } from 'vite';
+import {defineConfig} from 'vite';
 import react from '@vitejs/plugin-react';
-import { privateHandwritingPlugin } from './scripts/private-handwriting-plugin';
+import {privateHandwritingPlugin} from './scripts/private-handwriting-plugin';
+import {templateEditionPlugin} from './scripts/template-edition-plugin';
 
-// The GitHub Pages project URL is /storybook-3d/; local and EC2 keep /.
-export default defineConfig(({mode})=>({
-  plugins:[react(),privateHandwritingPlugin()],
-  base:mode==='pages'?'/storybook-3d/':'/',
-  server:{host:'0.0.0.0'},
-}));
+export default defineConfig(({mode})=>{
+  const template=mode==='template';
+  return {
+    plugins:[react(),templateEditionPlugin(template),...(template?[]:[privateHandwritingPlugin()])],
+    // Each delivered edition can be hosted under any independent URL prefix.
+    base:template?'./':mode==='pages'?'/storybook-3d/':'/',
+    publicDir:template?false:'public',
+    server:{host:'0.0.0.0'},
+  };
+});
