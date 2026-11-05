@@ -17,7 +17,8 @@
     "qa:baseline": "playwright test tests/readiness.spec.ts",
     "qa:gallery": "node scripts/build-review-gallery.mjs test-results",
     "qa:browser:setup": "playwright install chromium webkit",
-    "qa:continuity": "node scripts/capture-continuity.mjs"
+    "qa:continuity": "node scripts/capture-continuity.mjs",
+    "book:build": "node scripts/build-book.mjs"
   },
   "dependencies": {
     "gsap": "^3.14.0",

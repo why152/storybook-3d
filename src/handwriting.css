@@ -1,6 +1,5 @@
 /* Original ink is a native image on each physical page, like the native
    lettering plane. The same crop follows the mesh without another encoding. */
-.v2-showroom.v2-letter-edition.has-authentic-handwriting .spread-composition{opacity:1;filter:none}
 .v2-showroom.v2-letter-edition.has-authentic-handwriting .page-print-grain{opacity:.16}
 .handwriting-on-page{position:absolute;inset:0;z-index:9;pointer-events:none}
 .handwriting-fragment{position:absolute}

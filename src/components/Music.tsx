@@ -1,8 +1,10 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 
-const trackUrl=`${import.meta.env.BASE_URL}audio/the-long-way-home.mp3`;
-const trackSource='https://www.scottbuckley.com.au/library/the-long-way-home/';
-const trackLicense='https://creativecommons.org/licenses/by/4.0/';
+import {defaultMusic} from '../data/template';
+import template from 'virtual:storybook-template';
+
+const music=template?template.music:defaultMusic;
+const trackUrl=music?import.meta.env.BASE_URL+music.src:undefined;
 
 export function MusicControl(){
   const audioRef=useRef<HTMLAudioElement>(null);
@@ -72,8 +74,9 @@ export function MusicControl(){
 }
 
 export function MusicCredit(){
-  return <span className="music-credit">配乐 <a href={trackSource} lang="en">The Long Way Home · Scott Buckley</a> ·{' '}
-    <a href={trackLicense} aria-label="署名 4.0 国际许可">CC BY 4.0</a>
-    <span className="music-edit">（音量下调、重新编码）</span>
+  if(!music)return null;
+  return <span className="music-credit">配乐 <a href={music.source}>{music.title} · {music.author}</a> ·{' '}
+    <a href={music.licenseUrl}>{music.license}</a>
+    {music.changes&&<span className="music-edit">（{music.changes}）</span>}
   </span>;
 }

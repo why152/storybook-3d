@@ -28,7 +28,7 @@ export function getChapter(position:number,mode:StoryMode='birthday'):Chapter {
   if(!found)throw new RangeError('Invalid story position: '+position);
   if(mode==='birthday')return found;
   const spread=letterSpreadFor(found.id);
-  return {...found,eyebrow:spread.left.kicker,title:spread.left.lines.join(''),description:spread.right.lines.join('')};
+  return {...found,word:spread.word??found.word,eyebrow:spread.left.kicker,title:spread.left.lines.join(''),description:spread.right.lines.join('')};
 }
 export function initialPosition(){
   const params=new URLSearchParams(window.location.search);
