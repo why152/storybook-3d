@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Storybook 3D · Flexible Paper Shader Lab</title>
+<style>
+:root{color:#f4e4d6;background:#111218;font:14px/1.6 system-ui,-apple-system,"Noto Sans SC",sans-serif;font-synthesis:none}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body{background:radial-gradient(ellipse at 49% 27%,#35343e,#191a20 50%,#0c0c10)}
+button,select,input{font:inherit}button{cursor:pointer}
+header{display:flex;justify-content:space-between;align-items:center;padding:20px clamp(18px,4vw,60px);border-bottom:1px solid #ffffff26}
+.logo{font:900 23px Impact,'Arial Narrow',sans-serif;letter-spacing:.1em}
+.logo i{font:italic 21px Georgia,serif;color:#e8bf9b;letter-spacing:0}
+header a{font-size:12px;color:#dfc7b6;text-decoration:none;border-bottom:1px solid #e4bc97}
+main{width:min(1480px,96vw);margin:24px auto 70px}
+h1{font:900 clamp(25px,4.1vw,52px)/1.1 Impact,'Arial Narrow',sans-serif;margin:0}
+.lead{font-size:13px;max-width:990px;color:#c5bcba;margin:12px 0 22px}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 22px;padding:15px;border:1px solid #ffffff2b;border-radius:12px;background:#222229;margin-bottom:20px}
+.toolbar label{display:flex;gap:9px;align-items:center;font-size:12px}
+.toolbar select{background:#13151a;color:#f4dfc8;border:1px solid #695e63;border-radius:6px;padding:8px}
+.toolbar input{accent-color:#efbf99;width:132px}
+.toolbar output{min-width:30px;color:#efd0af;text-align:right;font-variant-numeric:tabular-nums}
+.action{padding:8px 13px;background:#ebbc96;border:0;border-radius:5px;color:#2d2527;font-weight:700;font-size:12px}
+.action.secondary{background:transparent;border:1px solid #e1b693;color:#f0d0b8}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.panel{min-width:0;padding:13px;border:1px solid #ffffff29;border-radius:14px;background:#18191f;box-shadow:0 15px 40px #0007}
+.panel-header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 3px 12px}
+.panel h2{margin:0;font:800 14px Impact,'Arial Narrow',sans-serif;letter-spacing:.1em}
+.panel h2 span{font:500 11px system-ui;color:#bdaca4}
+.metrics{font-size:10px;color:#ebbe98;text-align:right}
+.book{position:relative;width:100%;aspect-ratio:12/7;overflow:hidden;border-radius:6px;background:#ecd4b8;
+  user-select:none;touch-action:pan-y;cursor:ew-resize}
+.book::before{content:"";position:absolute;inset:0;z-index:0;box-shadow:inset 0 0 38px #95686667}
+.paper-stack{position:absolute;inset:.5% .5% 0;border-radius:6px;box-shadow:0 9px 0 #a89482,0 17px 3px #4a4349,0 24px 35px #0009}
+.fixed-page{position:absolute;top:0;width:50%;height:100%;z-index:1;overflow:hidden;background:#ecd4bc}
+.fixed-left{left:0}.fixed-right{left:50%}
+.print{position:absolute;inset:0;width:200%;height:100%;pointer-events:none}
+.print img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none}
+.print.right{left:-100%}
+.rigid-leaf{position:absolute;left:50%;top:0;width:50%;height:100%;z-index:5;transform-origin:0 50%;transform-style:preserve-3d}
+.face{position:absolute;inset:0;overflow:hidden;background:#ecd4bc;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.face.back{transform:rotateY(180deg)}
+.face.back .print{left:0}
+.face.front .print{left:-100%}
+.face::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#241b29a6,transparent 42%,#ffeed476);opacity:var(--shade,0)}
+.canvas{position:absolute;inset:0;z-index:5;width:100%;height:100%;pointer-events:none}
+.canvas[hidden],.rigid-leaf[hidden]{display:none}
+.book::after{content:"";position:absolute;inset:0;z-index:7;pointer-events:none;box-shadow:inset 0 0 10px #4f383449}
+.gutter{position:absolute;z-index:9;top:0;bottom:0;left:calc(50% - 5px);width:10px;
+ pointer-events:none;background:linear-gradient(90deg,#40303d,#a89580 46%,#554052);
+ box-shadow:-5px 0 10px #39253180,5px 0 11px #49364080}
+.error{position:absolute;z-index:10;inset:0;display:grid;place-items:center;background:#26212ae0;padding:24px;text-align:center;color:#f6baaa}
+.error[hidden]{display:none}
+.panel p{font-size:12px;color:#b6aeb2;line-height:1.7;margin:12px 5px 3px}
+.status{font-size:12px;min-height:22px;color:#edc09b;margin:15px 3px}
+.status.error-status{color:#ffaaa4}
+.notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:22px}
+.note{border-top:1px solid #ffffff3e;padding-top:14px}
+.note b{font-size:12px}.note p{color:#b9b2b2;font-size:12px;margin:5px 0;line-height:1.7}
+@media(max-width:880px){.panels{grid-template-columns:1fr}.notes{grid-template-columns:1fr}}
+@media(max-width:560px){main{margin-top:15px}.panel{padding:8px}.toolbar{padding:10px}.toolbar input{width:100px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="logo">LITTLE <i>book lab</i></div><a href="/">返回正式五章绘本 ↗</a></header>
+<main>
+<h1>WE CAN BEND THE PAPER.</h1>
+<p class="lead">自研 WebGL2 纸张弯曲实验——把右侧单张纸细分为 64×24 个网格，随着翻页进度由顶点 Shader 改变其形状。左侧是现有刚性翻页基线，两侧使用同一组原创绘本插画；书脊始终在中间，不是整张卡片旋转。</p>
+<div class="toolbar">
+ <label>章节 <select id="chapter"><option value="hello">HELLO → GROW</option><option value="grow">GROW → TOGETHER</option><option value="together">TOGETHER → DREAM</option><option value="dream">DREAM → WISH</option></select></label>
+ <label>翻页 <input id="progress" type="range" min="0" max="100" step="1" value="0"><output id="progress-value">0%</output></label>
+ <label>柔软度 <input id="curl" type="range" min="0" max="100" step="1" value="55"><output id="curl-value">55</output></label>
+ <label>形变算法 <select id="profile"><option value="arch">渐进弧形</option><option value="roll" selected>圆柱卷曲</option></select></label>
+ <button type="button" id="forward" class="action">向前翻 ↶</button>
+ <button type="button" id="reverse" class="action secondary">翻回来 ↷</button>
+ <button type="button" id="reset" class="action secondary">重置</button>
+</div>
+<div class="panels">
+ <section class="panel">
+  <div class="panel-header"><h2>01 / RIGID <span>CSS 3D · 原方案</span></h2><span class="metrics">平面半页，只有整体旋转</span></div>
+  <div class="book" id="css-book" aria-label="旧式刚性书页对照">
+   <div class="paper-stack"></div>
+   <div class="fixed-page fixed-left"><div class="print" data-part="from-left"></div></div>
+   <div class="fixed-page fixed-right"><div class="print right" data-part="to-right"></div></div>
+   <div class="rigid-leaf" id="css-leaf">
+    <div class="face front"><div class="print right" data-part="from-right"></div></div>
+    <div class="face back"><div class="print" data-part="to-left"></div></div>
+   </div>
+   <div class="gutter"></div>
+  </div>
+  <p>这是已经实现过的刚性单页旋转方案。50% 翻页时纸片几乎只剩一条边，缺少纸张弯曲、重量感和表面光照。</p>
+ </section>
+ <section class="panel">
+  <div class="panel-header"><h2>02 / FLEXIBLE <span>Original GLSL ES 3.0</span></h2><span class="metrics" id="gpu-stats">GPU 初始化中…</span></div>
+  <div class="book" id="gpu-book" aria-label="GPU 曲面网格书页">
+   <div class="paper-stack"></div>
+   <div class="fixed-page fixed-left"><div class="print" data-part="from-left"></div></div>
+   <div class="fixed-page fixed-right"><div class="print right" data-part="to-right"></div></div>
+   <canvas id="gpu" class="canvas" aria-label="GPU 曲面纸张的 GLSL Shader 渲染"></canvas>
+   <div class="rigid-leaf" id="fallback-leaf" hidden>
+    <div class="face front"><div class="print right" data-part="from-right"></div></div>
+    <div class="face back"><div class="print" data-part="to-left"></div></div>
+   </div>
+   <div class="gutter"></div><div class="error" id="gpu-error" hidden>不支持 WebGL2，已自动使用 CSS 翻页。</div>
+  </div>
+  <p>这次连纸的几何形状都交给自己写的顶点 Shader 计算；背面纹理单独采样，翻到左页后不镜像，表面明暗跟着翻页变化。</p>
+ </section>
+</div>
+<p class="status" id="status" role="status">正在载入 Shader 与插画素材…</p>
+<div class="notes">
+ <div class="note"><b>沿装订书脊翻页</b><p>右侧叶片宽度为书本一半。书脊保持静止，正反翻页都是同一张纸的连续动作。</p></div>
+ <div class="note"><b>可直接对照</b><p>用滑块逐帧比较 0%、25%、50%、75%、100%，还能调整纸张柔软度。鼠标拖动页面可直接控制翻页。</p></div>
+ <div class="note"><b>实验安全隔离</b><p>此页面不修改当前 Book.tsx；GPU 不可用时会自动回退。是否替换正式引擎，以截图、录像、手机性能为准。</p></div>
+</div>
+</main>
+<script type="module" src="/labs/paper-curl-engine.js"></script>
+</body>
+</html>
