@@ -9,9 +9,17 @@ import { gsap } from 'gsap';
 // 1.28s physical turn into a multi-second frozen sheet.
 gsap.ticker.lagSmoothing(0);
 import { getChapter, type StoryMode } from '../data/story';
+import { letterSpreadFor } from '../data/letterStory';
 import { BlankPage, FrontCover, PageHalf } from './SceneArt';
 import { capturePaperPrint, releasePaperPrint, type LayeredPrint, type PaperPrint, type PrintedSurface } from './paperPrint';
 import { PAPER_SEGMENTS, layoutPaper, posePaper, segmentCountForTolerance } from './paperGeometry';
+
+function decodePagePhoto(src:string|undefined){
+  if(!src)return;
+  const image=new Image();
+  image.src=src;
+  return image.decode().catch(()=>undefined);
+}
 
 export type PageTurn = Readonly<{from:number;to:number;direction:-1|1;interactive?:true}>;
 
@@ -70,6 +78,10 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
   const printReady=printAvailable&&decodedPrint?.print===print&&decodedPrint.segments===paperSegments;
   const waiting=flexible?!printReady:debugPose===null&&turning!==null&&preparedTurn!==turning;
   const closed=active===0&&(!showingTurn||waiting);
+  // The incoming fixed leaf mounts only after the turning leaf is ready.
+  const incomingPhoto=turning&&turning.to>0&&storyMode==='letter'
+    ?letterSpreadFor(getChapter(turning.to).id)[turning.direction===1?'right':'left'].photo?.src
+    :undefined;
 
   useLayoutEffect(()=>{
     // Keep a leaf's topology fixed while it is turning. After a resize, choose
@@ -91,12 +103,12 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
     if(!flexible)return;
     let cancelled=false;
     const pair=shellRef.current!.querySelector<HTMLElement>('.paper-source-pair')!;
-    void capturePaperPrint(pair).then(texture=>{
+    void Promise.all([capturePaperPrint(pair),decodePagePhoto(incomingPhoto)]).then(([texture])=>{
       if(!cancelled)setPrint({turn:turning,pose:debugPose,from:debugFrom,name,wish,...texture});
       else releasePaperPrint(texture);
     });
     return()=>{cancelled=true;};
-  },[flexible,turning,debugPose,debugFrom,name,wish]);
+  },[flexible,turning,debugPose,debugFrom,name,wish,incomingPhoto]);
 
   useLayoutEffect(()=>()=>{if(print)releasePaperPrint(print);},[print]);
 
@@ -127,12 +139,14 @@ export function Book({active,turning,onTurnFinished,onGrabTurn,name,wish,storyMo
   useLayoutEffect(()=>{
     if(!turning||debugPose!==null||flexible)return;
     let cancelled=false;
-    const images=[...shellRef.current!.querySelectorAll<HTMLImageElement>('.scene-plane,.handwriting-image')];
-    void Promise.all(images.map(image=>image.decode().catch(()=>undefined))).then(()=>{
+    const images=[...shellRef.current!.querySelectorAll<HTMLImageElement>('.scene-plane,.handwriting-image,.v2-cover-scene,.template-photo')];
+    void Promise.all([
+      ...images.map(image=>image.decode().catch(()=>undefined)),decodePagePhoto(incomingPhoto),
+    ]).then(()=>{
       if(!cancelled)setPreparedTurn(turning);
     });
     return()=>{cancelled=true;};
-  },[turning,debugPose,flexible]);
+  },[turning,debugPose,flexible,incomingPhoto]);
 
   // Match retained and newly mounted halves before paint. CSS pauses the
   // original animation instead of removing it; the physical leaf receives

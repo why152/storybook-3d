@@ -57,3 +57,5 @@ node scripts/capture-safari-repair.mjs test-results/commercial-final-webkit
 ```
 
 《晚风来信》使用 WebKit，《给追星的你》使用 Chromium 导出桌面和 390×844 手机视口录像。已检查封面标题、五跨页文字与插画、书脊和半翻照片的位置。iPhone Safari 真机及公开交付仍待验收。
+
+慢速网络验收包含开封前等待首张照片。后续翻页也会预先解码即将露出的固定页照片。

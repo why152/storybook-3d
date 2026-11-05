@@ -3,7 +3,7 @@ import {spawnSync} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
 import {cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
-import {join,resolve} from 'node:path';
+import {join,resolve,sep} from 'node:path';
 import type {AddressInfo} from 'node:net';
 import {preview,type PreviewServer} from 'vite';
 
@@ -50,7 +50,7 @@ test.afterAll(async()=>{
 test('the two published directories isolate copy and assets, and reject overwriting a release',async({page})=>{
   for(const sample of samples){
     const dir=dist(sample.fixture);
-    const files=readdirSync(dir,{recursive:true,encoding:'utf8'});
+    const files=readdirSync(dir,{recursive:true,encoding:'utf8'}).map(file=>file.split(sep).join('/'));
     const script=files.find(name=>/^assets\/index-.*\.js$/.test(name))!;
     const code=readFileSync(join(dir,script),'utf8');
     expect(code).toContain(sample.firstLine);
@@ -93,6 +93,25 @@ test('the two published directories isolate copy and assets, and reject overwrit
   await expect(page.getByRole('link',{name:'The Long Way Home · Scott Buckley'})).toBeVisible();
   await page.goto(templateURL('afterglow'));
   await expect(page).toHaveTitle('晚风来信 · 立体绘本');
+});
+
+test('opening waits for the first right-page photo even before its page mounts',async({page})=>{
+  let allowPhoto!:()=>void;
+  const gate=new Promise<void>(resolve=>{allowPhoto=resolve;});
+  await page.route('**/template/hello-right.webp',async route=>{
+    await gate;
+    await route.continue();
+  });
+  try{
+    await page.goto(templateURL('afterglow'));
+    const requested=page.waitForRequest('**/template/hello-right.webp');
+    await page.getByRole('button',{name:'下一页'}).click();
+    await requested;
+    await expect(page.locator('.book-turn-leaf')).toHaveAttribute('data-loading','true');
+    await expect(page.locator('.book-closed-cover')).toBeVisible();
+  }finally{allowPhoto();}
+  await expect(page.locator('.book-turn-leaf')).toHaveCount(0);
+  await expect(page.locator('.book-static .template-photo')).toBeVisible();
 });
 
 for(const phone of [false,true]){

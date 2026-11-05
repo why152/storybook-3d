@@ -1,5 +1,5 @@
 import {readFileSync, realpathSync, statSync} from 'node:fs';
-import {dirname, extname, isAbsolute, relative, resolve} from 'node:path';
+import {dirname, extname, isAbsolute, relative, resolve, sep} from 'node:path';
 import type {Plugin} from 'vite';
 import {actingScenes, coverArt, planes} from '../src/data/bookArt';
 import type {LetterLeaf, LetterSpread} from '../src/data/letterStory';
@@ -42,7 +42,7 @@ function readEdition(path:string,publicRoot:string){
     if(isAbsolute(input))throw new Error(field+' 必须使用配置目录内的相对路径');
     const source=realpathSync(resolve(root,input));
     const local=relative(root,source);
-    if(!local||local==='..'||local.startsWith('../')||isAbsolute(local))throw new Error(field+' 超出配置目录');
+    if(!local||local==='..'||local.startsWith('..'+sep)||isAbsolute(local))throw new Error(field+' 超出配置目录');
     const extension=extname(source).toLowerCase();
     const file=statSync(source);
     if(!extensions.includes(extension)||!file.isFile()||file.size<1||file.size>limit){
