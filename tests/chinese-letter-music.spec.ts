@@ -14,30 +14,39 @@ test('the public cover opens as a Chinese letter without an editor entry',async(
   }
 });
 
-test('music loads only when enabled, continues across a turn and can be paused',async({page})=>{
-  const audioRequests:string[]=[];
-  page.on('request',request=>{if(request.url().endsWith('.mp3'))audioRequests.push(request.url());});
+test('blocked autoplay starts on the first turn and stays paused after the reader pauses it',async({page})=>{
+  await page.addInitScript(()=>{
+    const play=HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play=function(){
+      if(this instanceof HTMLAudioElement){
+        const attempts=Number(this.dataset.playAttempts??0)+1;
+        this.dataset.playAttempts=String(attempts);
+        if(attempts===1)return Promise.reject(new DOMException('Autoplay blocked','NotAllowedError'));
+      }
+      return play.call(this);
+    };
+  });
   await page.goto('/');
   const toggle=page.getByRole('button',{name:'背景音乐'});
   const track=page.locator('audio');
+  await expect(track).toHaveAttribute('data-play-attempts','1');
   await expect(toggle).toHaveAttribute('aria-pressed','false');
-  await expect(track).not.toHaveAttribute('src',/./);
-  expect(audioRequests).toHaveLength(0);
-  await toggle.click();
-  await expect(toggle).toHaveAttribute('aria-pressed','true');
-  await expect.poll(()=>track.evaluate(audio=>audio.currentTime)).toBeGreaterThan(.2);
-  expect(await track.evaluate(audio=>audio.loop)).toBe(true);
-  expect(audioRequests.length).toBeGreaterThan(0);
-  const beforeTurn=await track.evaluate(audio=>audio.currentTime);
+  await expect(page.getByText('音乐暂时无法播放')).toHaveCount(0);
   await page.getByRole('button',{name:'下一页'}).click();
   await expect(page.locator('.book-static .letter-page')).toHaveCount(2);
   await expect(page.locator('.book-turn-leaf')).toHaveCount(0);
-  await expect.poll(()=>track.evaluate(audio=>audio.currentTime)).toBeGreaterThan(beforeTurn);
+  await expect(toggle).toHaveAttribute('aria-pressed','true');
+  await expect.poll(()=>track.evaluate(audio=>(audio as HTMLAudioElement).currentTime)).toBeGreaterThan(.2);
+  expect(await track.evaluate(audio=>(audio as HTMLAudioElement).loop)).toBe(true);
+  await expect(track).toHaveAttribute('data-play-attempts','2');
   await toggle.click();
   await expect(toggle).toHaveAttribute('aria-pressed','false');
-  expect(await track.evaluate(audio=>audio.paused)).toBe(true);
-  await page.reload();
-  await expect(toggle).toHaveAttribute('aria-pressed','false');
-  await expect(track).not.toHaveAttribute('src',/./);
+  await page.getByRole('button',{name:'下一页'}).click();
+  await expect(page.locator('.book-static .page-surface[data-chapter="grow"]')).toHaveCount(2);
+  await expect(page.locator('.book-turn-leaf')).toHaveCount(0);
+  expect(await track.evaluate(audio=>(audio as HTMLAudioElement).paused)).toBe(true);
+  await expect(track).toHaveAttribute('data-play-attempts','2');
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-pressed','true');
   await expect(page.getByRole('link',{name:'The Long Way Home · Scott Buckley'})).toBeVisible();
 });

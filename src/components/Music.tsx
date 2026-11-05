@@ -1,4 +1,4 @@
-import {useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 
 const trackUrl=`${import.meta.env.BASE_URL}audio/the-long-way-home.mp3`;
 const trackSource='https://www.scottbuckley.com.au/library/the-long-way-home/';
@@ -6,26 +6,57 @@ const trackLicense='https://creativecommons.org/licenses/by/4.0/';
 
 export function MusicControl(){
   const audioRef=useRef<HTMLAudioElement>(null);
+  const automatic=useRef<AbortController|null>(null);
   const [playing,setPlaying]=useState(false);
   const [failed,setFailed]=useState(false);
 
-  const toggle=()=>{
+  const play=useCallback(()=>{
     const track=audioRef.current!;
-    if(!track.paused){
-      track.pause();
-      return;
-    }
-    if(!track.getAttribute('src')||track.error)track.src=trackUrl;
+    if(!track.paused)return;
+    if(track.error)track.load();
     setFailed(false);
     void track.play().catch((error:unknown)=>{
-      if(error instanceof DOMException&&error.name==='AbortError')return;
+      if(error instanceof DOMException&&(error.name==='AbortError'||error.name==='NotAllowedError'))return;
       setPlaying(false);
       setFailed(true);
     });
+  },[]);
+
+  useEffect(()=>{
+    const track=audioRef.current!;
+    const controller=new AbortController();
+    automatic.current=controller;
+    const startAfterGesture=(event:Event)=>{
+      if(!event.isTrusted)return;
+      const target=event.target instanceof Element?event.target:null;
+      if(target?.closest('.music-control'))return;
+      if(event instanceof KeyboardEvent&&event.key!=='ArrowLeft'&&event.key!=='ArrowRight')return;
+      if(event.type!=='click'&&!(event instanceof KeyboardEvent)&&!target?.closest('.book-viewport'))return;
+      play();
+    };
+    const options={capture:true,signal:controller.signal};
+    for(const gesture of ['click','keydown','pointerup','touchend']){
+      document.addEventListener(gesture,startAfterGesture,options);
+    }
+    queueMicrotask(()=>{
+      if(!controller.signal.aborted)play();
+    });
+    return ()=>{
+      controller.abort();
+      track.pause();
+    };
+  },[play]);
+
+  const toggle=()=>{
+    automatic.current?.abort();
+    const track=audioRef.current!;
+    if(track.paused)play();
+    else track.pause();
   };
 
   return <div className="music-control">
-    <audio ref={audioRef} preload="none" loop onPlay={()=>setPlaying(true)} onPause={()=>setPlaying(false)}
+    <audio ref={audioRef} src={trackUrl} preload="none" loop
+      onPlay={()=>{automatic.current?.abort();setPlaying(true);}} onPause={()=>setPlaying(false)}
       onError={()=>{setPlaying(false);setFailed(true);}}/>
     <button type="button" className="customize-trigger music-trigger" aria-label="背景音乐"
       aria-pressed={playing} onClick={toggle}>
