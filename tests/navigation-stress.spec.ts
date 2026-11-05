@@ -14,7 +14,7 @@ test('actual Chromium touch input turns physical pages forward and backward',asy
   });
   const page=await context.newPage();
   try{
-    await page.goto('/?scene=grow');
+    await page.goto('/?story=birthday&scene=grow');
     await expect(page.locator('.book-static .page-surface[data-chapter="grow"]')).toHaveCount(2);
     const rect=await page.locator('main.exhibition').boundingBox();
     expect(rect).not.toBeNull();
@@ -40,7 +40,7 @@ test('actual Chromium touch input turns physical pages forward and backward',asy
 });
 
 test('next/previous boundary buttons, mid-turn input lock and no stale leaf DOM',async ({page})=>{
-  await page.goto('/');
+  await page.goto('/?story=birthday');
   await expect(page.getByRole('button',{name:'上一页'})).toBeDisabled();
   await page.getByRole('button',{name:'下一页'}).click();
   await expect(page.locator('.book-turn-leaf')).toHaveCount(1);
@@ -64,8 +64,8 @@ test('next/previous boundary buttons, mid-turn input lock and no stale leaf DOM'
 
 test('customization modal traps focus and never forwards arrow keys to the book',async ({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.goto('/?scene=grow');
-  const trigger=page.getByRole('button',{name:/CUSTOMIZE/});
+  await page.goto('/?story=birthday&scene=grow');
+  const trigger=page.getByRole('button',{name:'定制祝福'});
   await trigger.click();
   const dialog=page.getByRole('dialog',{name:'写下你的故事。'});
   await expect(dialog).toBeVisible();

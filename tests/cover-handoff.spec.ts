@@ -47,7 +47,7 @@ for(const mode of ['birthday','letter'] as const){
 
 test('real cover opens and closes back to a single portrait without losing HELLO',async({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await page.goto('/');
+  await page.goto('/?story=birthday');
   await expect(page.locator('.book-static.book-closed-cover')).toBeVisible();
   for(let repeat=0;repeat<2;repeat++){
     await page.getByRole('button',{name:'下一页'}).click();
@@ -92,7 +92,7 @@ for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
 
   test(`${viewport.width}: cover drag reverses and cancellation restores both endpoints`,async({page},testInfo)=>{
     await page.setViewportSize(viewport);
-    await page.goto('/');
+    await page.goto('/?story=birthday');
     const book=page.locator('.book-viewport');
     const shell=page.locator('.book-shell');
     const leaf=page.locator('.book-turn-leaf');
@@ -138,7 +138,7 @@ for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
   });
   test(`${viewport.width}: reduced motion cover transitions settle coherently`,async({page})=>{
     await page.setViewportSize(viewport);await page.emulateMedia({reducedMotion:'reduce'});
-    await page.goto('/');
+    await page.goto('/?story=birthday');
     for(const direction of ['下一页','上一页']){
       await page.getByRole('button',{name:direction}).click();
       await expect(page.locator('.book-turn-leaf')).toHaveCount(0);

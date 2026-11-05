@@ -55,7 +55,7 @@ test('capture reproducible book asset/layout/readability baselines before premiu
     for(const viewport of sizes){
       await page.setViewportSize({width:viewport.width,height:viewport.height});
       for(const chapter of chapters){
-        await page.goto('/?scene='+chapter,{waitUntil:'networkidle'});
+        await page.goto('/?story=birthday&scene='+chapter,{waitUntil:'networkidle'});
         const images=page.locator('.book-static .page-surface .scene-plane');
         await expect(images).toHaveCount(chapter==='hello'?14:16);
         await expect.poll(async()=>images.evaluateAll(list=>list.every(

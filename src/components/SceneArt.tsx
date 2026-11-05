@@ -91,16 +91,16 @@ function LetterLeafText({id,side}:{id:ChapterId;side:PageSide}){
 }
 
 export function FrontCover({storyMode='birthday'}:{storyMode?:StoryMode}){
-  return <div className="book-front-cover v2-cover" aria-label="A LITTLE STORY — 实体书封面">
+  const letter=storyMode==='letter';
+  return <div className="book-front-cover v2-cover" aria-label={letter?'一封来信 · 封面':'生日绘本 · 封面'}>
     <img className="v2-cover-scene" src={import.meta.env.BASE_URL+'assets/v2/cover-art.svg'} alt="" draggable={false}/>
     <div className="v2-cover-frame" aria-hidden="true"/>
     <div className="book-cover-copy">
-      <span className="cover-edition">{storyMode==='letter'?'WORDS FROM A FRIEND':'A HANDMADE BIRTHDAY TALE'}</span>
-      <span className="cover-main-title">A LITTLE<i>{storyMode==='letter'?'letter':'story'}</i></span>
+      <span className="cover-edition">{letter?'给朋友的一本小书':'一份亲手翻开的礼物'}</span>
+      <span className="cover-main-title">{letter?<>一封<i>来信</i></>:<>生日<i>绘本</i></>}</span>
       <span className="v2-cover-flourish" aria-hidden="true">✦ · ✧ · ✦</span>
-      <span className="cover-meta">A BOOK FOR SOMEONE SPECIAL<br/>{storyMode==='letter'?'IN TEN LITTLE PAGES':'ONE STORY, JUST FOR YOU'}</span>
     </div>
-    <div className="v2-cover-bottom-note">{storyMode==='letter'?'Some words are worth keeping.':'Some stories begin with hello.'}</div>
+    <div className="v2-cover-bottom-note">{letter?'有些话，值得留在纸上。':'有些故事，从一句你好开始。'}</div>
     <div className="cover-hinge" aria-hidden="true"/>
   </div>;
 }

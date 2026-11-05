@@ -5,6 +5,7 @@ import { DEFAULT_GREETING, greetingFromHash, makeShareLink } from './data/share'
 import { letterSpreads } from './data/letterStory';
 import { hasHandwriting } from './data/handwriting';
 import {BookReadingStage, type ReadingSide} from './components/BookReadingStage';
+import {MusicControl, MusicCredit} from './components/Music';
 import './styles.css';
 import './styles.v2.css';
 import './handwriting.css';
@@ -13,7 +14,9 @@ import './letter-reading.css';
 const debugPose=previewPose();
 const debugFrom=previewFrom();
 const sharedGreeting=greetingFromHash(window.location.hash);
-const storyMode:StoryMode=new URLSearchParams(window.location.search).get('story')==='letter'?'letter':'birthday';
+const requestedStory=new URLSearchParams(window.location.search).get('story');
+const storyMode:StoryMode=requestedStory==='birthday'||
+  (requestedStory!=='letter'&&window.location.hash.startsWith('#gift='))?'birthday':'letter';
 
 function Arrow({back=false}:{back?:boolean}){
   return <svg aria-hidden="true" viewBox="0 0 115 52" className={`hand-arrow ${back?'is-back':''}`} fill="none">
@@ -124,16 +127,16 @@ export default function App(){
 
   return <div className={`showroom v2-showroom ${storyMode==='letter'?'v2-letter-edition':''} ${authenticLetter?'has-authentic-handwriting letter-reading-edition':''}`}>
     <header className="site-head">
-      <div className="site-name">{authenticLetter?'一封来信':<>little<span>story</span>.studio</>}</div>
-      <div className="site-title">{authenticLetter?'写在纸上的话，留在故事里。':<>A LITTLE STORY<br/>FOR SOMEONE SPECIAL</>}</div>
-      {storyMode==='letter'
-        ? <a className="customize-trigger letter-variant-trigger" href={window.location.pathname}>BIRTHDAY EDITION ↗</a>
-        : <button ref={customizeTrigger} type="button" className="customize-trigger" disabled={!!turn} onClick={()=>setEditorOpen(true)}>
-          CUSTOMIZE <span aria-hidden="true">↗</span>
-        </button>}
+      <div className="site-name">{storyMode==='letter'?'一封来信':'生日绘本'}</div>
+      <div className="site-title">{storyMode==='letter'?'写在纸上的话，留在故事里。':'给特别的你'}</div>
+      <div className="site-actions">
+        {storyMode==='birthday'&&<button ref={customizeTrigger} type="button" className="customize-trigger" disabled={!!turn}
+          onClick={()=>setEditorOpen(true)}>定制祝福</button>}
+        <MusicControl/>
+      </div>
     </header>
     <main className="exhibition">
-      <button type="button" aria-label="上一页" title="向左翻书"
+      <button type="button" aria-label="上一页" title="翻到上一页"
         className="turn-button turn-prev"
         disabled={active===0||!!turn||debugPose!==null}
         onClick={()=>goTo(active-1)}><Arrow back/></button>
@@ -142,7 +145,7 @@ export default function App(){
         name={name} wish={wish} storyMode={storyMode} reducedMotion={reducedMotion}
         debugPose={debugPose} debugFrom={debugFrom} reading={readingSide!==null}/>
       </BookReadingStage>
-      <button type="button" aria-label="下一页" title="向右翻书"
+      <button type="button" aria-label="下一页" title="翻到下一页"
         className="turn-button turn-next"
         disabled={active===totalPositions-1||!!turn||debugPose!==null}
         onClick={()=>goTo(active+1)}><Arrow/></button>
@@ -165,7 +168,7 @@ export default function App(){
           </div>:<p>{readableMessage}</p>}
         </>
         : <>
-          <div className="reader-meta">THE BEGINNING</div>
+          <div className="reader-meta">故事的开头</div>
           <h2>{storyMode==='letter'?'有一封信，想慢慢读给你听':'一本为特别的你准备的小书'}</h2>
           <p>用手指或鼠标按住纸页拖动，或点击右侧箭头翻开故事。</p>
         </>}
@@ -173,7 +176,7 @@ export default function App(){
     <div className="page-navigation">
       <div className="chapter-current">
         {shownChapter? <><span>{shownChapter.label}</span><strong>{shownChapter.word}</strong></>:
-          <><span>THE BEGINNING</span><strong>THE COVER</strong></>}
+          <strong>封面</strong>}
       </div>
       <nav className="page-dots" aria-label="故事进度">
         {Array.from({length:totalPositions},(_,index)=>{
@@ -181,19 +184,19 @@ export default function App(){
           return <button key={index} type="button"
             aria-label={index===0?'查看封面':`查看第 ${index} 个故事跨页`}
             aria-current={active===index?'page':undefined}
-            title={chapter?.word??'COVER'}
+            title={chapter?.word??'封面'}
             className={`page-dot ${active===index?'selected':''}`}
             style={{'--dot-color':chapter?.accent??'#343D54'} as React.CSSProperties}
             disabled={!!turn||debugPose!==null}
             onClick={()=>goTo(index)}/>;
         })}
       </nav>
-      <div className="page-count">{String(currentIndex).padStart(2,'0')} / 05</div>
+      <div className="page-count">{String(currentIndex).padStart(2,'0')} / {String(totalPositions-1).padStart(2,'0')}</div>
     </div>
     <footer className="site-foot">
-      <span>AN ORIGINAL INTERACTIVE BOOK</span>
-      <span>← → &nbsp; HOLD &amp; DRAG PAPER &nbsp; · &nbsp; RELEASE TO SETTLE</span>
-      <span>{storyMode==='letter'?'A LETTER · TOKIRINN':<a className="letter-edition-link" href={window.location.pathname+'?story=letter'}>READ THE OTHER LETTER ↗</a>}</span>
+      <span>{storyMode==='letter'?'手写来信 · Tokirinn':'原创互动绘本'}</span>
+      <span>← → &nbsp; 按住纸页拖动，松手落页</span>
+      <MusicCredit/>
     </footer>
 
     {editorOpen&&storyMode==='birthday'&&<div className="editor-backdrop" role="presentation"
@@ -208,7 +211,7 @@ export default function App(){
         }}>
         <button type="button" aria-label="关闭定制面板" className="drawer-close"
           onClick={closeEditor}>×</button>
-        <div className="drawer-eyebrow">MAKE IT PERSONAL</div>
+        <div className="drawer-eyebrow">专属祝福</div>
         <h2 id="editor-heading">写下你的故事。</h2>
         <p>调整名字与祝福，最后一章会立即使用这些内容。五个插画跨页和实体书翻页动作保持不变。</p>
         <label htmlFor="recipient">收礼人的名字</label>

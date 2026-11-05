@@ -11,7 +11,7 @@ test('record hand-held forward/backward paper manipulation with photographic pos
   });
   try{
     const page=await context.newPage();
-    await page.goto('/?scene=hello');
+    await page.goto('/?story=birthday&scene=hello');
     const book=page.locator('.book-viewport');
     const rect=(await book.boundingBox())!;
     const y=rect.y+rect.height*.66, start=rect.x+rect.width*.9, half=rect.width/2;

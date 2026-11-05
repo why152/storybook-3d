@@ -188,7 +188,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .cover-main-title{font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(27px,4.7vw,73px);font-weight:900;line-height:.86;white-space:nowrap}
 .cover-main-title i{display:block;font-family:'Caveat',cursive;font-size:1.2em;line-height:1.08;font-weight:700;color:#ecc69f;transform:rotate(-7deg)}
 .cover-separator{font-size:20px;margin:2% 0}
-.cover-meta{font-size:clamp(7px,.72vw,12px);letter-spacing:.17em;line-height:1.8}
 .cover-hinge{position:absolute;left:0;top:0;bottom:0;width:15px;
  background:linear-gradient(90deg,#0e111b,#64606a66 58%,transparent);pointer-events:none}
 
@@ -206,7 +205,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .page-count{text-align:right;color:#c2b0a4;font-size:11px;font-variant-numeric:tabular-nums;letter-spacing:2px}
 .site-foot{flex:none;height:43px;display:flex;justify-content:space-between;align-items:center;
  padding:0 24px 7px;color:#817c82;letter-spacing:1px;font-size:9px;z-index:3}
-.site-foot span:nth-child(2){letter-spacing:2px;color:#a6a0a3}
+.site-foot>span:nth-child(2){letter-spacing:2px;color:#a6a0a3}
 
 .editor-backdrop{position:fixed;inset:0;z-index:30;background:#060609a6;display:flex;justify-content:flex-end}
 .editor-drawer{position:relative;width:min(450px,100vw);height:100%;overflow-y:auto;padding:68px 39px 35px;
@@ -245,14 +244,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
  .page-chapter{font-size:7px;letter-spacing:1px}
  .page-chapter-left{font-size:8px}
  .cover-main-title{font-size:clamp(23px,7vw,35px)}
- .cover-moon{font-size:34px}.cover-edition,.cover-meta{font-size:6px}
+ .cover-moon{font-size:34px}.cover-edition{font-size:6px}
  .cover-separator{font-size:12px}
  .page-navigation{height:75px;grid-template-columns:1fr 1fr;gap:4px;padding:0 15px}
  .page-navigation .chapter-current{display:none}.page-count{font-size:10px}
  .page-dots{justify-content:flex-start;gap:10px}
  .site-foot{height:42px;justify-content:center}
- .site-foot span:first-child,.site-foot span:last-child{display:none}
- .site-foot span:nth-child(2){text-align:center;font-size:8px}
+ .site-foot>span:first-child,.site-foot>span:last-child{display:none}
+ .site-foot>span:nth-child(2){text-align:center;font-size:8px}
  .editor-drawer{padding:64px 27px 28px}
 }
 @media(prefers-reduced-motion:reduce){

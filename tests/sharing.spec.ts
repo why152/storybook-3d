@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 
 test('a Chinese birthday greeting becomes a reusable private-by-link URL',async ({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.goto('/?scene=wish');
-  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
+  await page.goto('/?story=birthday&scene=wish');
+  await page.getByRole('button',{name:'定制祝福'}).click();
   await page.getByLabel('收礼人的名字').fill('小雨🎂');
   await page.getByLabel('最后一页的祝福').fill('愿每一页都开满花。\n生日快乐！');
   const url=await page.getByLabel('专属绘本链接').inputValue();
@@ -18,7 +18,7 @@ test('a Chinese birthday greeting becomes a reusable private-by-link URL',async 
   // A fresh visit must start with a real, closed portrait cover.
   await page.goto(url);
   await expect(page.locator('.book-shell.is-closed')).toHaveCount(1);
-  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
+  await page.getByRole('button',{name:'定制祝福'}).click();
   await expect(page.getByLabel('收礼人的名字')).toHaveValue('小雨🎂');
   await expect(page.getByLabel('最后一页的祝福')).toHaveValue('愿每一页都开满花。\n生日快乐！');
   await page.getByRole('button',{name:'关闭定制面板'}).click();
@@ -27,7 +27,7 @@ test('a Chinese birthday greeting becomes a reusable private-by-link URL',async 
   await expect(page.locator('.book-static .page-surface[data-chapter="wish"]')).toHaveCount(2,{timeout:30000});
   await expect(page.getByRole('heading',{name:'生日快乐，小雨🎂'})).toBeVisible();
   await page.reload();
-  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
+  await page.getByRole('button',{name:'定制祝福'}).click();
   await expect(page.getByLabel('收礼人的名字')).toHaveValue('小雨🎂');
 });
 
@@ -42,7 +42,7 @@ test('malformed, unsupported and oversized share fragments are harmless',async (
     // path triggers the application's hashchange reload asynchronously.
     await page.goto('/?scene=wish&invalid-case='+index+hash);
     await expect(page.locator('.chapter-reader h2')).toHaveText('生日快乐，你');
-    await page.getByRole('button',{name:/CUSTOMIZE/}).click();
+    await page.getByRole('button',{name:'定制祝福'}).click();
     await expect(page.getByLabel('收礼人的名字')).toHaveValue('你');
     await page.getByRole('button',{name:'关闭定制面板'}).click();
   }
@@ -50,13 +50,13 @@ test('malformed, unsupported and oversized share fragments are harmless',async (
 
 test('share URLs also preserve mobile base paths',async ({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await page.goto('/');
-  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
+  await page.goto('/?story=birthday');
+  await page.getByRole('button',{name:'定制祝福'}).click();
   await page.getByLabel('收礼人的名字').fill('阿星');
   const href=await page.getByLabel('专属绘本链接').inputValue();
   expect(href).toContain('/#gift=');
   await page.goto(href);
   await expect(page.locator('.book-shell.is-closed')).toHaveCount(1);
-  await page.getByRole('button',{name:/CUSTOMIZE/}).click();
+  await page.getByRole('button',{name:'定制祝福'}).click();
   await expect(page.getByLabel('收礼人的名字')).toHaveValue('阿星');
 });

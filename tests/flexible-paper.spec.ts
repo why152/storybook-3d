@@ -90,7 +90,7 @@ async function ready(page:import('@playwright/test').Page){
 
 test('a mobile leaf keeps its segments while turning and adapts after resizing',async({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await page.goto('/?scene=grow');
+  await page.goto('/?story=birthday&scene=grow');
   await page.evaluate(()=>Promise.all([...document.images].map(image=>image.decode())));
   await page.getByRole('button',{name:'下一页'}).click();
   const leaf=page.locator('.book-turn-leaf.is-flexible');
@@ -113,7 +113,7 @@ test('a mobile leaf keeps its segments while turning and adapts after resizing',
 test('exactly flat poses use native, single-piece printed paper',async({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
   for(const [pose,expected] of [['0','front'],['0.5','none'],['1','back']] as const){
-    await page.goto('/?pose='+pose+'&from=grow');
+    await page.goto('/?story=birthday&pose='+pose+'&from=grow');
     const leaf=page.locator('.book-turn-leaf.is-flexible');
     await expect(leaf).toHaveAttribute('data-texture-ready','true');
     await expect(leaf).toHaveAttribute('data-paper-endpoint',expected);
@@ -140,7 +140,7 @@ test('front and reverse endpoint print match the actual settled pages at desktop
    for(const viewport of viewports){
     await page.setViewportSize(viewport);
     for(const [pose,chapter] of [[0,'grow'],[1,'together']] as const){
-      await page.goto(`/?from=grow&pose=${pose}`);await ready(page);
+      await page.goto(`/?story=birthday&from=grow&pose=${pose}`);await ready(page);
       if(viewport.width===393){
         await page.setViewportSize({width:844,height:393});
         await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
@@ -148,7 +148,7 @@ test('front and reverse endpoint print match the actual settled pages at desktop
         await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
       }
       const turned=await page.locator('.book-shell').screenshot();
-      await page.goto('/?scene='+chapter);await ready(page);
+      await page.goto('/?story=birthday&scene='+chapter);await ready(page);
       const settled=await page.locator('.book-shell').screenshot();
       const diff=await page.evaluate(async([a,b])=>{
         const decode=async(src:string)=>{const i=new Image();i.src=src;await i.decode();return i;};
@@ -190,7 +190,7 @@ test('front and reverse endpoint print match the actual settled pages at desktop
 
 
 test('WebKit resumes real book time after a blocked paint frame',async({page})=>{
-  await page.goto('/?scene=grow');
+  await page.goto('/?story=birthday&scene=grow');
   await page.evaluate(async()=>Promise.all([...document.images].map(image=>image.decode())));
   await page.getByRole('button',{name:'下一页'}).click();
   const leaf=page.locator('.book-turn-leaf.is-flexible');

@@ -1,7 +1,7 @@
 import {expect,test} from '@playwright/test';
 
 test('mouse grip follows the paper both directions, waits while held, then cancels',async({page})=>{
-  await page.goto('/?scene=grow');
+  await page.goto('/?story=birthday&scene=grow');
   const book=page.locator('.book-viewport');
   const rect=(await book.boundingBox())!;
   const y=rect.y+rect.height*.66;
@@ -27,7 +27,7 @@ test('mouse grip follows the paper both directions, waits while held, then cance
 });
 
 test('release over center advances a page, reverse left-to-right grip returns it',async({page})=>{
-  await page.goto('/?scene=grow');
+  await page.goto('/?story=birthday&scene=grow');
   const book=page.locator('.book-viewport');
   const bounds=(await book.boundingBox())!;
   const y=bounds.y+bounds.height*.65;
@@ -54,7 +54,7 @@ test('release over center advances a page, reverse left-to-right grip returns it
 
 test('mobile touch pointer can reverse course before letting go',async({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await page.goto('/?scene=hello');
+  await page.goto('/?story=birthday&scene=hello');
   const book=page.locator('.book-viewport');
   const rect=(await book.boundingBox())!;
   const pos=(fraction:number)=>rect.x+rect.width*fraction;
